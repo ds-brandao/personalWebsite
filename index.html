@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Daniel Brandao</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+    }
+    pre {
+      white-space: pre-wrap;       /* Since CSS 2.1 */
+      white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+      white-space: -pre-wrap;      /* Opera 4-6 */
+      white-space: -o-pre-wrap;    /* Opera 7 */
+      word-wrap: break-word;       /* Internet Explorer 5.5+ */
+      font-size: 16px;
+    }
+    .title-section {
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .title {
+      font-size: 55px;
+      font-weight: bold;
+      text-align: center;
+    }
+    .subtitle {
+      font-size: 24px;
+      text-align: center;
+      margin-top: 20px;
+    }
+    .content-section {
+      margin-top: 50px;
+    }
+    @media (max-width: 600px) {
+      pre {
+        font-size: 18px;
+      }
+      .title {
+        font-size: 36px;
+      }
+      .subtitle {
+        font-size: 24px;
+      }
+    }
+    @media (max-width: 400px) {
+      pre {
+        font-size: 12px;
+      }
+      .title {
+        font-size: 24px;
+      }
+      .subtitle {
+        font-size: 14px;
+      }
+    }
+    .typing-animation {
+      display: inline-block;
+      overflow: hidden;
+      border-right: 2px solid;
+      white-space: nowrap;
+      animation: typing 1s steps(20, end), blink-caret 0.75s step-end infinite;
+    }
+
+    @keyframes typing {
+      from { width: 0 }
+      to { width: 100% }
+    }
+
+    @keyframes blink-caret {
+      from, to { border-color: transparent }
+      50% { border-color: black; }
+    }
+
+    .repo-container {
+      background-color: #f0f0f0;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+<div class="title-section">
+  <div style="text-align: center;">
+    <div class="title"><span id="title-text"></span></div>
+    <div class="subtitle">
+      <span id="link-about"></span> | <span id="link-contact"></span> | <span id="link-projects"></span><br>
+    </div>
+  </div>
+</div>
+
+<div id="about" class="content-section">
+  <pre>
+    <b style="font-size: 24px;">Daniel Brandao</b>
+    <hr style="width: 100%;">
+    I am a Cybersecurity student <a href="https://www.bellevuecollege.edu/">@Bellevue College</a>. 
+
+    Currently, I have been exploring the many resources available to me and learning as much as I can as well as working on side-projects that seem to be never-ending...
+
+    For fun, I enjoy listening to music (life is better with a soundtrack), get some <a href="https://www.google.com/maps/place/Gianfranco+Ristorante+Italiano/@47.5274551,-121.8345108,15z/data=!3m1!4b1!4m6!3m5!1s0x54907be66b78c025:0xc82fbc62605fe116!8m2!3d47.5274556!4d-121.8242111!16s%2Fg%2F1vl9r5tm?entry=ttu">Italian food</a>, and absolutely destroy my friends in Fifa.  
+  </pre>
+</div>
+
+<div id="projects" class="content-section">
+  <pre>
+    <b style="font-size: 24px;">Projects</b>
+    <hr style="width: 100%;">
+    Check out my <a href="https://github.com/ds-brandao" target="_blank">GitHub</a> to see some of my open source projects.
+  </pre>
+  <div id="repo-list" style="text-align: center;"></div>
+</div>
+
+<div id="contact" class="content-section">
+  <pre>
+    <b style="font-size: 24px;">Contact</b>
+    <hr style="width: 100%;">
+    <a href="mailto:lounges.upstage_0y@icloud.com">Email me</a>
+    <a href="https://www.linkedin.com/in/dsbrandao/" target="_blank">LinkedIn</a> 
+  </pre>
+</div>
+
+<script>
+  // Smooth scrolling when navigation links are clicked
+  const navLinks = document.querySelectorAll('.subtitle a');
+  
+  navLinks.forEach(link => {
+    link.addEventListener('click', (event) => {
+      event.preventDefault();
+      const targetId = link.getAttribute('href');
+      const targetSection = document.querySelector(targetId);
+      
+      targetSection.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+  
+  // Typing animation for the title and links
+  const titleText = "Aye!";
+  const titleElement = document.getElementById("title-text");
+  const linkAboutElement = document.getElementById("link-about");
+  const linkContactElement = document.getElementById("link-contact");
+  const linkProjectsElement = document.getElementById("link-projects");
+  const linkTexts = [
+  { element: linkAboutElement, text: "About me", targetId: "about" },
+    { element: linkContactElement, text: "Contact", targetId: "contact" },
+    { element: linkProjectsElement, text: "Projects", targetId: "projects" }
+  ];
+  let titleIndex = 0;
+  let linkIndex = 0;
+  let charIndex = 0;
+
+  function typeTitle() {
+    if (titleIndex < titleText.length) {
+      titleElement.innerHTML += titleText.charAt(titleIndex);
+      titleIndex++;
+      setTimeout(typeTitle, 200);
+    } else {
+      titleElement.classList.remove("typing-animation");
+      setTimeout(typeLinks, 500);
+    }
+  }
+
+  function typeLinks() {
+    if (linkIndex < linkTexts.length) {
+      const currentLink = linkTexts[linkIndex];
+      if (charIndex < currentLink.text.length) {
+        currentLink.element.innerHTML += currentLink.text.charAt(charIndex);
+        charIndex++;
+        setTimeout(typeLinks, 100);
+      } else {
+        currentLink.element.innerHTML = `<a href="#${currentLink.targetId}">${currentLink.text}</a>`;
+        currentLink.element.classList.remove("typing-animation");
+        linkIndex++;
+        charIndex = 0;
+        setTimeout(typeLinks, 500);
+      }
+    }
+  }
+
+  titleElement.classList.add("typing-animation");
+  typeTitle();
+
+  // Fetch and display GitHub repositories
+  async function fetchRepos() {
+    const response = await fetch('https://api.github.com/users/ds-brandao/repos');
+    const repos = await response.json();
+    const repoList = document.getElementById('repo-list');
+    
+    repos.forEach(repo => {
+      const repoItem = document.createElement('div');
+      repoItem.className = 'repo-container';
+      repoItem.innerHTML = `<a href="${repo.html_url}" target="_blank">${repo.name}</a> | ${repo.stargazers_count}`;
+      repoList.appendChild(repoItem);
+    });
+  }
+
+  fetchRepos();
+</script>
+
+</body>
+</html>
