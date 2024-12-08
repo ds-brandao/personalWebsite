@@ -8,33 +8,36 @@
       padding: 20px;
       font-family: Arial, sans-serif;
     }
+
     pre {
       white-space: pre-wrap;       /* Since CSS 2.1 */
-      white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
-      white-space: -pre-wrap;      /* Opera 4-6 */
-      white-space: -o-pre-wrap;    /* Opera 7 */
       word-wrap: break-word;       /* Internet Explorer 5.5+ */
       font-size: 16px;
     }
+
     .title-section {
       height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
     }
+
     .title {
       font-size: 55px;
       font-weight: bold;
       text-align: center;
     }
+
     .subtitle {
       font-size: 24px;
       text-align: center;
       margin-top: 20px;
     }
+
     .content-section {
       margin-top: 50px;
     }
+
     @media (max-width: 600px) {
       pre {
         font-size: 18px;
@@ -46,6 +49,7 @@
         font-size: 24px;
       }
     }
+
     @media (max-width: 400px) {
       pre {
         font-size: 12px;
@@ -57,6 +61,7 @@
         font-size: 14px;
       }
     }
+
     .typing-animation {
       display: inline-block;
       overflow: hidden;
@@ -82,6 +87,175 @@
       border-radius: 5px;
       display: inline-block;
     }
+
+    /* Blog Section Styling */
+    #blog .blog-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .blog-post {
+      border: 1px solid #eee;
+      border-radius: 5px;
+      padding: 20px;
+      background-color: #fafafa;
+    }
+
+    .blog-post img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 5px;
+    }
+
+    .blog-post-title {
+      font-size: 20px;
+      font-weight: bold;
+      margin-top: 15px;
+    }
+
+    .blog-post-summary {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #333;
+    }
+
+    .blog-post a.read-more {
+      display: inline-block;
+      margin-top: 15px;
+      font-size: 14px;
+      color: #007ACC;
+      text-decoration: none;
+      border-bottom: 1px dotted #007ACC;
+    }
+    .blog-post a.read-more:hover {
+      text-decoration: underline;
+    }
+
+    /* Updated Modal Styles */
+    .modal-overlay {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        backdrop-filter: blur(8px);
+        padding: 20px;
+    }
+
+    .modal-content {
+        background: rgba(255, 255, 255, 0.95);
+        padding: 40px;
+        width: 90%;
+        max-width: 900px;
+        max-height: 85vh;
+        overflow-y: auto;
+        border-radius: 15px;
+        position: relative;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        backdrop-filter: blur(4px);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+
+    /* Style the markdown content inside modal */
+    .modal-content h1 {
+        font-size: 2.5em;
+        margin-bottom: 1em;
+        color: #333;
+    }
+
+    .modal-content h2 {
+        font-size: 1.8em;
+        margin: 1em 0;
+        color: #444;
+    }
+
+    .modal-content p {
+        font-size: 1.1em;
+        line-height: 1.6;
+        margin: 1em 0;
+        color: #333;
+    }
+
+    .modal-content img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+        margin: 1.5em 0;
+    }
+
+    .modal-content ul, .modal-content ol {
+        margin: 1em 0;
+        padding-left: 2em;
+    }
+
+    .modal-content li {
+        margin: 0.5em 0;
+        font-size: 1.1em;
+        line-height: 1.6;
+    }
+
+    .modal-close {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: rgba(0, 0, 0, 0.1);
+        border: none;
+        border-radius: 50%;
+        width: 35px;
+        height: 35px;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 18px;
+        color: #444;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-close:hover {
+        background: rgba(0, 0, 0, 0.2);
+        transform: scale(1.1);
+    }
+
+    /* Add custom scrollbar for the modal */
+    .modal-content::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .modal-content::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.1);
+        border-radius: 4px;
+    }
+
+    .modal-content::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 4px;
+    }
+
+    .modal-content::-webkit-scrollbar-thumb:hover {
+        background: rgba(0, 0, 0, 0.3);
+    }
+
+    /* Add some animation for the modal */
+    @keyframes modalFadeIn {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    .modal-content {
+        animation: modalFadeIn 0.3s ease-out;
+    }
   </style>
 </head>
 <body>
@@ -89,7 +263,11 @@
   <div style="text-align: center;">
     <div class="title"><span id="title-text"></span></div>
     <div class="subtitle">
-      <span id="link-about"></span> | <span id="link-contact"></span> | <span id="link-projects"></span><br>
+      <span id="link-about"></span> | 
+      <span id="link-projects"></span> |
+      <span id="link-blog"></span> |
+      <span id="link-contact"></span>
+      <br>
     </div>
   </div>
 </div>
@@ -115,6 +293,16 @@
   <div id="repo-list" style="text-align: center;"></div>
 </div>
 
+<div id="blog" class="content-section">
+  <pre>
+    <b style="font-size: 24px;">Blog</b>
+    <hr style="width: 100%;">
+    Check out some of my latest thoughts and tutorials.
+  </pre>
+
+  <div class="blog-grid" id="blog-posts"></div>
+</div>
+
 <div id="contact" class="content-section">
   <pre>
     <b style="font-size: 24px;">Contact</b>
@@ -123,6 +311,17 @@
     <a href="https://www.linkedin.com/in/dsbrandao/" target="_blank">LinkedIn</a> 
   </pre>
 </div>
+
+<!-- Modal for full post content -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal-content">
+    <button class="modal-close" id="modal-close">X</button>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<!-- Include Marked.js for Markdown parsing -->
+<script src="https://cdn.jsdelivr.net/npm/marked@4.3.0/marked.min.js"></script>
 
 <script>
   // Smooth scrolling when navigation links are clicked
@@ -139,16 +338,19 @@
   });
   
   // Typing animation for the title and links
-  const titleText = "Aye!";
+  const titleText = "aye!";
   const titleElement = document.getElementById("title-text");
   const linkAboutElement = document.getElementById("link-about");
   const linkContactElement = document.getElementById("link-contact");
   const linkProjectsElement = document.getElementById("link-projects");
+  const linkBlogElement = document.getElementById("link-blog");
   const linkTexts = [
-  { element: linkAboutElement, text: "About me", targetId: "about" },
-    { element: linkContactElement, text: "Contact", targetId: "contact" },
-    { element: linkProjectsElement, text: "Projects", targetId: "projects" }
+    { element: linkAboutElement, text: "About me", targetId: "about" },
+    { element: linkProjectsElement, text: "Projects", targetId: "projects" },
+    { element: linkBlogElement, text: "Blog", targetId: "blog" },
+    { element: linkContactElement, text: "Contact", targetId: "contact" }
   ];
+
   let titleIndex = 0;
   let linkIndex = 0;
   let charIndex = 0;
@@ -157,7 +359,7 @@
     if (titleIndex < titleText.length) {
       titleElement.innerHTML += titleText.charAt(titleIndex);
       titleIndex++;
-      setTimeout(typeTitle, 200);
+      setTimeout(typeTitle, 90);
     } else {
       titleElement.classList.remove("typing-animation");
       setTimeout(typeLinks, 500);
@@ -170,7 +372,7 @@
       if (charIndex < currentLink.text.length) {
         currentLink.element.innerHTML += currentLink.text.charAt(charIndex);
         charIndex++;
-        setTimeout(typeLinks, 100);
+        setTimeout(typeLinks, 50);
       } else {
         currentLink.element.innerHTML = `<a href="#${currentLink.targetId}">${currentLink.text}</a>`;
         currentLink.element.classList.remove("typing-animation");
@@ -184,9 +386,61 @@
   titleElement.classList.add("typing-animation");
   typeTitle();
 
-  // Fetch and display GitHub repositories
+  // Add this at the beginning of your script section
+  let config;
+  
+  async function loadConfig() {
+    try {
+      const response = await fetch('config/config.json');
+      config = await response.json();
+      initializePage();
+    } catch (error) {
+      console.error('Error loading config:', error);
+    }
+  }
+
+  function initializePage() {
+    // Update title text
+    const titleText = config.personal.title;
+    titleElement.classList.add("typing-animation");
+    typeTitle();
+
+    // Update personal information
+    document.querySelector('#about pre b').textContent = config.personal.name;
+    
+    // Update about section content
+    const aboutContent = document.querySelector('#about pre');
+    aboutContent.innerHTML = `
+    <b style="font-size: 24px;">${config.personal.name}</b>
+    <hr style="width: 100%;">
+    I am a Cybersecurity student <a href="${config.personal.college.url}">@${config.personal.college.name}</a>. 
+
+    Currently, I have been exploring the many resources available to me and learning as much as I can as well as working on side-projects that seem to be never-ending...
+
+    For fun, I enjoy listening to music (life is better with a soundtrack), get some <a href="${config.personal.favoriteRestaurant.url}">${config.personal.favoriteRestaurant.name}</a>, and absolutely destroy my friends in Fifa.  
+    `;
+
+    // Update projects section
+    const projectsSection = document.querySelector('#projects pre');
+    projectsSection.innerHTML = `
+    <b style="font-size: 24px;">Projects</b>
+    <hr style="width: 100%;">
+    Check out my <a href="${config.social.github.url}" target="_blank">GitHub</a> to see some of my open source projects.
+    `;
+
+    // Update contact section
+    const contactSection = document.querySelector('#contact pre');
+    contactSection.innerHTML = `
+    <b style="font-size: 24px;">Contact</b>
+    <hr style="width: 100%;">
+    <a href="mailto:${config.social.email}">Email me</a>
+    <a href="${config.social.linkedin}" target="_blank">LinkedIn</a> 
+    `;
+  }
+
+  // Modify fetchRepos function to use config
   async function fetchRepos() {
-    const response = await fetch('https://api.github.com/users/ds-brandao/repos');
+    const response = await fetch(`https://api.github.com/users/${config.social.github.username}/repos`);
     const repos = await response.json();
     const repoList = document.getElementById('repo-list');
     
@@ -198,7 +452,76 @@
     });
   }
 
-  fetchRepos();
+  // Start loading the config when the page loads
+  document.addEventListener('DOMContentLoaded', loadConfig);
+
+  async function loadBlogPosts() {
+    try {
+      const response = await fetch('config/articles.json');
+      const posts = await response.json();
+      const blogContainer = document.getElementById('blog-posts');
+      
+      posts.forEach((post, index) => {
+        const article = document.createElement('div');
+        article.className = 'blog-post';
+
+        const title = document.createElement('div');
+        title.className = 'blog-post-title';
+        title.textContent = post.title;
+
+        const summary = document.createElement('div');
+        summary.className = 'blog-post-summary';
+        summary.textContent = post.summary;
+
+        const readMore = document.createElement('a');
+        readMore.href = '#';
+        readMore.className = 'read-more';
+        readMore.textContent = 'Read More';
+        readMore.addEventListener('click', (e) => {
+          e.preventDefault();
+          showFullPost(post.markdown);
+        });
+
+        article.appendChild(title);
+        article.appendChild(summary);
+        article.appendChild(readMore);
+
+        blogContainer.appendChild(article);
+      });
+    } catch (e) {
+      console.error('Error loading blog posts:', e);
+    }
+  }
+
+  loadBlogPosts();
+
+  // Show full post in modal
+  const modalOverlay = document.getElementById('modal-overlay');
+  const modalClose = document.getElementById('modal-close');
+  const modalBody = document.getElementById('modal-body');
+
+  modalClose.addEventListener('click', () => {
+    modalOverlay.style.display = 'none';
+    modalBody.innerHTML = '';
+  });
+
+  async function showFullPost(markdownFile) {
+    try {
+        const response = await fetch(markdownFile);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const text = await response.text();
+        // Use marked.parse() instead of marked()
+        const html = marked.parse(text);
+        modalBody.innerHTML = html;
+        modalOverlay.style.display = 'flex';
+    } catch (error) {
+        console.error('Error fetching markdown:', error);
+        modalBody.innerHTML = `<p>Failed to load post. Error: ${error.message}</p>`;
+        modalOverlay.style.display = 'flex';
+    }
+  }
 </script>
 
 </body>
