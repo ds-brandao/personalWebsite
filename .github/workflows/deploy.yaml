@@ -16,7 +16,7 @@ jobs:
     - name: Stop existing containers
       run: docker-compose down || true
       
-    - name: Build the Docker image
+    - name: Build the Docker image with retry logic
       run: docker-compose build
       
     - name: Pull required Docker images
