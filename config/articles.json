@@ -2,35 +2,35 @@
     {
       "title": "My First Post",
       "summary": "An introduction to my new blog. I discuss my goals, what readers can expect, and why I decided to start sharing my thoughts online.",
-      "markdown": "../blog-posts/firstBlogPost.md",
+      "markdown": "blog-posts/firstBlogPost.md",
       "image": "images/blog/firstBlogPost.jpeg",
       "tags": ["Intro"]
     },
     {
       "title": "Understanding Network Security Fundamentals",
       "summary": "A dive into the essential principles of network security and how to implement basic protections for your home or small business network.",
-      "markdown": "../blog-posts/network-security.md",
+      "markdown": "blog-posts/network-security.md",
       "image": "images/blog/network-security.jpg",
       "tags": ["Security", "Tutorial"]
     },
     {
       "title": "Building a Home Lab for Cybersecurity Practice",
       "summary": "Step-by-step guide on setting up a virtualized environment for practicing cybersecurity skills and running security tools safely.",
-      "markdown": "../blog-posts/homelab.md",
+      "markdown": "blog-posts/homelab.md",
       "image": "images/blog/homelab.jpg",
       "tags": ["Security", "Project", "Tutorial"]
     },
     {
       "title": "My Experience Learning Python for Security",
       "summary": "My journey of learning Python specifically for cybersecurity applications, including automation, tool development, and data analysis.",
-      "markdown": "../blog-posts/python-security.md",
+      "markdown": "blog-posts/python-security.md",
       "image": "images/blog/python-security.jpg",
       "tags": ["Coding", "Security"]
     },
     {
       "title": "The Future of AI in Cybersecurity",
       "summary": "Exploring how artificial intelligence is transforming the cybersecurity landscape, from threat detection to automated defense mechanisms.",
-      "markdown": "../blog-posts/ai-security.md",
+      "markdown": "blog-posts/ai-security.md",
       "image": "images/blog/ai-security.jpg",
       "tags": ["AI", "Security"]
     }

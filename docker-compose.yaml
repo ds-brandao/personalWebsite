@@ -2,10 +2,8 @@ services:
   web:
     build: .
     volumes:
-     - ./nginx.conf:/etc/nginx/conf.d/nginx.conf
-     - ./projects:/usr/share/nginx/html/projects
-     - ./articles:/usr/share/nginx/html/articles
-     - ./images:/usr/share/nginx/html/imagesprojects:/usr/share/nginx/html/projects
+    - ./nginx.conf:/etc/nginx/conf.d/nginx.conf
+      - ./projects:/usr/share/nginx/html/projects
       - ./articles:/usr/share/nginx/html/articles
       - ./images:/usr/share/nginx/html/images
       - ./index.html:/usr/share/nginx/html/index.html
