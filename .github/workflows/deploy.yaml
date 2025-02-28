@@ -109,7 +109,7 @@ jobs:
           if docker compose ps | grep -q "web.*Up"; then
             echo "Web container is still running, proceeding with deployment anyway..."
           else
-            echo "Stopping containers..."
+            echo "Stopping containers...."
             docker compose down
             exit 1
           fi
