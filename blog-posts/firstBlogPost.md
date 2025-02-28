@@ -6,4 +6,4 @@ In this blog, I'll be covering a range of topics that reflect my interests and s
 
 My interest in this field began when I realized how critical security is in our increasingly digital world. Currently studying Cybersecurity at Bellevue College, I'm fascinated by how we entrust our personal information to countless systems and applications every day, and I want to be part of the solution that keeps that information safe. This motivation drives both my studies and the content I plan to share here.
 
-I'm always open to discussions, questions, and suggestions. Feel free to reach out via email or connect with me on LinkedIn. I look forward to growing this blog and connecting with others who share similar interests and passions in the cybersecurity landscape
+I'm always open to discussions, questions, and suggestions. Feel free to reach out via email or connect with me on LinkedIn. I look forward to growing this blog and connecting with others who share similar interests and passions in the cybersecurity landscape.
