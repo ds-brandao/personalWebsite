@@ -2,12 +2,13 @@ services:
   web:
     build: .
     volumes:
-      - .:/usr/share/nginx/html
-      - ./nginx.conf:/etc/nginx/conf.d/nginx.conf
-      - ./projects:/usr/share/nginx/html/projects
+     - ./nginx.conf:/etc/nginx/conf.d/nginx.conf
+     - ./projects:/usr/share/nginx/html/projects
+     - ./articles:/usr/share/nginx/html/articles
+     - ./images:/usr/share/nginx/html/imagesprojects:/usr/share/nginx/html/projects
       - ./articles:/usr/share/nginx/html/articles
       - ./images:/usr/share/nginx/html/images
-    # Expose Nginx internally for BrowserSync to proxy
+      - ./index.html:/usr/share/nginx/html/index.html
     expose:
       - "80"
     command: nginx -g 'daemon off;'
