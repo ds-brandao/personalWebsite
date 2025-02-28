@@ -4,6 +4,9 @@ services:
     volumes:
       - .:/usr/share/nginx/html
       - ./nginx.conf:/etc/nginx/conf.d/nginx.conf
+      - ./projects:/usr/share/nginx/html/projects
+      - ./articles:/usr/share/nginx/html/articles
+      - ./images:/usr/share/nginx/html/images
     # Expose Nginx internally for BrowserSync to proxy
     expose:
       - "80"
