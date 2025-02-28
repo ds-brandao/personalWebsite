@@ -7,15 +7,23 @@ services:
       - ./articles:/usr/share/nginx/html/articles
       - ./images:/usr/share/nginx/html/images
       - ./index.html:/usr/share/nginx/html/index.html
+      - ./blog-posts:/usr/share/nginx/html/blog-posts
+      - ./config:/usr/share/nginx/html/config
     expose:
       - "80"
     command: nginx -g 'daemon off;'
 
   browsersync:
-    image: node:14
+    image: node:18-alpine
     working_dir: /usr/src/app
     volumes:
       - .:/usr/src/app
-    command: npx browser-sync start --proxy web:80 --files "." --port 3000 --host 0.0.0.0
+    command: sh -c "npm install -g browser-sync && browser-sync start --proxy web:80 --files '.' --port 3000 --host 0.0.0.0 --no-open"
     ports:
       - "3000:3000"
+    depends_on:
+      - web
+    deploy:
+      resources:
+        limits:
+          memory: 512M
