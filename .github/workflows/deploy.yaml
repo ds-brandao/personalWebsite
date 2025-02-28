@@ -28,7 +28,7 @@ jobs:
         done
       continue-on-error: true
       
-    - name: Run and test website build
+    - name: Run and test website build with retry logic
       id: test_website
       run: |
         # Start containers in the background with retry logic
