@@ -635,10 +635,10 @@
 
     .modal-close {
       position: absolute;
-      top: 15px;
-      right: 15px;
-      background: rgba(79, 70, 229, 0.1);
-      border: 1px solid rgba(79, 70, 229, 0.2);
+      top: 20px;
+      right: 20px;
+      background: rgba(30, 30, 30, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.2);
       border-radius: 50%;
       width: 36px;
       height: 36px;
@@ -650,32 +650,14 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      z-index: 10;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
 
     .modal-close:hover {
       background: rgba(79, 70, 229, 0.2);
     }
     
-    .modal-back-button {
-      background: rgba(79, 70, 229, 0.1);
-      border: 1px solid rgba(79, 70, 229, 0.2);
-      border-radius: 8px;
-      padding: 8px 16px;
-      margin-bottom: 20px;
-      cursor: pointer;
-      color: var(--accent-color);
-      font-weight: 500;
-      font-size: 14px;
-      transition: all 0.3s ease;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-    
-    .modal-back-button:hover {
-      background: rgba(79, 70, 229, 0.2);
-    }
-
     /* More link styling */
     .more-link {
       text-align: center;
@@ -770,6 +752,88 @@
       color: var(--accent-color);
       border-color: rgba(79, 70, 229, 0.4);
     }
+
+    /* Modal styling for article content */
+    .modal-article-image {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      object-position: center 35%;
+      border-radius: 8px 8px 0 0;
+      margin: 0 0 20px;
+      display: block;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal-content img {
+      max-width: 100%;
+      border-radius: 6px;
+      margin: 10px 0;
+    }
+
+    .modal-content h1, 
+    .modal-content h2, 
+    .modal-content h3, 
+    .modal-content h4 {
+      margin-top: 1.5em;
+      margin-bottom: 0.5em;
+      color: var(--text-color);
+    }
+
+    .modal-content p {
+      margin-bottom: 1em;
+      line-height: 1.6;
+    }
+
+    .modal-content ul, 
+    .modal-content ol {
+      margin-bottom: 1em;
+      padding-left: 2em;
+    }
+
+    .modal-content blockquote {
+      border-left: 4px solid var(--accent-color);
+      padding-left: 1em;
+      margin-left: 0;
+      color: var(--text-secondary);
+      font-style: italic;
+    }
+
+    .modal-content code {
+      font-family: 'JetBrains Mono', monospace;
+      background: rgba(30, 30, 30, 0.5);
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-size: 0.9em;
+    }
+
+    .modal-content pre {
+      background: rgba(20, 20, 20, 0.8);
+      padding: 15px;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 15px 0;
+    }
+
+    .modal-content pre code {
+      background: transparent;
+      padding: 0;
+      font-size: 0.9em;
+      color: #e0e0e0;
+    }
+    
+    /* Responsive modal image adjustments */
+    @media (min-width: 1024px) {
+      .modal-article-image {
+        height: 250px; /* Taller on larger screens */
+      }
+    }
+    
+    @media (max-width: 600px) {
+      .modal-article-image {
+        height: 160px; /* Smaller on mobile devices */
+      }
+    }
   </style>
 </head>
 <body>
@@ -805,7 +869,6 @@
     <div id="about" class="panel">
       <h2 class="panel-title"><i class="fas fa-user"></i>About Me</h2>
       <div class="panel-content">
-        <div class="profile-highlight">Daniel Brandao</div>
         <hr class="profile-divider">
         I am a Cybersecurity student at <a href="" id="college-link">Bellevue College</a>. 
 
@@ -877,8 +940,7 @@
   <!-- Modal -->
   <div class="modal-overlay" id="modal-overlay">
     <div class="modal-content">
-      <button class="modal-close" id="modal-close">×</button>
-      <button class="modal-back-button" id="modal-back"><i class="fas fa-arrow-left"></i> Back to Articles</button>
+      <button class="modal-close" id="modal-close"><i class="fas fa-times"></i></button>
       <div id="modal-body"></div>
     </div>
   </div>
@@ -1064,22 +1126,21 @@
         const blogContainer = document.getElementById('blog-posts');
         const categoryFilters = document.getElementById('category-filters');
         
-        // Extract unique categories from all posts
-        const categories = new Set();
-        posts.forEach(post => {
-          if (post.tags && post.tags.length > 0) {
-            post.tags.forEach(tag => categories.add(tag));
-          }
-        });
+        // Clear existing filter buttons except 'All'
+        const existingFilterButtons = categoryFilters.querySelectorAll('.filter-tag:not([data-filter="all"])');
+        existingFilterButtons.forEach(btn => btn.remove());
         
-        // Add category filter buttons
-        categories.forEach(category => {
-          const filterBtn = document.createElement('button');
-          filterBtn.className = 'filter-tag';
-          filterBtn.setAttribute('data-filter', category.toLowerCase());
-          filterBtn.textContent = category;
-          categoryFilters.appendChild(filterBtn);
-        });
+        // Use predefined tags from config instead of extracting from posts
+        if (config && config.tags) {
+          // Add filter buttons for each predefined tag
+          Object.keys(config.tags).forEach(tagName => {
+            const filterBtn = document.createElement('button');
+            filterBtn.className = 'filter-tag';
+            filterBtn.setAttribute('data-filter', tagName.toLowerCase());
+            filterBtn.textContent = tagName;
+            categoryFilters.appendChild(filterBtn);
+          });
+        }
         
         // Create a map to store all posts by their elements
         const allPostElements = [];
@@ -1093,35 +1154,53 @@
           article.setAttribute('tabindex', '0');
           
           article.addEventListener('click', () => {
-            showFullPost(post.markdown);
+            showFullPost(post.markdown, post.image, post.title);
           });
           
           article.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
-              showFullPost(post.markdown);
+              showFullPost(post.markdown, post.image, post.title);
             }
           });
           
-          if (post.tags && post.tags.length > 0) {
-            article.setAttribute('data-categories', post.tags.map(tag => tag.toLowerCase()).join(' '));
+          // Filter and validate tags against predefined tags
+          const validTags = [];
+          if (post.tags && post.tags.length > 0 && config && config.tags) {
+            post.tags.forEach(tag => {
+              if (config.tags[tag]) {
+                validTags.push(tag);
+              }
+            });
+            
+            // Set data-categories for filtering
+            if (validTags.length > 0) {
+              article.setAttribute('data-categories', validTags.map(tag => tag.toLowerCase()).join(' '));
+            }
           }
-
+          
           if (post.image) {
             const image = document.createElement('img');
             image.src = post.image;
             image.alt = post.title;
             article.appendChild(image);
           }
-
-          if (post.tags && post.tags.length > 0) {
+          
+          // Add tags using the predefined styles from config
+          if (validTags.length > 0) {
             const tagsContainer = document.createElement('div');
             tagsContainer.className = 'blog-post-tags';
             
-            post.tags.forEach(tag => {
+            validTags.forEach(tag => {
               const tagElement = document.createElement('span');
-              tagElement.className = `blog-post-tag tag-${tag.toLowerCase()}`;
+              // Use the color class from config
+              const colorClass = config.tags[tag].color || tag.toLowerCase();
+              tagElement.className = `blog-post-tag tag-${colorClass}`;
               tagElement.textContent = tag;
+              // Add the description as a tooltip
+              if (config.tags[tag].description) {
+                tagElement.title = config.tags[tag].description;
+              }
               tagsContainer.appendChild(tagElement);
             });
             
@@ -1189,15 +1268,11 @@
     // Modal functionality
     const modalOverlay = document.getElementById('modal-overlay');
     const modalClose = document.getElementById('modal-close');
-    const modalBack = document.getElementById('modal-back');
     const modalBody = document.getElementById('modal-body');
     const modalContent = document.querySelector('.modal-content');
 
     // Close modal when clicking the X button
     modalClose.addEventListener('click', closeModal);
-    
-    // Close modal when clicking the back button
-    modalBack.addEventListener('click', closeModal);
     
     // Close modal when clicking outside the content area
     modalOverlay.addEventListener('click', (e) => {
@@ -1218,7 +1293,7 @@
       modalBody.innerHTML = '';
     }
 
-    async function showFullPost(markdownFile) {
+    async function showFullPost(markdownFile, image, title) {
       try {
         const response = await fetch(markdownFile);
         if (!response.ok) {
@@ -1226,7 +1301,19 @@
         }
         const text = await response.text();
         const html = marked.parse(text);
-        modalBody.innerHTML = html;
+        
+        // Create content with image at the top
+        let modalContent = '';
+        
+        // Add the image if available
+        if (image) {
+          modalContent += `<img src="${image}" alt="${title}" class="modal-article-image">`;
+        }
+        
+        // Add the parsed markdown content
+        modalContent += html;
+        
+        modalBody.innerHTML = modalContent;
         modalOverlay.style.display = 'flex';
         
         // Ensure focus is trapped in the modal for accessibility

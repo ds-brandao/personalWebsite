@@ -2,9 +2,9 @@
     {
       "title": "My First Post",
       "summary": "An introduction to my new blog. I discuss my goals, what readers can expect, and why I decided to start sharing my thoughts online.",
-      "markdown": "../blog-posts/post1.md",
-      "image": "images/blog/post1-thumbnail.jpg",
-      "tags": ["Coding", "Security"]
+      "markdown": "../blog-posts/firstBlogPost.md",
+      "image": "images/blog/firstBlogPost.jpeg",
+      "tags": ["Intro"]
     },
     {
       "title": "Understanding Network Security Fundamentals",

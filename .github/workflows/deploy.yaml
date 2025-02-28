@@ -1,0 +1,53 @@
+name: Deploy Website
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Stop existing containers
+      run: docker-compose down || true
+      
+    - name: Build the Docker image
+      run: docker-compose build
+      
+    - name: Run and test website
+      id: test_website
+      run: |
+        # Start containers in the background
+        docker-compose up -d
+        
+        # Wait for container to be fully up and running
+        echo "Waiting for container to be ready..."
+        sleep 10
+        
+        # Simple test to check if the website is accessible
+        curl -s -o /dev/null -w "%{http_code}" http://localhost:3000 | grep 200
+      continue-on-error: true
+
+    - name: Check test results and deploy
+      run: |
+        if [ "${{ steps.test_website.outcome }}" == "success" ]; then
+          echo "Tests passed successfully. Website is accessible."
+          # The container is already running from the test step
+        else
+          echo "Tests failed. Website is not accessible. Stopping containers..."
+          docker-compose down
+          exit 1
+        fi
+    
+    - name: Clean up
+      if: always()
+      run: |
+        # Remove any unused images and volumes
+        docker system prune -f
+        # Keep only recent images
+        docker image prune -a --force --filter "until=72h" 

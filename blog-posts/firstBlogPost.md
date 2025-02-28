@@ -23,7 +23,3 @@ I'm currently studying Cybersecurity at Bellevue College. My interest in this fi
 ## Let's Connect!
 
 I'm always open to discussions, questions, and suggestions. Feel free to reach out via email or connect with me on LinkedIn.
-
-Stay safe online!
-
-- Daniel
