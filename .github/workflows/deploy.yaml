@@ -19,7 +19,7 @@ jobs:
     - name: Build the Docker image
       run: docker-compose build
       
-    - name: Pre-pull required Docker images
+    - name: Pull required Docker images
       run: |
         # Pre-pull the node:14 image with retry logic
         for i in {1..3}; do
