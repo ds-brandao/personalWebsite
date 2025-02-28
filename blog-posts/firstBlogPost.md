@@ -20,6 +20,6 @@ In this blog, I'll be covering:
 
 I'm currently studying Cybersecurity at Bellevue College. My interest in this field began when I realized how critical security is in our increasingly digital world. Every day, we entrust our personal information to countless systems and applications, and I want to be part of the solution that keeps that information safe.
 
-## Let's Connect!
+## Let's Connect
 
 I'm always open to discussions, questions, and suggestions. Feel free to reach out via email or connect with me on LinkedIn.
