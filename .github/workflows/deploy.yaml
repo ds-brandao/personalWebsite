@@ -17,6 +17,60 @@ jobs:
         ref: ${{ github.event.pull_request.head.sha }}
         fetch-depth: 0  # Fetch all history and tags
     
+    - name: Verify content and permissions
+      run: |
+        echo "Checking key directories and files..."
+        ls -la
+        echo "Content of config directory:"
+        ls -la ./config
+        echo "Content of articles directory:"
+        ls -la ./articles
+        echo "Content of projects directory:"
+        ls -la ./projects || echo "Projects directory not found or empty"
+        echo "Setting proper permissions..."
+        # Ensure proper permissions on all directories
+        chmod -R 755 ./*
+        
+    - name: Create config copy script
+      run: |
+        cat > ensure-config.sh << 'EOF'
+        #!/bin/bash
+        
+        # This script ensures configuration files are properly copied inside the container
+        # after it starts, to handle any potential volume mounting issues
+        
+        echo "Ensuring configuration files are properly available..."
+        
+        # Wait for containers to be up
+        sleep 10
+        
+        # Get the web container ID
+        WEB_CONTAINER=$(docker compose ps -q web)
+        
+        if [ -z "$WEB_CONTAINER" ]; then
+          echo "Error: Web container not found!"
+          exit 1
+        fi
+        
+        echo "Copying config files to web container $WEB_CONTAINER..."
+        
+        # Copy the config files directly into the container
+        docker cp ./config/config.json $WEB_CONTAINER:/usr/share/nginx/html/config/
+        docker cp ./config/articles.json $WEB_CONTAINER:/usr/share/nginx/html/config/
+        docker cp ./config/projects.json $WEB_CONTAINER:/usr/share/nginx/html/config/
+        
+        # Set proper permissions inside container
+        docker exec $WEB_CONTAINER chmod -R 755 /usr/share/nginx/html/config
+        
+        echo "Configuration files copied successfully."
+        
+        # Check that the files are there
+        echo "Verifying files in container:"
+        docker exec $WEB_CONTAINER ls -la /usr/share/nginx/html/config/
+        EOF
+        
+        chmod +x ensure-config.sh
+        
     - name: Stop existing containers
       run: docker compose down || true
       
@@ -25,10 +79,10 @@ jobs:
       
     - name: Pull required Docker images
       run: |
-        # Pre-pull the node:14 image with retry logic
+        # Pre-pull the node image with retry logic
         for i in {1..3}; do
-          echo "Attempt $i to pull node:14 image..."
-          docker pull node:14 && break || sleep 10
+          echo "Attempt $i to pull node:18-alpine image..."
+          docker pull node:18-alpine && break || sleep 10
         done
       continue-on-error: true
       
@@ -87,16 +141,27 @@ jobs:
           fi
         done
         
+        # Run the config copy script to ensure files are available
+        ./ensure-config.sh
+        
         # Wait for container to be fully up and running
         echo "Waiting for container to be ready..."
         sleep 60
+        
+        # Display Docker Compose logs for debugging
+        echo "Docker Compose logs:"
+        docker compose logs
+        
+        # Check if config files are properly mounted in the container
+        echo "Checking config files in the container:"
+        docker exec $(docker compose ps -q web) ls -la /usr/share/nginx/html/config || echo "Failed to check config directory in container"
         
         # Simple test to check if the website is accessible
         # Try direct access to nginx container if browsersync fails
         if ! curl -s -o /dev/null -w "%{http_code}" http://localhost:3000 | grep 200; then
           echo "Trying direct access to web container..."
           # Get the web container IP
-          WEB_IP=$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $(docker-compose ps -q web))
+          WEB_IP=$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $(docker compose ps -q web))
           # The web container exposes port 80 internally, not 3000
           curl -s -o /dev/null -w "%{http_code}" http://$WEB_IP:80 | grep 200
         fi
@@ -107,11 +172,26 @@ jobs:
         if [ "${{ steps.test_website.outcome }}" == "success" ]; then
           echo "Tests passed successfully. Website is accessible."
           # The container is already running from the test step
+          
+          # Now let's check for any JavaScript errors
+          echo "Checking for JavaScript errors in the web container logs:"
+          docker compose logs web | grep -i "error" || echo "No obvious JavaScript errors found"
+          
+          # Verify content of critical files in the container
+          echo "Verifying config.json in container:"
+          docker exec $(docker compose ps -q web) cat /usr/share/nginx/html/config/config.json || echo "Failed to read config.json"
+          
+          echo "Verifying articles.json in container:"
+          docker exec $(docker compose ps -q web) cat /usr/share/nginx/html/config/articles.json || echo "Failed to read articles.json"
         else
           echo "Tests failed. Website is not accessible."
           # Check if the web container is running even if tests failed
           if docker compose ps | grep -q "web.*Up"; then
             echo "Web container is still running, proceeding with deployment anyway..."
+            
+            # Add additional debug steps for troubleshooting
+            echo "Checking web container logs:"
+            docker compose logs web
           else
             echo "Stopping containers...."
             docker compose down
