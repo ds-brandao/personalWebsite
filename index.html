@@ -33,9 +33,9 @@
       background-color: var(--bg-color);
       color: var(--text-color);
       line-height: 1.6;
-      overflow: hidden;
-      height: 100vh;
-      width: 100vw;
+      overflow-x: hidden; /* Allow vertical scrolling but prevent horizontal */
+      min-height: 100vh;
+      width: 100%;
     }
 
     /* Main Grid Layout - Modified for new asymmetrical layout with reduced center area */
@@ -47,12 +47,13 @@
         "articles about projects"
         "articles cycling projects"
         "articles contact projects";
-      height: 100vh;
-      width: 100vw;
+      min-height: 100vh;
+      width: 100%;
       position: relative;
       gap: 15px;
       padding: 15px;
-      overflow: hidden;
+      overflow-y: auto; /* Allow vertical scrolling */
+      overflow-x: hidden;
     }
 
     /* Panel sizing and positioning */
@@ -95,6 +96,7 @@
       border-radius: 12px;
       transition: all 0.5s ease;
       margin: auto; /* Added to center the reduced container */
+      min-height: 180px; /* Minimum height to ensure content visibility */
     }
 
     .center-circle:hover {
@@ -205,6 +207,7 @@
       padding-right: 15px;
       font-size: 15px;
       color: var(--text-secondary);
+      max-height: 100%; /* Ensure content doesn't overflow without scrolling */
     }
 
     .panel-content::-webkit-scrollbar {
@@ -577,12 +580,12 @@
       background-color: rgba(20, 20, 20, 0.8);
       font-size: 12px;
       color: var(--text-secondary);
-      position: absolute;
-      bottom: 0;
+      position: relative; /* Change from absolute to relative for scrollable layout */
       width: 100%;
       z-index: 10;
       backdrop-filter: blur(5px);
       border-top: 1px solid rgba(70, 70, 70, 0.2);
+      margin-top: 20px; /* Add some space above footer */
     }
 
     .footer-content {
@@ -618,6 +621,7 @@
       z-index: 9999;
       backdrop-filter: blur(8px);
       padding: 20px;
+      overflow-y: auto; /* Allow scrolling inside modal */
     }
 
     .modal-content {
@@ -631,6 +635,7 @@
       position: relative;
       box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
       border: 1px solid rgba(79, 70, 229, 0.2);
+      margin: auto; /* Center the modal content */
     }
 
     .modal-close {
@@ -690,6 +695,7 @@
           "articles contact";
         height: auto;
         min-height: 100vh;
+        overflow-y: auto;
       }
       
       .center-circle {
@@ -700,10 +706,15 @@
       #articles, #about, #projects, #contact {
         height: auto;
         min-height: 300px;
+        max-height: none; /* Remove any max-height limitations */
       }
     }
 
     @media (max-width: 800px) {
+      body {
+        overflow-y: auto; /* Ensure body allows scrolling */
+      }
+      
       .main-layout {
         grid-template-columns: 1fr;
         grid-template-rows: auto auto auto auto auto;
@@ -715,10 +726,39 @@
           "contact";
         padding: 10px;
         gap: 10px;
+        height: auto;
       }
       
       .center-circle {
         height: 180px; /* Even smaller on mobile */
+      }
+      
+      /* Ensure panels have appropriate heights on mobile */
+      #articles, #projects {
+        height: auto;
+        min-height: 500px;
+      }
+      
+      #about, #contact {
+        height: auto;
+        min-height: 250px;
+      }
+      
+      .panel {
+        min-height: 250px;
+        max-height: none;
+        overflow: visible; /* Allow content to flow */
+        margin-bottom: 10px;
+      }
+      
+      .panel-content {
+        max-height: none; /* Remove max-height constraint on mobile */
+        overflow: visible; /* Show all content */
+      }
+      
+      /* Adjust the blog post and project cards for better mobile display */
+      .blog-post, .project-card {
+        margin-bottom: 15px;
       }
     }
 
@@ -830,6 +870,17 @@
     }
     
     @media (max-width: 600px) {
+      .modal-content {
+        padding: 15px;
+        max-height: 90vh;
+        width: 95%;
+      }
+      
+      .modal-close {
+        top: 10px;
+        right: 10px;
+      }
+      
       .modal-article-image {
         height: 160px; /* Smaller on mobile devices */
       }
