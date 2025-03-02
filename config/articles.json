@@ -12,5 +12,12 @@
       "markdown": "blog-posts/agents-in-helpdesk.md",
       "image": "images/blog/agents-in-helpdesk.jpg",
       "tags": ["AI", "Security"]
+    },
+    {
+      "title": "Leveraging GitHub Runners for CI/CD in a Home Lab",
+      "summary": "How to use GitHub Runners to automate your CI/CD pipeline in a home lab environment.",
+      "markdown": "blog-posts/githubrunners.md",
+      "image": "images/blog/github-runners.jpg",
+      "tags": ["CI/CD", "Home Lab"]
     }
   ]
