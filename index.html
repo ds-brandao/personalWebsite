@@ -758,7 +758,7 @@
       width: 100%;
       height: 200px;
       object-fit: cover;
-      object-position: center 35%;
+      object-position: center 35%; /* Default position, can be overridden with inline style */
       border-radius: 8px 8px 0 0;
       margin: 0 0 20px;
       display: block;
@@ -997,6 +997,12 @@
         
         config = await response.json();
         console.log('Config loaded successfully:', config);
+        
+        // Verify config has required data
+        if (!config.tags) {
+          console.warn('Missing tags configuration in config.json');
+        }
+        
         initializePage();
       } catch (error) {
         console.error('Error loading config:', error);
@@ -1027,14 +1033,14 @@
       document.getElementById('footer-linkedin-link').href = config.social.linkedin;
       document.getElementById('footer-email-link').href = `mailto:${config.social.email}`;
 
-      // After config is loaded, fetch GitHub repos
+      // After config is loaded, load blog posts and fetch GitHub repos
+      loadBlogPosts();
       fetchRepos();
     }
 
     document.addEventListener('DOMContentLoaded', () => {
       loadConfig();
       typeText();
-      loadBlogPosts();
       setupContactItems();
       
       // Add debug query parameter check
@@ -1271,17 +1277,23 @@
     // Load blog posts
     async function loadBlogPosts() {
       try {
-        const response = await fetch('config/articles.json');
+        // Add cache-busting parameter to avoid browser caching
+        const timestamp = new Date().getTime();
+        const response = await fetch(`config/articles.json?_=${timestamp}`);
         const posts = await response.json();
         const blogContainer = document.getElementById('blog-posts');
         const categoryFilters = document.getElementById('category-filters');
         
+        // Clear existing posts
+        blogContainer.innerHTML = '';
+        
         // Clear existing filter buttons except 'All'
         const existingFilterButtons = categoryFilters.querySelectorAll('.filter-tag:not([data-filter="all"])');
         existingFilterButtons.forEach(btn => btn.remove());
-        
+
         // Use predefined tags from config instead of extracting from posts
         if (config && config.tags) {
+          console.log('Adding filter buttons for tags:', Object.keys(config.tags));
           // Add filter buttons for each predefined tag
           Object.keys(config.tags).forEach(tagName => {
             const filterBtn = document.createElement('button');
@@ -1290,6 +1302,8 @@
             filterBtn.textContent = tagName;
             categoryFilters.appendChild(filterBtn);
           });
+        } else {
+          console.warn('No tags found in config or config not loaded yet. Current config:', config);
         }
         
         // Create a map to store all posts by their elements
@@ -1304,13 +1318,13 @@
           article.setAttribute('tabindex', '0');
           
           article.addEventListener('click', () => {
-            showFullPost(post.markdown, post.image, post.title);
+            showFullPost(post.markdown, post.image, post.title, post.objectPosition);
           });
           
           article.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
-              showFullPost(post.markdown, post.image, post.title);
+              showFullPost(post.markdown, post.image, post.title, post.objectPosition);
             }
           });
           
@@ -1333,6 +1347,10 @@
             const image = document.createElement('img');
             image.src = post.image;
             image.alt = post.title;
+            // Apply object-position if specified in the post data
+            if (post.objectPosition) {
+              image.style.objectPosition = post.objectPosition;
+            }
             // Add error handler for images
             image.onerror = function() {
               this.src = 'https://via.placeholder.com/300x150?text=Image+Not+Found';
@@ -1390,27 +1408,62 @@
           allPostElements.push(article);
         });
         
-        const filterButtons = document.querySelectorAll('.filter-tag');
+        // Attach click handlers to filter buttons
+        const filterButtons = categoryFilters.querySelectorAll('.filter-tag');
         filterButtons.forEach(btn => {
           btn.addEventListener('click', () => {
-            filterButtons.forEach(b => b.classList.remove('active'));
-            
-            btn.classList.add('active');
-            
             const filter = btn.getAttribute('data-filter');
+            console.log(`Toggle filter: ${filter}`);
             
+            // Handle the "All" filter specially
             if (filter === 'all') {
+              // Deactivate all other filters when "All" is clicked
+              filterButtons.forEach(b => {
+                if (b.getAttribute('data-filter') !== 'all') {
+                  b.classList.remove('active');
+                }
+              });
+              btn.classList.add('active');
+            } else {
+              // For other filters, toggle their active state
+              btn.classList.toggle('active');
+              
+              // If we're activating a filter, deactivate the "All" filter
+              if (btn.classList.contains('active')) {
+                const allFilter = categoryFilters.querySelector('.filter-tag[data-filter="all"]');
+                if (allFilter) {
+                  allFilter.classList.remove('active');
+                }
+              }
+              
+              // If no filters are active, activate the "All" filter
+              const activeFilters = categoryFilters.querySelectorAll('.filter-tag.active');
+              if (activeFilters.length === 0) {
+                const allFilter = categoryFilters.querySelector('.filter-tag[data-filter="all"]');
+                if (allFilter) {
+                  allFilter.classList.add('active');
+                }
+              }
+            }
+            
+            // Get all active filters
+            const activeFilters = Array.from(categoryFilters.querySelectorAll('.filter-tag.active'))
+              .map(el => el.getAttribute('data-filter'));
+            
+            console.log(`Active filters: ${activeFilters.join(', ')}`);
+            
+            // Apply filters using OR logic (show if matches ANY selected filter)
+            if (activeFilters.includes('all')) {
+              // If "All" is active, show everything
               allPostElements.forEach(post => {
                 post.style.display = 'flex';
               });
             } else {
+              // Show posts that match ANY of the selected filters
               allPostElements.forEach(post => {
                 const categories = post.getAttribute('data-categories') || '';
-                if (categories.includes(filter)) {
-                  post.style.display = 'flex';
-                } else {
-                  post.style.display = 'none';
-                }
+                const shouldShow = activeFilters.some(filter => categories.includes(filter));
+                post.style.display = shouldShow ? 'flex' : 'none';
               });
             }
           });
@@ -1418,6 +1471,9 @@
       } catch (e) {
         console.error('Error loading blog posts:', e);
       }
+      
+      // Return a resolved promise for chaining
+      return Promise.resolve();
     }
 
     // Modal functionality
@@ -1448,7 +1504,7 @@
       modalBody.innerHTML = '';
     }
 
-    async function showFullPost(markdownFile, image, title) {
+    async function showFullPost(markdownFile, image, title, objectPosition) {
       try {
         const response = await fetch(markdownFile);
         if (!response.ok) {
@@ -1462,7 +1518,23 @@
         
         // Add the image if available
         if (image) {
-          modalContent += `<img src="${image}" alt="${title}" class="modal-article-image">`;
+          // Use custom objectPosition if provided, otherwise use default (center 35%)
+          // Using direct style attribute with !important to ensure it overrides the CSS
+          const positionValue = objectPosition || 'center 35%';
+          const positionStyle = objectPosition ? `style="object-position: ${objectPosition} !important;"` : '';
+          
+          // Position indicator for easy reference (only in development mode)
+          const positionIndicator = window.debugMode ? 
+            `<div style="position: absolute; top: 10px; right: 60px; background: rgba(0,0,0,0.6); color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-family: monospace;">
+              Position: ${positionValue}
+            </div>` : '';
+          
+          modalContent += `
+            <div style="position: relative;">
+              <img src="${image}" alt="${title}" class="modal-article-image" ${positionStyle}>
+              ${positionIndicator}
+            </div>
+          `;
         }
         
         // Add the parsed markdown content
@@ -1520,6 +1592,63 @@
         }
       });
     }
+    
+    // Utility function for debugging and adjusting image positions
+    window.adjustImagePosition = function(articleIndex, verticalPosition) {
+      // Load current posts data with cache busting
+      const timestamp = new Date().getTime();
+      fetch(`config/articles.json?_=${timestamp}`)
+        .then(response => response.json())
+        .then(posts => {
+          if (posts[articleIndex]) {
+            // Update the object position with the new vertical value
+            const position = `center ${verticalPosition}%`;
+            
+            console.log(`Previewing image position: ${position} for article "${posts[articleIndex].title}"`);
+            
+            // Show a preview by opening the modal with the adjusted position
+            showFullPost(
+              posts[articleIndex].markdown,
+              posts[articleIndex].image,
+              posts[articleIndex].title,
+              position
+            );
+            
+            // Add debugging info to the modal
+            setTimeout(() => {
+              const imgElement = document.querySelector('.modal-article-image');
+              if (imgElement) {
+                const computedStyle = window.getComputedStyle(imgElement);
+                const actualPosition = computedStyle.objectPosition;
+                
+                const debugDiv = document.createElement('div');
+                debugDiv.style.background = 'rgba(0,0,0,0.8)';
+                debugDiv.style.color = '#fff';
+                debugDiv.style.padding = '10px';
+                debugDiv.style.marginTop = '10px';
+                debugDiv.style.borderRadius = '4px';
+                debugDiv.style.fontSize = '12px';
+                debugDiv.style.fontFamily = 'monospace';
+                debugDiv.innerHTML = `
+                  <strong>Image Position Debug:</strong><br>
+                  Requested position: ${position}<br>
+                  Actual computed position: ${actualPosition}<br>
+                  Applied via: ${imgElement.getAttribute('style') ? 'Inline style' : 'CSS class'}<br>
+                  Full inline style: ${imgElement.getAttribute('style') || 'none'}
+                `;
+                
+                modalBody.insertBefore(debugDiv, modalBody.firstChild.nextSibling);
+              }
+            }, 100);
+            
+            // Log instructions for saving the change
+            console.log(`To save this position, update your articles.json file with "objectPosition": "${position}" for article "${posts[articleIndex].title}"`);
+          } else {
+            console.error(`Article index ${articleIndex} not found. Available indices are 0 to ${posts.length - 1}`);
+          }
+        })
+        .catch(err => console.error('Error loading articles:', err));
+    };
   </script>
 </body>
 </html>

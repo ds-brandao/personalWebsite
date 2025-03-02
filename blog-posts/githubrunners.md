@@ -1,2 +1,2 @@
-# Leveraging GitHub Runners for CI/CD in a Home Lab
+# Leveraging GitHub Self-Hosted Runners for CI/CD in a Home Lab
 
