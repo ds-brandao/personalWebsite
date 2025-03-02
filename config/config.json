@@ -1,0 +1,56 @@
+{
+  "personal": {
+    "name": "Daniel Brandao",
+    "title": "aye!",
+    "college": {
+      "name": "Bellevue College",
+      "url": "https://www.bellevuecollege.edu/"
+    },
+    "favoriteRestaurant": {
+      "name": "Gianfranco Ristorante Italiano",
+      "url": "https://www.google.com/maps/place/Gianfranco+Ristorante+Italiano/@47.5274551,-121.8345108,15z/data=!3m1!4b1!4m6!3m5!1s0x54907be66b78c025:0xc82fbc62605fe116!8m2!3d47.5274556!4d-121.8242111!16s%2Fg%2F1vl9r5tm?entry=ttu"
+    }
+  },
+  "social": {
+    "github": {
+      "username": "ds-brandao",
+      "url": "https://github.com/ds-brandao"
+    },
+    "email": "lounges.upstage_0y@icloud.com",
+    "linkedin": "https://www.linkedin.com/in/dsbrandao/"
+  },
+  "tags": {
+    "Security": {
+      "color": "security",
+      "description": "Topics related to cybersecurity, privacy, and protecting digital assets"
+    },
+    "Coding": {
+      "color": "coding",
+      "description": "Programming, software development, and coding techniques"
+    },
+    "AI": {
+      "color": "ai",
+      "description": "Artificial intelligence, machine learning, and their applications"
+    },
+    "Tutorial": {
+      "color": "tutorial",
+      "description": "Step-by-step guides and how-to content"
+    },
+    "Project": {
+      "color": "project",
+      "description": "Personal and professional projects I've worked on"
+    },
+    "Intro": {
+      "color": "intro",
+      "description": "Introduction to the blog and my journey into cybersecurity and programming"
+    },
+    "CI/CD": {
+      "color": "ci/cd",
+      "description": "Continuous Integration/Continuous Deployment"
+    },
+    "Home Lab": {
+      "color": "home lab",
+      "description": "Home Lab"
+    }
+  }
+}
