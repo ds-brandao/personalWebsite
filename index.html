@@ -2,6 +2,7 @@
 <html>
 <head>
   <title>Daniel Brandao</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -710,141 +711,205 @@
       }
     }
 
+    /* Mobile-specific optimization */
     @media (max-width: 800px) {
       body {
         overflow-y: auto; /* Ensure body allows scrolling */
+        font-size: 16px; /* Base font size for mobile */
       }
       
       .main-layout {
         grid-template-columns: 1fr;
-        grid-template-rows: auto auto auto auto auto;
+        grid-template-rows: repeat(5, auto);
         grid-template-areas: 
           "cycling"
           "about"
           "projects"
           "articles"
           "contact";
-        padding: 10px;
-        gap: 10px;
+        padding: 12px;
+        gap: 12px;
         height: auto;
+        min-height: 100vh;
       }
       
+      /* Center Circle - mobile optimized */
       .center-circle {
-        height: 120px; /* Significantly smaller on mobile */
-        min-height: unset; /* Override the min-height */
-        margin: 5px 0;
+        height: auto;
+        min-height: 100px;
+        padding: 12px 0;
+        margin: 0 0 8px 0;
       }
       
       .typed-text-container {
-        height: auto; /* Auto height for text container */
-        margin-bottom: 5px;
-      }
-      
-      .hero-subtitle {
-        margin-bottom: 5px;
-        font-size: 14px;
-      }
-      
-      .center-content {
-        padding: 10px; /* Reduced padding on mobile */
-      }
-      
-      /* Ensure panels have appropriate heights on mobile */
-      #articles, #projects {
         height: auto;
-        min-height: 400px; /* Reduced from 500px */
-      }
-      
-      #about, #contact {
-        height: auto;
-        min-height: auto; /* Let content determine height */
-        max-height: none;
-      }
-      
-      .panel {
-        min-height: auto; /* Let content determine height */
-        max-height: none;
-        overflow: visible; /* Allow content to flow */
-        margin-bottom: 10px;
-        padding: 15px; /* Reduce padding on mobile */
-      }
-      
-      .panel-title {
-        font-size: 18px; /* Slightly smaller title on mobile */
-        margin-bottom: 10px;
-      }
-      
-      .panel-content {
-        max-height: none; /* Remove max-height constraint on mobile */
-        overflow: visible; /* Show all content */
-        padding-right: 5px; /* Less padding on mobile */
-      }
-      
-      /* Adjust the blog post and project cards for better mobile display */
-      .blog-post, .project-card {
-        margin-bottom: 15px;
-        padding: 12px; /* Slightly less padding in cards */
-      }
-      
-      /* Contact grid on mobile */
-      .contact-grid {
-        grid-template-columns: repeat(3, 1fr); /* Force 3 columns on mobile */
-        gap: 8px; /* Reduced gap */
-      }
-      
-      .contact-item {
-        padding: 10px; /* Less padding in contact items */
-      }
-      
-      .contact-icon {
-        width: 32px; /* Smaller icons */
-        height: 32px;
         margin-bottom: 8px;
-        font-size: 16px;
-      }
-      
-      .contact-title {
-        font-size: 12px;
-        margin-bottom: 3px;
-      }
-      
-      .contact-detail {
-        font-size: 11px;
-      }
-    }
-    
-    /* Add even more specific adjustments for very small screens */
-    @media (max-width: 480px) {
-      .center-circle {
-        height: 100px; /* Even smaller on very small screens */
       }
       
       .hero-title {
-        font-size: 18px; /* Smaller title text */
+        font-size: 20px;
+        margin-bottom: 5px;
       }
       
       .hero-subtitle {
-        font-size: 12px; /* Smaller subtitle */
+        font-size: 14px;
+        margin-bottom: 0;
       }
       
       .panel {
-        padding: 12px; /* Even less padding */
+        min-height: auto;
+        max-height: none;
+        overflow: visible;
+        margin-bottom: 12px;
+        padding: 15px;
       }
       
-      /* Optimize contact grid for very small screens */
+      /* Fixed heights for scrollable panels */
+      #articles, #projects {
+        height: auto;
+        max-height: 450px;
+        overflow: hidden;
+      }
+      
+      #articles .panel-content, 
+      #projects .panel-content {
+        max-height: 380px;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+      }
+      
+      /* Auto height for the other panels */
+      #about, #contact {
+        height: auto;
+        min-height: auto;
+        max-height: none;
+      }
+      
+      .panel-title {
+        font-size: 18px;
+        margin-bottom: 12px;
+      }
+      
+      .panel-content {
+        font-size: 15px;
+      }
+      
+      /* Cards for mobile */
+      .blog-post, .project-card {
+        padding: 12px;
+        margin-bottom: 12px;
+      }
+      
+      .blog-post img {
+        max-height: 120px;
+      }
+      
+      .blog-post-title {
+        font-size: 16px;
+      }
+      
+      .blog-post-summary {
+        font-size: 14px;
+      }
+      
+      /* Contact items */
       .contact-grid {
         grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
       }
       
       .contact-item {
-        padding: 8px 5px;
+        padding: 10px;
       }
       
       .contact-icon {
-        width: 28px;
-        height: 28px;
+        width: 35px;
+        height: 35px;
+        font-size: 16px;
+        margin-bottom: 8px;
+      }
+      
+      .contact-title {
+        font-size: 13px;
+      }
+      
+      .contact-detail {
+        font-size: 12px;
+      }
+      
+      /* Visual indicator that content is scrollable */
+      #articles .panel-content::after,
+      #projects .panel-content::after {
+        content: '';
+        display: block;
+        height: 20px;
+        background: linear-gradient(to top, var(--card-bg) 0%, transparent 100%);
+        position: sticky;
+        bottom: 0;
+        margin-top: -20px;
+        pointer-events: none;
+      }
+      
+      /* Adjust modal for proper mobile display */
+      .modal-overlay {
+        padding: 10px;
+        align-items: flex-start; /* Align to top on mobile */
+      }
+      
+      .modal-content {
+        padding: 15px 12px;
+        max-height: 92vh;
+        width: 95%;
+        margin-top: 20px; /* Add space at the top */
+        border-radius: 8px;
+      }
+      
+      .modal-close {
+        top: 8px;
+        right: 8px;
+        width: 30px;
+        height: 30px;
         font-size: 14px;
-        margin-bottom: 5px;
+      }
+      
+      .modal-article-image {
+        height: 140px; /* Smaller on mobile devices */
+        margin-bottom: 15px;
+      }
+      
+      /* Adjust typography in modal for mobile */
+      .modal-content h1 {
+        font-size: 20px;
+      }
+      
+      .modal-content h2 {
+        font-size: 18px;
+      }
+      
+      .modal-content h3, 
+      .modal-content h4 {
+        font-size: 16px;
+      }
+      
+      .modal-content p, 
+      .modal-content li {
+        font-size: 15px;
+      }
+    }
+    
+    @media (max-width: 400px) {
+      .modal-content {
+        padding: 12px 10px;
+      }
+      
+      .modal-article-image {
+        height: 120px;
+      }
+      
+      .modal-close {
+        width: 26px;
+        height: 26px;
+        font-size: 12px;
       }
     }
 
@@ -969,6 +1034,53 @@
       
       .modal-article-image {
         height: 160px; /* Smaller on mobile devices */
+      }
+    }
+
+    /* iPhone SE / Very small screens */
+    @media (max-width: 380px) {
+      body {
+        font-size: 15px;
+      }
+      
+      .main-layout {
+        padding: 8px;
+        gap: 8px;
+      }
+      
+      .center-circle {
+        min-height: 90px;
+      }
+      
+      .hero-title {
+        font-size: 18px;
+      }
+      
+      .hero-subtitle {
+        font-size: 13px;
+      }
+      
+      .panel {
+        padding: 12px;
+      }
+      
+      #articles .panel-content, 
+      #projects .panel-content {
+        max-height: 320px;
+      }
+      
+      .panel-title {
+        font-size: 17px;
+      }
+      
+      .panel-content {
+        font-size: 14px;
+      }
+      
+      .contact-icon {
+        width: 30px;
+        height: 30px;
+        font-size: 14px;
       }
     }
   </style>
