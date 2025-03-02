@@ -699,7 +699,7 @@
       }
       
       .center-circle {
-        height: 200px; /* Fixed height on tablet */
+        height: 180px; /* Reduced height on tablet */
         margin: 15px 0;
       }
       
@@ -730,35 +730,121 @@
       }
       
       .center-circle {
-        height: 180px; /* Even smaller on mobile */
+        height: 120px; /* Significantly smaller on mobile */
+        min-height: unset; /* Override the min-height */
+        margin: 5px 0;
+      }
+      
+      .typed-text-container {
+        height: auto; /* Auto height for text container */
+        margin-bottom: 5px;
+      }
+      
+      .hero-subtitle {
+        margin-bottom: 5px;
+        font-size: 14px;
+      }
+      
+      .center-content {
+        padding: 10px; /* Reduced padding on mobile */
       }
       
       /* Ensure panels have appropriate heights on mobile */
       #articles, #projects {
         height: auto;
-        min-height: 500px;
+        min-height: 400px; /* Reduced from 500px */
       }
       
       #about, #contact {
         height: auto;
-        min-height: 250px;
+        min-height: auto; /* Let content determine height */
+        max-height: none;
       }
       
       .panel {
-        min-height: 250px;
+        min-height: auto; /* Let content determine height */
         max-height: none;
         overflow: visible; /* Allow content to flow */
+        margin-bottom: 10px;
+        padding: 15px; /* Reduce padding on mobile */
+      }
+      
+      .panel-title {
+        font-size: 18px; /* Slightly smaller title on mobile */
         margin-bottom: 10px;
       }
       
       .panel-content {
         max-height: none; /* Remove max-height constraint on mobile */
         overflow: visible; /* Show all content */
+        padding-right: 5px; /* Less padding on mobile */
       }
       
       /* Adjust the blog post and project cards for better mobile display */
       .blog-post, .project-card {
         margin-bottom: 15px;
+        padding: 12px; /* Slightly less padding in cards */
+      }
+      
+      /* Contact grid on mobile */
+      .contact-grid {
+        grid-template-columns: repeat(3, 1fr); /* Force 3 columns on mobile */
+        gap: 8px; /* Reduced gap */
+      }
+      
+      .contact-item {
+        padding: 10px; /* Less padding in contact items */
+      }
+      
+      .contact-icon {
+        width: 32px; /* Smaller icons */
+        height: 32px;
+        margin-bottom: 8px;
+        font-size: 16px;
+      }
+      
+      .contact-title {
+        font-size: 12px;
+        margin-bottom: 3px;
+      }
+      
+      .contact-detail {
+        font-size: 11px;
+      }
+    }
+    
+    /* Add even more specific adjustments for very small screens */
+    @media (max-width: 480px) {
+      .center-circle {
+        height: 100px; /* Even smaller on very small screens */
+      }
+      
+      .hero-title {
+        font-size: 18px; /* Smaller title text */
+      }
+      
+      .hero-subtitle {
+        font-size: 12px; /* Smaller subtitle */
+      }
+      
+      .panel {
+        padding: 12px; /* Even less padding */
+      }
+      
+      /* Optimize contact grid for very small screens */
+      .contact-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+      
+      .contact-item {
+        padding: 8px 5px;
+      }
+      
+      .contact-icon {
+        width: 28px;
+        height: 28px;
+        font-size: 14px;
+        margin-bottom: 5px;
       }
     }
 
