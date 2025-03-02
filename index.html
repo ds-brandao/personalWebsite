@@ -2,6 +2,7 @@
 <html>
 <head>
   <title>Daniel Brandao</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -33,9 +34,9 @@
       background-color: var(--bg-color);
       color: var(--text-color);
       line-height: 1.6;
-      overflow: hidden;
-      height: 100vh;
-      width: 100vw;
+      overflow-x: hidden; /* Allow vertical scrolling but prevent horizontal */
+      min-height: 100vh;
+      width: 100%;
     }
 
     /* Main Grid Layout - Modified for new asymmetrical layout with reduced center area */
@@ -47,12 +48,13 @@
         "articles about projects"
         "articles cycling projects"
         "articles contact projects";
-      height: 100vh;
-      width: 100vw;
+      min-height: 100vh;
+      width: 100%;
       position: relative;
       gap: 15px;
       padding: 15px;
-      overflow: hidden;
+      overflow-y: auto; /* Allow vertical scrolling */
+      overflow-x: hidden;
     }
 
     /* Panel sizing and positioning */
@@ -95,6 +97,7 @@
       border-radius: 12px;
       transition: all 0.5s ease;
       margin: auto; /* Added to center the reduced container */
+      min-height: 180px; /* Minimum height to ensure content visibility */
     }
 
     .center-circle:hover {
@@ -205,6 +208,7 @@
       padding-right: 15px;
       font-size: 15px;
       color: var(--text-secondary);
+      max-height: 100%; /* Ensure content doesn't overflow without scrolling */
     }
 
     .panel-content::-webkit-scrollbar {
@@ -577,12 +581,12 @@
       background-color: rgba(20, 20, 20, 0.8);
       font-size: 12px;
       color: var(--text-secondary);
-      position: absolute;
-      bottom: 0;
+      position: relative; /* Change from absolute to relative for scrollable layout */
       width: 100%;
       z-index: 10;
       backdrop-filter: blur(5px);
       border-top: 1px solid rgba(70, 70, 70, 0.2);
+      margin-top: 20px; /* Add some space above footer */
     }
 
     .footer-content {
@@ -618,6 +622,7 @@
       z-index: 9999;
       backdrop-filter: blur(8px);
       padding: 20px;
+      overflow-y: auto; /* Allow scrolling inside modal */
     }
 
     .modal-content {
@@ -631,6 +636,7 @@
       position: relative;
       box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
       border: 1px solid rgba(79, 70, 229, 0.2);
+      margin: auto; /* Center the modal content */
     }
 
     .modal-close {
@@ -690,35 +696,220 @@
           "articles contact";
         height: auto;
         min-height: 100vh;
+        overflow-y: auto;
       }
       
       .center-circle {
-        height: 200px; /* Fixed height on tablet */
+        height: 180px; /* Reduced height on tablet */
         margin: 15px 0;
       }
       
       #articles, #about, #projects, #contact {
         height: auto;
         min-height: 300px;
+        max-height: none; /* Remove any max-height limitations */
       }
     }
 
+    /* Mobile-specific optimization */
     @media (max-width: 800px) {
+      body {
+        overflow-y: auto; /* Ensure body allows scrolling */
+        font-size: 16px; /* Base font size for mobile */
+      }
+      
       .main-layout {
         grid-template-columns: 1fr;
-        grid-template-rows: auto auto auto auto auto;
+        grid-template-rows: repeat(5, auto);
         grid-template-areas: 
           "cycling"
           "about"
           "projects"
           "articles"
           "contact";
-        padding: 10px;
+        padding: 12px;
+        gap: 12px;
+        height: auto;
+        min-height: 100vh;
+      }
+      
+      /* Center Circle - mobile optimized */
+      .center-circle {
+        height: auto;
+        min-height: 100px;
+        padding: 12px 0;
+        margin: 0 0 8px 0;
+      }
+      
+      .typed-text-container {
+        height: auto;
+        margin-bottom: 8px;
+      }
+      
+      .hero-title {
+        font-size: 20px;
+        margin-bottom: 5px;
+      }
+      
+      .hero-subtitle {
+        font-size: 14px;
+        margin-bottom: 0;
+      }
+      
+      .panel {
+        min-height: auto;
+        max-height: none;
+        overflow: visible;
+        margin-bottom: 12px;
+        padding: 15px;
+      }
+      
+      /* Fixed heights for scrollable panels */
+      #articles, #projects {
+        height: auto;
+        max-height: 450px;
+        overflow: hidden;
+      }
+      
+      #articles .panel-content, 
+      #projects .panel-content {
+        max-height: 380px;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+      }
+      
+      /* Auto height for the other panels */
+      #about, #contact {
+        height: auto;
+        min-height: auto;
+        max-height: none;
+      }
+      
+      .panel-title {
+        font-size: 18px;
+        margin-bottom: 12px;
+      }
+      
+      .panel-content {
+        font-size: 15px;
+      }
+      
+      /* Cards for mobile */
+      .blog-post, .project-card {
+        padding: 12px;
+        margin-bottom: 12px;
+      }
+      
+      .blog-post img {
+        max-height: 120px;
+      }
+      
+      .blog-post-title {
+        font-size: 16px;
+      }
+      
+      .blog-post-summary {
+        font-size: 14px;
+      }
+      
+      /* Contact items */
+      .contact-grid {
+        grid-template-columns: repeat(3, 1fr);
         gap: 10px;
       }
       
-      .center-circle {
-        height: 180px; /* Even smaller on mobile */
+      .contact-item {
+        padding: 10px;
+      }
+      
+      .contact-icon {
+        width: 35px;
+        height: 35px;
+        font-size: 16px;
+        margin-bottom: 8px;
+      }
+      
+      .contact-title {
+        font-size: 13px;
+      }
+      
+      .contact-detail {
+        font-size: 12px;
+      }
+      
+      /* Visual indicator that content is scrollable */
+      #articles .panel-content::after,
+      #projects .panel-content::after {
+        content: '';
+        display: block;
+        height: 20px;
+        background: linear-gradient(to top, var(--card-bg) 0%, transparent 100%);
+        position: sticky;
+        bottom: 0;
+        margin-top: -20px;
+        pointer-events: none;
+      }
+      
+      /* Adjust modal for proper mobile display */
+      .modal-overlay {
+        padding: 10px;
+        align-items: flex-start; /* Align to top on mobile */
+      }
+      
+      .modal-content {
+        padding: 15px 12px;
+        max-height: 92vh;
+        width: 95%;
+        margin-top: 20px; /* Add space at the top */
+        border-radius: 8px;
+      }
+      
+      .modal-close {
+        top: 8px;
+        right: 8px;
+        width: 30px;
+        height: 30px;
+        font-size: 14px;
+      }
+      
+      .modal-article-image {
+        height: 140px; /* Smaller on mobile devices */
+        margin-bottom: 15px;
+      }
+      
+      /* Adjust typography in modal for mobile */
+      .modal-content h1 {
+        font-size: 20px;
+      }
+      
+      .modal-content h2 {
+        font-size: 18px;
+      }
+      
+      .modal-content h3, 
+      .modal-content h4 {
+        font-size: 16px;
+      }
+      
+      .modal-content p, 
+      .modal-content li {
+        font-size: 15px;
+      }
+    }
+    
+    @media (max-width: 400px) {
+      .modal-content {
+        padding: 12px 10px;
+      }
+      
+      .modal-article-image {
+        height: 120px;
+      }
+      
+      .modal-close {
+        width: 26px;
+        height: 26px;
+        font-size: 12px;
       }
     }
 
@@ -830,8 +1021,66 @@
     }
     
     @media (max-width: 600px) {
+      .modal-content {
+        padding: 15px;
+        max-height: 90vh;
+        width: 95%;
+      }
+      
+      .modal-close {
+        top: 10px;
+        right: 10px;
+      }
+      
       .modal-article-image {
         height: 160px; /* Smaller on mobile devices */
+      }
+    }
+
+    /* iPhone SE / Very small screens */
+    @media (max-width: 380px) {
+      body {
+        font-size: 15px;
+      }
+      
+      .main-layout {
+        padding: 8px;
+        gap: 8px;
+      }
+      
+      .center-circle {
+        min-height: 90px;
+      }
+      
+      .hero-title {
+        font-size: 18px;
+      }
+      
+      .hero-subtitle {
+        font-size: 13px;
+      }
+      
+      .panel {
+        padding: 12px;
+      }
+      
+      #articles .panel-content, 
+      #projects .panel-content {
+        max-height: 320px;
+      }
+      
+      .panel-title {
+        font-size: 17px;
+      }
+      
+      .panel-content {
+        font-size: 14px;
+      }
+      
+      .contact-icon {
+        width: 30px;
+        height: 30px;
+        font-size: 14px;
       }
     }
   </style>
