@@ -7,31 +7,10 @@
       "tags": ["Intro"]
     },
     {
-      "title": "Understanding Network Security Fundamentals",
-      "summary": "A dive into the essential principles of network security and how to implement basic protections for your home or small business network.",
-      "markdown": "blog-posts/network-security.md",
-      "image": "images/blog/network-security.jpg",
-      "tags": ["Security", "Tutorial"]
-    },
-    {
-      "title": "Building a Home Lab for Cybersecurity Practice",
-      "summary": "Step-by-step guide on setting up a virtualized environment for practicing cybersecurity skills and running security tools safely.",
-      "markdown": "blog-posts/homelab.md",
-      "image": "images/blog/homelab.jpg",
-      "tags": ["Security", "Project", "Tutorial"]
-    },
-    {
-      "title": "My Experience Learning Python for Security",
-      "summary": "My journey of learning Python specifically for cybersecurity applications, including automation, tool development, and data analysis.",
-      "markdown": "blog-posts/python-security.md",
-      "image": "images/blog/python-security.jpg",
-      "tags": ["Coding", "Security"]
-    },
-    {
-      "title": "The Future of AI in Cybersecurity",
-      "summary": "Exploring how artificial intelligence is transforming the cybersecurity landscape, from threat detection to automated defense mechanisms.",
-      "markdown": "blog-posts/ai-security.md",
-      "image": "images/blog/ai-security.jpg",
+      "title": "A Take on Agents in Helpdesk",
+      "summary": "Where does AI agents fit in the complex landscape of helpdesk tools?",
+      "markdown": "blog-posts/agents-in-helpdesk.md",
+      "image": "images/blog/agents-in-helpdesk.jpg",
       "tags": ["AI", "Security"]
     }
   ]
