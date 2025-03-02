@@ -1255,6 +1255,14 @@
         initializePage();
       } catch (error) {
         console.error('Error loading config:', error);
+        // Add a user-visible error
+        document.getElementById('blog-posts').innerHTML = `
+          <div class="card">
+            <div class="card-body">
+              <p>Failed to load configuration. Please check the console for details.</p>
+              <p>Error: ${error.message}</p>
+            </div>
+          </div>`;
       }
     }
 
@@ -1283,8 +1291,13 @@
       document.getElementById('footer-email-link').href = `mailto:${config.social.email}`;
 
       // After config is loaded, load blog posts and fetch GitHub repos
-      loadBlogPosts();
-      fetchRepos();
+      console.log('Starting to load blog posts after config initialization');
+      loadBlogPosts().then(() => {
+        console.log('Blog posts loading complete, fetching repos');
+        fetchRepos();
+      }).catch(err => {
+        console.error('Failed to load blog posts:', err);
+      });
     }
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -1526,15 +1539,31 @@
     // Load blog posts
     async function loadBlogPosts() {
       try {
+        console.log('Starting to load blog posts...');
         // Add cache-busting parameter to avoid browser caching
         const timestamp = new Date().getTime();
+        console.log('Fetching articles from config/articles.json');
         const response = await fetch(`config/articles.json?_=${timestamp}`);
+        
+        if (!response.ok) {
+          console.error(`Articles fetch failed with status: ${response.status}`);
+          throw new Error(`Failed to fetch articles: ${response.statusText}`);
+        }
+        
         const posts = await response.json();
+        console.log('Loaded blog posts:', posts);
         const blogContainer = document.getElementById('blog-posts');
         const categoryFilters = document.getElementById('category-filters');
         
+        // Check if blog container exists
+        if (!blogContainer) {
+          console.error('Blog container element not found!');
+          return;
+        }
+        
         // Clear existing posts
         blogContainer.innerHTML = '';
+        console.log('Cleared existing posts from container');
         
         // Clear existing filter buttons except 'All'
         const existingFilterButtons = categoryFilters.querySelectorAll('.filter-tag:not([data-filter="all"])');
@@ -1558,8 +1587,18 @@
         // Create a map to store all posts by their elements
         const allPostElements = [];
         
+        // Check if we have posts
+        if (!posts || posts.length === 0) {
+          console.warn('No blog posts found in articles.json');
+          blogContainer.innerHTML = '<div class="card"><div class="card-body">No articles found.</div></div>';
+          return;
+        }
+        
+        console.log(`Processing ${posts.length} blog posts`);
+        
         // Load all posts
-        posts.forEach((post) => {
+        posts.forEach((post, index) => {
+          console.log(`Creating element for post ${index + 1}: ${post.title}`);
           const article = document.createElement('div');
           article.className = 'blog-post';
           article.setAttribute('role', 'button');
@@ -1583,6 +1622,8 @@
             post.tags.forEach(tag => {
               if (config.tags[tag]) {
                 validTags.push(tag);
+              } else {
+                console.warn(`Post "${post.title}" has invalid tag: ${tag}`);
               }
             });
             
@@ -1602,10 +1643,12 @@
             }
             // Add error handler for images
             image.onerror = function() {
+              console.error(`Image not found: ${post.image}`);
               this.src = 'https://via.placeholder.com/300x150?text=Image+Not+Found';
-              console.warn(`Image not found: ${post.image}`);
             };
             article.appendChild(image);
+          } else {
+            console.warn(`Post "${post.title}" has no image`);
           }
           
           // Add tags using the predefined styles from config
@@ -1655,8 +1698,10 @@
 
           blogContainer.appendChild(article);
           allPostElements.push(article);
+          console.log(`Added post ${index + 1} to container`);
         });
         
+        console.log('Setting up filter button event handlers');
         // Attach click handlers to filter buttons
         const filterButtons = categoryFilters.querySelectorAll('.filter-tag');
         filterButtons.forEach(btn => {
@@ -1717,8 +1762,20 @@
             }
           });
         });
+        
+        console.log('Blog posts loading completed successfully');
       } catch (e) {
         console.error('Error loading blog posts:', e);
+        const blogContainer = document.getElementById('blog-posts');
+        if (blogContainer) {
+          blogContainer.innerHTML = `
+            <div class="card">
+              <div class="card-body">
+                <p>Error loading articles: ${e.message}</p>
+                <p>Please check the console for more details.</p>
+              </div>
+            </div>`;
+        }
       }
       
       // Return a resolved promise for chaining
@@ -1755,11 +1812,15 @@
 
     async function showFullPost(markdownFile, image, title, objectPosition) {
       try {
+        console.log(`Fetching markdown content from ${markdownFile}`);
         const response = await fetch(markdownFile);
         if (!response.ok) {
+          console.error(`Markdown fetch failed with status: ${response.status}`);
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const text = await response.text();
+        console.log(`Successfully loaded markdown content (${text.length} characters)`);
+        
         const html = marked.parse(text);
         
         // Create content with image at the top
@@ -1767,6 +1828,7 @@
         
         // Add the image if available
         if (image) {
+          console.log(`Adding image to modal: ${image}`);
           // Use custom objectPosition if provided, otherwise use default (center 35%)
           // Using direct style attribute with !important to ensure it overrides the CSS
           const positionValue = objectPosition || 'center 35%';
@@ -1780,7 +1842,7 @@
           
           modalContent += `
             <div style="position: relative;">
-              <img src="${image}" alt="${title}" class="modal-article-image" ${positionStyle}>
+              <img src="${image}" alt="${title}" class="modal-article-image" ${positionStyle} onerror="this.src='https://via.placeholder.com/800x400?text=Image+Not+Found'; console.error('Failed to load image: ${image}');">
               ${positionIndicator}
             </div>
           `;
@@ -1796,7 +1858,13 @@
         modalClose.focus();
       } catch (error) {
         console.error('Error fetching markdown:', error);
-        modalBody.innerHTML = `<p>Failed to load post. Error: ${error.message}</p>`;
+        modalBody.innerHTML = `
+          <div style="padding: 20px; background: rgba(225, 29, 72, 0.1); border: 1px solid rgba(225, 29, 72, 0.3); border-radius: 8px; margin-bottom: 20px;">
+            <h2 style="color: #fb7185; margin-bottom: 10px;">Error Loading Article</h2>
+            <p>Failed to load the article content. Please try again later.</p>
+            <p><strong>Technical details:</strong> ${error.message}</p>
+            <p><strong>Attempted to load:</strong> ${markdownFile}</p>
+          </div>`;
         modalOverlay.style.display = 'flex';
       }
     }
