@@ -17,6 +17,13 @@ jobs:
         ref: ${{ github.event.pull_request.head.sha }}
         fetch-depth: 0  # Fetch all history and tags
     
+    - name: Create missing directories
+      run: |
+        echo "Creating any missing directories required by docker-compose..."
+        mkdir -p ./articles
+        mkdir -p ./projects
+        ls -la
+        
     - name: Verify content and permissions
       run: |
         echo "Checking key directories and files..."
@@ -27,6 +34,10 @@ jobs:
         ls -la ./articles
         echo "Content of projects directory:"
         ls -la ./projects || echo "Projects directory not found or empty"
+        echo "Content of blog-posts directory:"
+        ls -la ./blog-posts
+        echo "Content of images/blog directory:"
+        ls -la ./images/blog || echo "Images/blog directory not found or empty"
         echo "Setting proper permissions..."
         # Ensure proper permissions on all directories
         chmod -R 755 ./*
@@ -59,17 +70,79 @@ jobs:
         docker cp ./config/articles.json $WEB_CONTAINER:/usr/share/nginx/html/config/
         docker cp ./config/projects.json $WEB_CONTAINER:/usr/share/nginx/html/config/
         
+        # Copy blog posts to ensure they're available
+        docker exec $WEB_CONTAINER mkdir -p /usr/share/nginx/html/blog-posts
+        for file in ./blog-posts/*; do
+          if [ -f "$file" ]; then
+            echo "Copying $file to container..."
+            docker cp "$file" $WEB_CONTAINER:/usr/share/nginx/html/blog-posts/
+          fi
+        done
+        
+        # Create necessary directories inside the container if they don't exist
+        docker exec $WEB_CONTAINER mkdir -p /usr/share/nginx/html/articles
+        docker exec $WEB_CONTAINER mkdir -p /usr/share/nginx/html/projects
+        
         # Set proper permissions inside container
         docker exec $WEB_CONTAINER chmod -R 755 /usr/share/nginx/html/config
+        docker exec $WEB_CONTAINER chmod -R 755 /usr/share/nginx/html/articles
+        docker exec $WEB_CONTAINER chmod -R 755 /usr/share/nginx/html/projects
+        docker exec $WEB_CONTAINER chmod -R 755 /usr/share/nginx/html/blog-posts
         
         echo "Configuration files copied successfully."
         
         # Check that the files are there
         echo "Verifying files in container:"
         docker exec $WEB_CONTAINER ls -la /usr/share/nginx/html/config/
+        docker exec $WEB_CONTAINER ls -la /usr/share/nginx/html/blog-posts/
         EOF
         
         chmod +x ensure-config.sh
+        
+    - name: Create console error checking script
+      run: |
+        cat > check-console-errors.sh << 'EOF'
+        #!/bin/bash
+        
+        # This script uses curl to fetch the HTML and analyzes it for potential issues
+        
+        # Get the web container IP
+        WEB_CONTAINER=$(docker compose ps -q web)
+        WEB_IP=$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $WEB_CONTAINER)
+        
+        echo "Fetching HTML from web container at $WEB_IP..."
+        HTML=$(curl -s http://$WEB_IP:80/)
+        
+        echo "Checking for JavaScript errors or issues..."
+        
+        # Check if config.json is being loaded
+        if echo "$HTML" | grep -q "loadConfig"; then
+          echo "✅ HTML includes loadConfig function"
+        else
+          echo "❌ HTML is missing loadConfig function"
+        fi
+        
+        # Check if key functions are defined
+        if echo "$HTML" | grep -q "fetchRepos"; then
+          echo "✅ HTML includes fetchRepos function"
+        else
+          echo "❌ HTML is missing fetchRepos function"
+        fi
+        
+        if echo "$HTML" | grep -q "loadBlogPosts"; then
+          echo "✅ HTML includes loadBlogPosts function"
+        else
+          echo "❌ HTML is missing loadBlogPosts function"
+        fi
+        
+        # Save HTML for inspection if needed
+        echo "$HTML" > /tmp/website-html.txt
+        echo "HTML saved to /tmp/website-html.txt for inspection"
+        
+        echo "Done checking for JavaScript issues."
+        EOF
+        
+        chmod +x check-console-errors.sh
         
     - name: Stop existing containers
       run: docker compose down || true
@@ -173,6 +246,10 @@ jobs:
           echo "Tests passed successfully. Website is accessible."
           # The container is already running from the test step
           
+          # Run JavaScript console error checking script
+          echo "Checking for JavaScript console errors..."
+          ./check-console-errors.sh
+          
           # Now let's check for any JavaScript errors
           echo "Checking for JavaScript errors in the web container logs:"
           docker compose logs web | grep -i "error" || echo "No obvious JavaScript errors found"
@@ -183,6 +260,21 @@ jobs:
           
           echo "Verifying articles.json in container:"
           docker exec $(docker compose ps -q web) cat /usr/share/nginx/html/config/articles.json || echo "Failed to read articles.json"
+          
+          # Verify image directories
+          echo "Checking if image directories exist in container:"
+          docker exec $(docker compose ps -q web) ls -la /usr/share/nginx/html/images/blog || echo "Images/blog directory not found in container"
+          
+          # Copy any missing image files
+          echo "Ensuring image files exist in container..."
+          docker exec $(docker compose ps -q web) mkdir -p /usr/share/nginx/html/images/blog
+          for img in ./images/blog/*; do
+            if [ -f "$img" ]; then
+              filename=$(basename "$img")
+              echo "Copying image $filename to container..."
+              docker cp "$img" $(docker compose ps -q web):/usr/share/nginx/html/images/blog/
+            fi
+          done
         else
           echo "Tests failed. Website is not accessible."
           # Check if the web container is running even if tests failed
@@ -192,6 +284,10 @@ jobs:
             # Add additional debug steps for troubleshooting
             echo "Checking web container logs:"
             docker compose logs web
+            
+            # Run JavaScript console error checking script even on failure
+            echo "Checking for JavaScript console errors..."
+            ./check-console-errors.sh || echo "Error checking script failed"
           else
             echo "Stopping containers...."
             docker compose down
