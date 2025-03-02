@@ -1,0 +1,26 @@
+[
+  {
+    "name": "websitev2",
+    "html_url": "https://github.com/ds-brandao/websitev2",
+    "description": "My personal website built with HTML, CSS, and JavaScript",
+    "homepage": null
+  },
+  {
+    "name": "cybersecurity-tools",
+    "html_url": "https://github.com/ds-brandao/cybersecurity-tools",
+    "description": "A collection of tools and scripts for cybersecurity tasks",
+    "homepage": null
+  },
+  {
+    "name": "home-lab",
+    "html_url": "https://github.com/ds-brandao/home-lab",
+    "description": "My home lab setup for security testing and development",
+    "homepage": null
+  },
+  {
+    "name": "python-security",
+    "html_url": "https://github.com/ds-brandao/python-security",
+    "description": "Python scripts for security automation and analysis",
+    "homepage": null
+  }
+] 

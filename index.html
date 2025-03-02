@@ -635,10 +635,10 @@
 
     .modal-close {
       position: absolute;
-      top: 15px;
-      right: 15px;
-      background: rgba(79, 70, 229, 0.1);
-      border: 1px solid rgba(79, 70, 229, 0.2);
+      top: 20px;
+      right: 20px;
+      background: rgba(30, 30, 30, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.2);
       border-radius: 50%;
       width: 36px;
       height: 36px;
@@ -650,32 +650,14 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      z-index: 10;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
 
     .modal-close:hover {
       background: rgba(79, 70, 229, 0.2);
     }
     
-    .modal-back-button {
-      background: rgba(79, 70, 229, 0.1);
-      border: 1px solid rgba(79, 70, 229, 0.2);
-      border-radius: 8px;
-      padding: 8px 16px;
-      margin-bottom: 20px;
-      cursor: pointer;
-      color: var(--accent-color);
-      font-weight: 500;
-      font-size: 14px;
-      transition: all 0.3s ease;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-    
-    .modal-back-button:hover {
-      background: rgba(79, 70, 229, 0.2);
-    }
-
     /* More link styling */
     .more-link {
       text-align: center;
@@ -770,6 +752,88 @@
       color: var(--accent-color);
       border-color: rgba(79, 70, 229, 0.4);
     }
+
+    /* Modal styling for article content */
+    .modal-article-image {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      object-position: center 35%; /* Default position, can be overridden with inline style */
+      border-radius: 8px 8px 0 0;
+      margin: 0 0 20px;
+      display: block;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal-content img {
+      max-width: 100%;
+      border-radius: 6px;
+      margin: 10px 0;
+    }
+
+    .modal-content h1, 
+    .modal-content h2, 
+    .modal-content h3, 
+    .modal-content h4 {
+      margin-top: 1.5em;
+      margin-bottom: 0.5em;
+      color: var(--text-color);
+    }
+
+    .modal-content p {
+      margin-bottom: 1em;
+      line-height: 1.6;
+    }
+
+    .modal-content ul, 
+    .modal-content ol {
+      margin-bottom: 1em;
+      padding-left: 2em;
+    }
+
+    .modal-content blockquote {
+      border-left: 4px solid var(--accent-color);
+      padding-left: 1em;
+      margin-left: 0;
+      color: var(--text-secondary);
+      font-style: italic;
+    }
+
+    .modal-content code {
+      font-family: 'JetBrains Mono', monospace;
+      background: rgba(30, 30, 30, 0.5);
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-size: 0.9em;
+    }
+
+    .modal-content pre {
+      background: rgba(20, 20, 20, 0.8);
+      padding: 15px;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 15px 0;
+    }
+
+    .modal-content pre code {
+      background: transparent;
+      padding: 0;
+      font-size: 0.9em;
+      color: #e0e0e0;
+    }
+    
+    /* Responsive modal image adjustments */
+    @media (min-width: 1024px) {
+      .modal-article-image {
+        height: 250px; /* Taller on larger screens */
+      }
+    }
+    
+    @media (max-width: 600px) {
+      .modal-article-image {
+        height: 160px; /* Smaller on mobile devices */
+      }
+    }
   </style>
 </head>
 <body>
@@ -805,7 +869,6 @@
     <div id="about" class="panel">
       <h2 class="panel-title"><i class="fas fa-user"></i>About Me</h2>
       <div class="panel-content">
-        <div class="profile-highlight">Daniel Brandao</div>
         <hr class="profile-divider">
         I am a Cybersecurity student at <a href="" id="college-link">Bellevue College</a>. 
 
@@ -877,8 +940,7 @@
   <!-- Modal -->
   <div class="modal-overlay" id="modal-overlay">
     <div class="modal-content">
-      <button class="modal-close" id="modal-close">×</button>
-      <button class="modal-back-button" id="modal-back"><i class="fas fa-arrow-left"></i> Back to Articles</button>
+      <button class="modal-close" id="modal-close"><i class="fas fa-times"></i></button>
       <div id="modal-body"></div>
     </div>
   </div>
@@ -935,6 +997,12 @@
         
         config = await response.json();
         console.log('Config loaded successfully:', config);
+        
+        // Verify config has required data
+        if (!config.tags) {
+          console.warn('Missing tags configuration in config.json');
+        }
+        
         initializePage();
       } catch (error) {
         console.error('Error loading config:', error);
@@ -965,121 +1033,278 @@
       document.getElementById('footer-linkedin-link').href = config.social.linkedin;
       document.getElementById('footer-email-link').href = `mailto:${config.social.email}`;
 
-      // After config is loaded, fetch GitHub repos
+      // After config is loaded, load blog posts and fetch GitHub repos
+      loadBlogPosts();
       fetchRepos();
     }
 
     document.addEventListener('DOMContentLoaded', () => {
       loadConfig();
       typeText();
-      loadBlogPosts();
       setupContactItems();
+      
+      // Add debug query parameter check
+      const urlParams = new URLSearchParams(window.location.search);
+      window.debugMode = urlParams.has('debug');
+      if (window.debugMode) {
+        console.log('Debug mode enabled');
+      }
     });
 
-    // Fetch GitHub Repos
+    // Fetch GitHub Repos with fallback to local JSON
     async function fetchRepos() {
+      const repoList = document.getElementById('repo-list');
+      
+      // Show loading indicator
+      repoList.innerHTML = `<div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Loading GitHub Projects...</h3>
+        </div>
+        <div class="card-body">
+          <p><i class="fas fa-spinner fa-spin"></i> Fetching projects from GitHub...</p>
+        </div>
+      </div>`;
+      
       try {
-        console.log('Fetching repositories for GitHub user:', config.social.github.username);
-        const response = await fetch(`https://api.github.com/users/${config.social.github.username}/repos`);
+        if (!config || !config.social || !config.social.github || !config.social.github.username) {
+          throw new Error('GitHub username not configured');
+        }
+        
+        const username = config.social.github.username;
+        console.log('Fetching repositories for GitHub user:', username);
+        
+        // Try first with our nginx proxy to avoid CORS issues
+        try {
+          console.log('Using local proxy for GitHub API');
+          const response = await fetch(`/github-api/users/${username}/repos?sort=updated&per_page=10&direction=desc`, {
+            cache: 'no-cache'
+          });
+          
+          if (!response.ok) {
+            console.error(`GitHub API via proxy error: ${response.status} ${response.statusText}`);
+            throw new Error('Proxy request failed');
+          }
+          
+          const repos = await response.json();
+          
+          if (repos && repos.length > 0) {
+            console.log('Successfully fetched GitHub repos via proxy:', repos.length);
+            displayRepos(repos, repoList, config.social.github.url);
+            return; // Early return if successful
+          }
+          console.warn('No repositories found via proxy, trying direct API');
+        } catch (proxyError) {
+          console.warn('Proxy request failed, falling back to direct API:', proxyError.message);
+        }
+        
+        // Fall back to direct GitHub API request if proxy fails
+        const fetchPromise = fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=10&direction=desc`, {
+          headers: {
+            'Accept': 'application/vnd.github.v3+json'
+          },
+          cache: 'no-cache'
+        });
+        
+        // Set a shorter timeout to fail faster
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('GitHub API request timed out')), 3000)
+        );
+        
+        // Race between the fetch and the timeout
+        const response = await Promise.race([fetchPromise, timeoutPromise]);
         
         if (!response.ok) {
-          console.error('GitHub API response not OK:', response.status, response.statusText);
-          const repoList = document.getElementById('repo-list');
-          repoList.innerHTML = `<div class="card">Failed to load GitHub repositories. Status: ${response.status}</div>`;
-          return;
+          // Log detailed error info
+          console.error(`GitHub API error: ${response.status} ${response.statusText}`);
+          
+          if (response.status === 403) {
+            const rateLimitRemaining = response.headers.get('X-RateLimit-Remaining');
+            if (rateLimitRemaining === '0') {
+              console.error('GitHub API rate limit exceeded');
+              throw new Error('GitHub API rate limit exceeded. Try again later.');
+            }
+          }
+          
+          if (response.status === 404) {
+            console.error('GitHub user not found');
+            throw new Error(`GitHub user "${username}" not found`);
+          }
+          
+          throw new Error(`GitHub API returned ${response.status}: ${response.statusText}`);
         }
         
         const repos = await response.json();
-        console.log('Fetched repos:', repos);
+        console.log('Successfully fetched GitHub repos:', repos.length);
         
         if (!repos || repos.length === 0) {
-          console.log('No repositories found for this user');
-          const repoList = document.getElementById('repo-list');
-          repoList.innerHTML = '<div class="card">No GitHub repositories found.</div>';
-          return;
+          console.log('No public repositories found, using fallback');
+          throw new Error('No public repositories found');
         }
         
-        const repoList = document.getElementById('repo-list');
-        repoList.innerHTML = ''; // Clear any existing content
+        // Display the repositories
+        displayRepos(repos, repoList, config.social.github.url);
         
-        // Only show first 4 repos to save space
-        const displayRepos = repos.slice(0, 4);
+      } catch (error) {
+        console.error('Error fetching from GitHub API:', error.message);
         
-        displayRepos.forEach(repo => {
-          const repoItem = document.createElement('div');
-          repoItem.className = 'project-card';
-          repoItem.setAttribute('role', 'button');
-          repoItem.setAttribute('aria-label', `View project: ${repo.name}`);
-          repoItem.setAttribute('tabindex', '0');
+        // Attempt to load from local fallback file
+        try {
+          console.log('Falling back to local projects file');
+          const response = await fetch('config/projects.json');
           
-          // Make entire card clickable to go to repository
-          repoItem.addEventListener('click', (e) => {
-            // Only trigger if not clicking on an actual link inside the card
-            if (!e.target.closest('a')) {
-              window.open(repo.html_url, '_blank');
-            }
-          });
+          if (!response.ok) {
+            throw new Error(`Local projects file returned ${response.status}`);
+          }
           
-          // Add keyboard navigation
-          repoItem.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              if (!e.target.closest('a')) {
-                e.preventDefault();
-                window.open(repo.html_url, '_blank');
-              }
-            }
-          });
+          const repos = await response.json();
           
-          let repoContent = `
-            <div class="project-info">
-              <h3 class="project-title">${repo.name}</h3>
-              <p class="project-description">${repo.description || 'No description available'}</p>
-              <div class="project-links">
-                <a href="${repo.html_url}" target="_blank"><i class="fab fa-github"></i> Repository</a>
-                ${repo.homepage ? `<a href="${repo.homepage}" target="_blank"><i class="fas fa-external-link-alt"></i> Demo</a>` : ''}
+          if (!repos || repos.length === 0) {
+            throw new Error('No projects in local file');
+          }
+          
+          // Display a notice that we're using cached data
+          displayRepos(repos, repoList, config.social.github.url, true);
+          
+        } catch (fallbackError) {
+          console.error('Fallback error:', fallbackError.message);
+          // Both GitHub API and local fallback failed
+          let errorMessage = `
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">GitHub Projects</h3>
               </div>
-            </div>
-          `;
+              <div class="card-body">
+                <p>Unable to retrieve projects. Please check your connection and try again.</p>
+                <p>You can view my projects directly on 
+                  <a href="${config?.social?.github?.url || 'https://github.com/ds-brandao'}" target="_blank">GitHub <i class="fas fa-external-link-alt"></i></a>
+                </p>
+              </div>
+            </div>`;
+            
+          // Add debug information if debug mode is enabled
+          if (window.debugMode) {
+            errorMessage += `
+              <div class="card" style="border-color: rgba(245, 158, 11, 0.5); margin-top: 15px;">
+                <div class="card-header" style="border-bottom-color: rgba(245, 158, 11, 0.3);">
+                  <h3 class="card-title"><i class="fas fa-bug" style="color: #f59e0b;"></i> Debug Information</h3>
+                </div>
+                <div class="card-body">
+                  <p><strong>GitHub Error:</strong> ${error.message}</p>
+                  <p><strong>Fallback Error:</strong> ${fallbackError.message}</p>
+                  <p><strong>GitHub Username:</strong> ${config?.social?.github?.username || 'Not configured'}</p>
+                  <p><small>This debug information is only visible because the URL has the '?debug' parameter.</small></p>
+                </div>
+              </div>`;
+          }
           
-          repoItem.innerHTML = repoContent;
-          repoList.appendChild(repoItem);
+          repoList.innerHTML = errorMessage;
+        }
+      }
+    }
+
+    // Helper function to display repositories
+    function displayRepos(repos, repoList, githubUrl, isFallback = false) {
+      repoList.innerHTML = ''; // Clear any existing content
+      
+      // If using fallback data, show an indicator
+      if (isFallback) {
+        const fallbackIndicator = document.createElement('div');
+        fallbackIndicator.className = 'card';
+        fallbackIndicator.style.marginBottom = '15px';
+        fallbackIndicator.style.padding = '10px';
+        fallbackIndicator.style.backgroundColor = 'rgba(245, 158, 11, 0.1)';
+        fallbackIndicator.style.border = '1px solid rgba(245, 158, 11, 0.3)';
+        fallbackIndicator.innerHTML = `
+          <div class="card-body" style="padding: 0;">
+            <p style="margin: 0;"><i class="fas fa-exclamation-triangle" style="color: #f59e0b;"></i> 
+            Showing cached project data. Couldn't connect to GitHub.</p>
+          </div>
+        `;
+        repoList.appendChild(fallbackIndicator);
+      }
+      
+      // Only show first 4 repos to save space
+      const displayRepos = repos.slice(0, 4);
+      
+      displayRepos.forEach(repo => {
+        const repoItem = document.createElement('div');
+        repoItem.className = 'project-card';
+        repoItem.setAttribute('role', 'button');
+        repoItem.setAttribute('aria-label', `View project: ${repo.name}`);
+        repoItem.setAttribute('tabindex', '0');
+        
+        // Make entire card clickable to go to repository
+        repoItem.addEventListener('click', (e) => {
+          // Only trigger if not clicking on an actual link inside the card
+          if (!e.target.closest('a')) {
+            window.open(repo.html_url, '_blank');
+          }
         });
         
-        if (repos.length > 4) {
-          const moreLink = document.createElement('div');
-          moreLink.className = 'more-link';
-          moreLink.innerHTML = `<a href="${config.social.github.url}" target="_blank">View ${repos.length - 4} more on GitHub</a>`;
-          repoList.appendChild(moreLink);
-        }
-      } catch (e) {
-        console.error('Error fetching repos:', e);
+        // Add keyboard navigation
+        repoItem.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            if (!e.target.closest('a')) {
+              e.preventDefault();
+              window.open(repo.html_url, '_blank');
+            }
+          }
+        });
+        
+        let repoContent = `
+          <div class="project-info">
+            <h3 class="project-title">${repo.name}</h3>
+            <p class="project-description">${repo.description || 'No description available'}</p>
+            <div class="project-links">
+              <a href="${repo.html_url}" target="_blank"><i class="fab fa-github"></i> Repository</a>
+              ${repo.homepage ? `<a href="${repo.homepage}" target="_blank"><i class="fas fa-external-link-alt"></i> Demo</a>` : ''}
+            </div>
+          </div>
+        `;
+        
+        repoItem.innerHTML = repoContent;
+        repoList.appendChild(repoItem);
+      });
+      
+      if (repos.length > 4) {
+        const moreLink = document.createElement('div');
+        moreLink.className = 'more-link';
+        moreLink.innerHTML = `<a href="${githubUrl}" target="_blank">View ${repos.length - 4} more on GitHub <i class="fas fa-external-link-alt"></i></a>`;
+        repoList.appendChild(moreLink);
       }
     }
 
     // Load blog posts
     async function loadBlogPosts() {
       try {
-        const response = await fetch('config/articles.json');
+        // Add cache-busting parameter to avoid browser caching
+        const timestamp = new Date().getTime();
+        const response = await fetch(`config/articles.json?_=${timestamp}`);
         const posts = await response.json();
         const blogContainer = document.getElementById('blog-posts');
         const categoryFilters = document.getElementById('category-filters');
         
-        // Extract unique categories from all posts
-        const categories = new Set();
-        posts.forEach(post => {
-          if (post.tags && post.tags.length > 0) {
-            post.tags.forEach(tag => categories.add(tag));
-          }
-        });
+        // Clear existing posts
+        blogContainer.innerHTML = '';
         
-        // Add category filter buttons
-        categories.forEach(category => {
-          const filterBtn = document.createElement('button');
-          filterBtn.className = 'filter-tag';
-          filterBtn.setAttribute('data-filter', category.toLowerCase());
-          filterBtn.textContent = category;
-          categoryFilters.appendChild(filterBtn);
-        });
+        // Clear existing filter buttons except 'All'
+        const existingFilterButtons = categoryFilters.querySelectorAll('.filter-tag:not([data-filter="all"])');
+        existingFilterButtons.forEach(btn => btn.remove());
+
+        // Use predefined tags from config instead of extracting from posts
+        if (config && config.tags) {
+          console.log('Adding filter buttons for tags:', Object.keys(config.tags));
+          // Add filter buttons for each predefined tag
+          Object.keys(config.tags).forEach(tagName => {
+            const filterBtn = document.createElement('button');
+            filterBtn.className = 'filter-tag';
+            filterBtn.setAttribute('data-filter', tagName.toLowerCase());
+            filterBtn.textContent = tagName;
+            categoryFilters.appendChild(filterBtn);
+          });
+        } else {
+          console.warn('No tags found in config or config not loaded yet. Current config:', config);
+        }
         
         // Create a map to store all posts by their elements
         const allPostElements = [];
@@ -1093,35 +1318,62 @@
           article.setAttribute('tabindex', '0');
           
           article.addEventListener('click', () => {
-            showFullPost(post.markdown);
+            showFullPost(post.markdown, post.image, post.title, post.objectPosition);
           });
           
           article.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
-              showFullPost(post.markdown);
+              showFullPost(post.markdown, post.image, post.title, post.objectPosition);
             }
           });
           
-          if (post.tags && post.tags.length > 0) {
-            article.setAttribute('data-categories', post.tags.map(tag => tag.toLowerCase()).join(' '));
+          // Filter and validate tags against predefined tags
+          const validTags = [];
+          if (post.tags && post.tags.length > 0 && config && config.tags) {
+            post.tags.forEach(tag => {
+              if (config.tags[tag]) {
+                validTags.push(tag);
+              }
+            });
+            
+            // Set data-categories for filtering
+            if (validTags.length > 0) {
+              article.setAttribute('data-categories', validTags.map(tag => tag.toLowerCase()).join(' '));
+            }
           }
-
+          
           if (post.image) {
             const image = document.createElement('img');
             image.src = post.image;
             image.alt = post.title;
+            // Apply object-position if specified in the post data
+            if (post.objectPosition) {
+              image.style.objectPosition = post.objectPosition;
+            }
+            // Add error handler for images
+            image.onerror = function() {
+              this.src = 'https://via.placeholder.com/300x150?text=Image+Not+Found';
+              console.warn(`Image not found: ${post.image}`);
+            };
             article.appendChild(image);
           }
-
-          if (post.tags && post.tags.length > 0) {
+          
+          // Add tags using the predefined styles from config
+          if (validTags.length > 0) {
             const tagsContainer = document.createElement('div');
             tagsContainer.className = 'blog-post-tags';
             
-            post.tags.forEach(tag => {
+            validTags.forEach(tag => {
               const tagElement = document.createElement('span');
-              tagElement.className = `blog-post-tag tag-${tag.toLowerCase()}`;
+              // Use the color class from config
+              const colorClass = config.tags[tag].color || tag.toLowerCase();
+              tagElement.className = `blog-post-tag tag-${colorClass}`;
               tagElement.textContent = tag;
+              // Add the description as a tooltip
+              if (config.tags[tag].description) {
+                tagElement.title = config.tags[tag].description;
+              }
               tagsContainer.appendChild(tagElement);
             });
             
@@ -1156,27 +1408,62 @@
           allPostElements.push(article);
         });
         
-        const filterButtons = document.querySelectorAll('.filter-tag');
+        // Attach click handlers to filter buttons
+        const filterButtons = categoryFilters.querySelectorAll('.filter-tag');
         filterButtons.forEach(btn => {
           btn.addEventListener('click', () => {
-            filterButtons.forEach(b => b.classList.remove('active'));
-            
-            btn.classList.add('active');
-            
             const filter = btn.getAttribute('data-filter');
+            console.log(`Toggle filter: ${filter}`);
             
+            // Handle the "All" filter specially
             if (filter === 'all') {
+              // Deactivate all other filters when "All" is clicked
+              filterButtons.forEach(b => {
+                if (b.getAttribute('data-filter') !== 'all') {
+                  b.classList.remove('active');
+                }
+              });
+              btn.classList.add('active');
+            } else {
+              // For other filters, toggle their active state
+              btn.classList.toggle('active');
+              
+              // If we're activating a filter, deactivate the "All" filter
+              if (btn.classList.contains('active')) {
+                const allFilter = categoryFilters.querySelector('.filter-tag[data-filter="all"]');
+                if (allFilter) {
+                  allFilter.classList.remove('active');
+                }
+              }
+              
+              // If no filters are active, activate the "All" filter
+              const activeFilters = categoryFilters.querySelectorAll('.filter-tag.active');
+              if (activeFilters.length === 0) {
+                const allFilter = categoryFilters.querySelector('.filter-tag[data-filter="all"]');
+                if (allFilter) {
+                  allFilter.classList.add('active');
+                }
+              }
+            }
+            
+            // Get all active filters
+            const activeFilters = Array.from(categoryFilters.querySelectorAll('.filter-tag.active'))
+              .map(el => el.getAttribute('data-filter'));
+            
+            console.log(`Active filters: ${activeFilters.join(', ')}`);
+            
+            // Apply filters using OR logic (show if matches ANY selected filter)
+            if (activeFilters.includes('all')) {
+              // If "All" is active, show everything
               allPostElements.forEach(post => {
                 post.style.display = 'flex';
               });
             } else {
+              // Show posts that match ANY of the selected filters
               allPostElements.forEach(post => {
                 const categories = post.getAttribute('data-categories') || '';
-                if (categories.includes(filter)) {
-                  post.style.display = 'flex';
-                } else {
-                  post.style.display = 'none';
-                }
+                const shouldShow = activeFilters.some(filter => categories.includes(filter));
+                post.style.display = shouldShow ? 'flex' : 'none';
               });
             }
           });
@@ -1184,20 +1471,19 @@
       } catch (e) {
         console.error('Error loading blog posts:', e);
       }
+      
+      // Return a resolved promise for chaining
+      return Promise.resolve();
     }
 
     // Modal functionality
     const modalOverlay = document.getElementById('modal-overlay');
     const modalClose = document.getElementById('modal-close');
-    const modalBack = document.getElementById('modal-back');
     const modalBody = document.getElementById('modal-body');
     const modalContent = document.querySelector('.modal-content');
 
     // Close modal when clicking the X button
     modalClose.addEventListener('click', closeModal);
-    
-    // Close modal when clicking the back button
-    modalBack.addEventListener('click', closeModal);
     
     // Close modal when clicking outside the content area
     modalOverlay.addEventListener('click', (e) => {
@@ -1218,7 +1504,7 @@
       modalBody.innerHTML = '';
     }
 
-    async function showFullPost(markdownFile) {
+    async function showFullPost(markdownFile, image, title, objectPosition) {
       try {
         const response = await fetch(markdownFile);
         if (!response.ok) {
@@ -1226,7 +1512,35 @@
         }
         const text = await response.text();
         const html = marked.parse(text);
-        modalBody.innerHTML = html;
+        
+        // Create content with image at the top
+        let modalContent = '';
+        
+        // Add the image if available
+        if (image) {
+          // Use custom objectPosition if provided, otherwise use default (center 35%)
+          // Using direct style attribute with !important to ensure it overrides the CSS
+          const positionValue = objectPosition || 'center 35%';
+          const positionStyle = objectPosition ? `style="object-position: ${objectPosition} !important;"` : '';
+          
+          // Position indicator for easy reference (only in development mode)
+          const positionIndicator = window.debugMode ? 
+            `<div style="position: absolute; top: 10px; right: 60px; background: rgba(0,0,0,0.6); color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-family: monospace;">
+              Position: ${positionValue}
+            </div>` : '';
+          
+          modalContent += `
+            <div style="position: relative;">
+              <img src="${image}" alt="${title}" class="modal-article-image" ${positionStyle}>
+              ${positionIndicator}
+            </div>
+          `;
+        }
+        
+        // Add the parsed markdown content
+        modalContent += html;
+        
+        modalBody.innerHTML = modalContent;
         modalOverlay.style.display = 'flex';
         
         // Ensure focus is trapped in the modal for accessibility
@@ -1278,6 +1592,63 @@
         }
       });
     }
+    
+    // Utility function for debugging and adjusting image positions
+    window.adjustImagePosition = function(articleIndex, verticalPosition) {
+      // Load current posts data with cache busting
+      const timestamp = new Date().getTime();
+      fetch(`config/articles.json?_=${timestamp}`)
+        .then(response => response.json())
+        .then(posts => {
+          if (posts[articleIndex]) {
+            // Update the object position with the new vertical value
+            const position = `center ${verticalPosition}%`;
+            
+            console.log(`Previewing image position: ${position} for article "${posts[articleIndex].title}"`);
+            
+            // Show a preview by opening the modal with the adjusted position
+            showFullPost(
+              posts[articleIndex].markdown,
+              posts[articleIndex].image,
+              posts[articleIndex].title,
+              position
+            );
+            
+            // Add debugging info to the modal
+            setTimeout(() => {
+              const imgElement = document.querySelector('.modal-article-image');
+              if (imgElement) {
+                const computedStyle = window.getComputedStyle(imgElement);
+                const actualPosition = computedStyle.objectPosition;
+                
+                const debugDiv = document.createElement('div');
+                debugDiv.style.background = 'rgba(0,0,0,0.8)';
+                debugDiv.style.color = '#fff';
+                debugDiv.style.padding = '10px';
+                debugDiv.style.marginTop = '10px';
+                debugDiv.style.borderRadius = '4px';
+                debugDiv.style.fontSize = '12px';
+                debugDiv.style.fontFamily = 'monospace';
+                debugDiv.innerHTML = `
+                  <strong>Image Position Debug:</strong><br>
+                  Requested position: ${position}<br>
+                  Actual computed position: ${actualPosition}<br>
+                  Applied via: ${imgElement.getAttribute('style') ? 'Inline style' : 'CSS class'}<br>
+                  Full inline style: ${imgElement.getAttribute('style') || 'none'}
+                `;
+                
+                modalBody.insertBefore(debugDiv, modalBody.firstChild.nextSibling);
+              }
+            }, 100);
+            
+            // Log instructions for saving the change
+            console.log(`To save this position, update your articles.json file with "objectPosition": "${position}" for article "${posts[articleIndex].title}"`);
+          } else {
+            console.error(`Article index ${articleIndex} not found. Available indices are 0 to ${posts.length - 1}`);
+          }
+        })
+        .catch(err => console.error('Error loading articles:', err));
+    };
   </script>
 </body>
 </html>
