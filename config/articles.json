@@ -22,5 +22,13 @@
       "image": "/images/blog/outlv.jpeg",
       "objectPosition": "center 55%",
       "tags": ["CI/CD", "Home Lab"]
+    },
+    {
+      "title": "From Hire to Wire",
+      "summary": "The importance of the synchronization between your HR and IT systems.",
+      "markdown": "/blog-posts/hireToWire.md",
+      "image": "/images/blog/lvbuilding.jpeg",
+      "objectPosition": "center 55%",
+      "tags": ["Systems Integration"]
     }
   ]
