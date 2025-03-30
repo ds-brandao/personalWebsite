@@ -51,6 +51,10 @@
     "Home Lab": {
       "color": "home lab",
       "description": "Home Lab"
+    },
+    "Systems Integration": {
+      "color": "systems integration",
+      "description": "Systems integration, synchronization, and automation"
     }
   }
 }
