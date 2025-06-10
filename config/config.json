@@ -44,6 +44,10 @@
       "color": "intro",
       "description": "Introduction to the blog and my journey into cybersecurity and programming"
     },
+    "Celery": {
+      "color": "celery",
+      "description": "Celery"
+    },
     "CI/CD": {
       "color": "ci/cd",
       "description": "Continuous Integration/Continuous Deployment"
@@ -55,6 +59,10 @@
     "Systems Integration": {
       "color": "systems integration",
       "description": "Systems integration, synchronization, and automation"
+    },
+    "Life": {
+      "color": "life",
+      "description": "Life, love, and everything in between"
     }
   }
 }
