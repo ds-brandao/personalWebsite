@@ -1,10 +1,10 @@
-# Daniel Brandao's Personal Website
+# Personal Website
 
-A modern, responsive personal website featuring a dynamic typing animation and blog system. Built as a single-page application with Docker containerization for easy development and deployment.
+Built as a single-page application with Docker containerization for easy development and deployment.
 
 ## 🌟 Features
 
-- **Dynamic Typing Animation**: Hero section with rotating phrases including "I'm Daniel Brandao", "I code security solutions", "I build secure systems", and "I break things to fix them"
+- **Dynamic Typing Animation**: Hero section with rotating phrases.
 - **Blog System**: Markdown-based articles with tag filtering and modal reading experience
 - **GitHub Integration**: Automatically fetches and displays GitHub repositories
 - **Responsive Design**: Mobile-first CSS Grid layout with asymmetrical panel design
@@ -118,12 +118,12 @@ To reorder articles:
 ## 🔗 Public Links and Social Media
 
 ### GitHub Repository
-- **Repository**: [ds-brandao/mywebsite2](https://github.com/ds-brandao/mywebsite2)
-- **GitHub Profile**: [ds-brandao](https://github.com/ds-brandao)
+- **Repository**
+- **GitHub Profile**
 
 ### Social Links
-- **LinkedIn**: [Daniel Brandao](https://www.linkedin.com/in/dsbrandao/)
-- **Email**: lounges.upstage_0y@icloud.com
+- **LinkedIn**
+- **Email**
 
 These links are configured in `config/config.json` under the `social` section and are automatically integrated throughout the website.
 
@@ -136,7 +136,7 @@ These links are configured in `config/config.json` under the `social` section an
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/ds-brandao/mywebsite2.git
+   git clone https://github.com/ds-brandao/personalWebsite.git
    cd mywebsite2
    ```
 
@@ -157,7 +157,6 @@ These links are configured in `config/config.json` under the `social` section an
 
 ### File Structure
 ```
-mywebsite2/
 ├── index.html              # Main application file
 ├── config/
 │   ├── config.json         # Personal info and tags
