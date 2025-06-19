@@ -2,16 +2,16 @@
 
 > *You must give up the life you have planned, so you can have the life that is waiting for you.* - **Joseph Campbell**
 
-Recently, a lot in my life has changed. I've been working towards my *b.s* degree and a month before graduation, I've received an amazing opportunity to work as a Software Engineer at T-Mobile. Amazing! I have been very happy to be able to work with such a talented team and learn from them at all opportunities I have had. It has been truly a dream come true in a way.
+Recently, my life has changed a lot. I’ve been working toward my bachelor's degree, and just one month before graduating, I landed an amazing job as a Software Engineer at T-Mobile. It’s honestly been fantastic! I'm super thankful to be working alongside such talented people and learning as much as possible—it feels like a dream come true.
 
-At the same time, I have been able to get my own place and finally have a place to call my own, until my lease ends. However, this has been the things that I have been working towards for the past years and, the fact that I have been able to achieve this has been a great feeling.
+At the same time, I finally got my own place. Having my own space, at least until the lease ends, feels amazing. These are milestones I've been chasing for years, and reaching them feels incredibly satisfying.
 
-To give a sense of how much things changed, in less than a month, I have had a job change + a new place to live + (in a few days) finished my degree. Things have been moving very fast and I couldn't be happier with the way things are going.
+To give you an idea of how fast things moved: in less than a month, I've switched jobs, moved into a new home, and I'll be finishing my degree soon. Everything’s happened so quickly, and I'm really happy with how things are turning out.
 
-However, like my mother always told me: *if you want something new, you have to let something old go*. And man, how true that is. Even if you don't want to and fight to keep it, life just finds a way to make you let go, no *buts* or *ifs*.
+But as my mom always says, "If you want something new, you have to let go of something old." That’s never felt more true. Even if you try to hold onto things, life always pushes you forward—no "ifs" or "buts."
 
-Today, I have gone to a *Festa Junina*, a traditional party from Brazil that happens every June. I haven't been to one since high school and, looking at the traditions, dances, music that I once thought to be corny or annoying, got my eyes watery. I remember not enjoying this event but, somehow, I was incredibly happy to be part of it, embrace it and share that moment with the people around me.
+Today I went to a *Festa Junina*, a traditional Brazilian festival held every June. It was my first time attending since high school, and surprisingly, seeing all the traditions, dances, and music that I used to find cheesy actually got me emotional. Even though I didn't appreciate it before, today I genuinely enjoyed being there, soaking it all in, and sharing the experience with others.
 
-I am not sure if this is me growing up or if I am just starting to see life for what it is, a truly special and unique thing. There is no predetermined path, I have to embrace my own story because that's what makes me unique and, because of it, I add to the table.
+I don’t know if this means I'm growing up or just starting to really appreciate life’s special moments. I've realized there’s no set path in life, and my unique journey is what makes me, well, me.
 
-Q2 2024 is a quarter for the books. So much has happened and I am having fun with it.
+May 2025 will be a month for the books, and I'm having a great time living it.
