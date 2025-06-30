@@ -3,10 +3,18 @@
 <head>
   <title>Daniel Brandao</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Preconnect to external domains -->
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  
+  <!-- Load critical CSS first -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
+  
+  <!-- Optimize font loading -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg-color: #121212;
@@ -34,9 +42,12 @@
       background-color: var(--bg-color);
       color: var(--text-color);
       line-height: 1.6;
-      overflow-x: hidden; /* Allow vertical scrolling but prevent horizontal */
+      overflow-x: hidden;
       min-height: 100vh;
       width: 100%;
+      /* Enable hardware acceleration */
+      -webkit-transform: translateZ(0);
+      transform: translateZ(0);
     }
 
     /* Main Grid Layout - Modified for new asymmetrical layout with reduced center area */
@@ -154,7 +165,8 @@
     /* Panel Styling - Removed blur effect */
     .panel {
       position: relative;
-      transition: all var(--transition-speed) ease;
+      transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease, border-color var(--transition-speed) ease;
+      will-change: transform;
       padding: 25px;
       border-radius: 12px;
       border: 1px solid var(--card-border);
@@ -169,7 +181,6 @@
       transform: scale(1.01);
       z-index: 99;
       border-color: rgba(79, 70, 229, 0.2);
-      background-color: rgba(25, 25, 25, 0.7);
       box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
     }
 
@@ -235,7 +246,8 @@
       margin-bottom: 15px;
       font-size: 14px;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      transition: all 0.3s ease;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      will-change: transform;
     }
 
     .card:hover {
@@ -613,41 +625,35 @@
     /* Modal */
     .modal-overlay {
       position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.85);
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.95);
       display: none;
-      justify-content: center;
-      align-items: flex-start;
       z-index: 9999;
-      backdrop-filter: blur(12px);
-      padding: 40px 20px;
       overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
     }
 
     .modal-content {
       background: var(--surface1-color);
-      padding: 32px;
+      padding: 60px 32px 32px;
       width: 90%;
       max-width: 1000px;
-      max-height: none;
-      min-height: auto;
-      overflow-y: visible;
-      border-radius: 16px;
+      margin: 40px auto 40px;
       position: relative;
-      box-shadow: 
-        0 25px 60px rgba(0, 0, 0, 0.4),
-        0 0 0 1px rgba(79, 70, 229, 0.1);
-      border: 1px solid rgba(79, 70, 229, 0.2);
-      margin: 40px auto;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      min-height: auto;
+      border-radius: 16px;
     }
 
     .modal-close {
-      position: absolute;
+      position: fixed;
       top: 24px;
       right: 24px;
-      background: rgba(30, 30, 30, 0.8);
+      background: rgba(30, 30, 30, 0.9);
       border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 50%;
       width: 40px;
@@ -660,7 +666,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 10;
+      z-index: 10001;
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
       backdrop-filter: blur(8px);
     }
@@ -669,6 +675,32 @@
       background: rgba(79, 70, 229, 0.3);
       border-color: rgba(79, 70, 229, 0.4);
       transform: scale(1.05);
+    }
+    
+    /* Modal body content */
+    #modal-body {
+      max-width: 100%;
+      overflow-x: hidden;
+      color: var(--text-color);
+      font-size: 15px;
+      line-height: 1.65;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+    
+    #modal-body > * {
+      max-width: 100%;
+    }
+    
+    #modal-body pre {
+      overflow-x: auto;
+      max-width: 100%;
+      margin: 20px 0;
+    }
+    
+    #modal-body img {
+      max-width: 100%;
+      height: auto;
     }
     
     /* More link styling */
@@ -857,33 +889,69 @@
         pointer-events: none;
       }
       
-      /* Adjust modal for proper mobile display */
+      /* Mobile modal display */
       .modal-overlay {
-        padding: 20px 10px;
-        align-items: flex-start;
+        background: var(--surface1-color);
+        padding: 0;
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
       }
       
       .modal-content {
-        padding: 24px 16px;
-        max-height: 90vh;
-        width: 98%;
-        margin: 10px auto;
-        border-radius: 12px;
-        min-height: auto;
+        padding: 60px 20px 40px;
+        width: 100%;
+        margin: 0;
+        background: var(--surface1-color);
+        min-height: 100%;
+        border-radius: 0;
+        position: relative;
+        display: block;
       }
       
       .modal-close {
-        top: 12px;
-        right: 12px;
-        width: 32px;
-        height: 32px;
-        font-size: 16px;
+        position: fixed;
+        top: 15px;
+        right: 15px;
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 10001;
       }
       
       .modal-article-image {
-        height: 180px;
-        margin: -24px -16px 20px -16px;
-        border-radius: 12px 12px 0 0;
+        height: 150px;
+        width: calc(100% + 40px);
+        margin: -60px -20px 20px -20px;
+        border-radius: 0;
+        object-fit: cover;
+      }
+      
+      /* Fix modal body content wrapping on mobile */
+      #modal-body {
+        width: 100%;
+        padding: 0 0 40px 0;
+        overflow-x: hidden;
+        word-break: break-word;
+        min-height: 100vh;
+      }
+      
+      #modal-body > * {
+        max-width: 100%;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+      }
+      
+      #modal-body pre {
+        overflow-x: auto;
+        max-width: 100%;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        font-size: 12px;
+      }
+      
+      #modal-body code {
+        word-break: break-word;
       }
       
       /* Adjust typography in modal for mobile */
@@ -905,12 +973,34 @@
         font-size: 0.95em;
         line-height: 1.5;
       }
+      
+      /* Ensure modal works properly on mobile */
+      body.modal-open {
+        overflow: hidden;
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+      }
     }
     
     @media (max-width: 400px) {
+      .modal-overlay {
+        background: var(--surface1-color);
+      }
+      
       .modal-content {
-        padding: 20px 12px;
-        margin: 5px auto;
+        padding: 50px 15px 40px;
+        margin: 0;
+        width: 100%;
+        min-height: 100%;
+        background: var(--surface1-color);
+      }
+      
+      #modal-body {
+        padding-bottom: 60px;
+        min-height: 100vh;
       }
       
       .modal-article-image {
@@ -1059,6 +1149,15 @@
       padding: 0;
       font-size: 0.9em;
       color: #e0e0e0;
+    }
+    
+    /* Modal article image */
+    .modal-article-image {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      margin-bottom: 20px;
+      border-radius: 0;
     }
     
     /* Mermaid diagram styling */
@@ -1265,16 +1364,46 @@
 
   <!-- Modal -->
   <div class="modal-overlay" id="modal-overlay">
-    <div class="modal-content">
+    <div class="modal-content" id="modal-content">
       <button class="modal-close" id="modal-close"><i class="fas fa-times"></i></button>
       <div id="modal-body"></div>
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/marked@4.3.0/marked.min.js"></script>
-  <!-- Add mermaid library -->
-  <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+  <!-- Defer non-critical scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/marked@4.3.0/marked.min.js" defer></script>
+  <!-- Load mermaid only when needed -->
   <script>
+    // Lazy load mermaid when a blog post is opened
+    window.loadMermaid = function() {
+      if (!window.mermaid && !window.mermaidLoading) {
+        window.mermaidLoading = true;
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js';
+        script.onload = function() {
+          window.mermaidLoading = false;
+          if (window.pendingMermaidInit) {
+            window.pendingMermaidInit();
+          }
+        };
+        document.head.appendChild(script);
+      }
+    };
+  </script>
+  <script>
+    // Utility function: debounce for better mobile performance
+    function debounce(func, wait) {
+      let timeout;
+      return function executedFunction(...args) {
+        const later = () => {
+          clearTimeout(timeout);
+          func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+      };
+    }
+    
     // Current year for footer
     document.getElementById('current-year').textContent = new Date().getFullYear();
     
@@ -1371,21 +1500,36 @@
 
       // After config is loaded, load blog posts and fetch GitHub repos
       console.log('Starting to load blog posts after config initialization');
-      loadBlogPosts().then(() => {
-        console.log('Blog posts loading complete, fetching repos');
-        fetchRepos();
+      
+      // Load content in parallel for better performance
+      Promise.all([
+        loadBlogPosts(),
+        fetchRepos()
+      ]).then(() => {
+        console.log('All content loaded successfully');
       }).catch(err => {
-        console.error('Failed to load blog posts:', err);
+        console.error('Error loading content:', err);
       });
     }
 
+    // Performance optimizations
+    const isMobile = window.matchMedia('(max-width: 800px)').matches;
+    
     document.addEventListener('DOMContentLoaded', () => {
+      // Load critical content first
       loadConfig();
-      typeText();
       setupContactItems();
       
-      // Initialize mermaid globally
-      try {
+      // Delay non-critical animations on mobile
+      if (!isMobile) {
+        typeText();
+      } else {
+        // Simple static text on mobile
+        document.getElementById('typed-text').textContent = "I'm Daniel Brandao";
+      }
+      
+      // Remove global mermaid initialization - load only when needed
+      /*try {
         mermaid.initialize({
           startOnLoad: true,
           theme: 'dark',
@@ -1419,7 +1563,7 @@
         console.log('Mermaid initialized globally');
       } catch (mermaidErr) {
         console.error('Error initializing mermaid globally:', mermaidErr);
-      }
+      }*/
       
       // Add debug query parameter check
       const urlParams = new URLSearchParams(window.location.search);
@@ -1601,10 +1745,8 @@
         repoList.appendChild(fallbackIndicator);
       }
       
-      // Only show first 4 repos to save space
-      const displayRepos = repos.slice(0, 4);
-      
-      displayRepos.forEach(repo => {
+      // Display all repos in a scrollable container
+      repos.forEach(repo => {
         const repoItem = document.createElement('div');
         repoItem.className = 'project-card';
         repoItem.setAttribute('role', 'button');
@@ -1643,13 +1785,6 @@
         repoItem.innerHTML = repoContent;
         repoList.appendChild(repoItem);
       });
-      
-      if (repos.length > 4) {
-        const moreLink = document.createElement('div');
-        moreLink.className = 'more-link';
-        moreLink.innerHTML = `<a href="${githubUrl}" target="_blank">View ${repos.length - 4} more on GitHub <i class="fas fa-external-link-alt"></i></a>`;
-        repoList.appendChild(moreLink);
-      }
     }
 
     // Load blog posts
@@ -1721,7 +1856,9 @@
           article.setAttribute('aria-label', `Read article: ${post.title}`);
           article.setAttribute('tabindex', '0');
           
-          article.addEventListener('click', () => {
+          // Direct click handling for faster response
+          article.addEventListener('click', (e) => {
+            e.preventDefault();
             showFullPost(post.markdown, post.image, post.title, post.objectPosition);
           });
           
@@ -1751,7 +1888,14 @@
           
           if (post.image) {
             const image = document.createElement('img');
-            image.src = post.image;
+            image.loading = 'lazy';
+            image.decoding = 'async';
+            // Use smaller images on mobile
+            if (isMobile && post.imageMobile) {
+              image.src = post.imageMobile;
+            } else {
+              image.src = post.image;
+            }
             image.alt = post.title;
             // Apply object-position if specified in the post data
             if (post.objectPosition) {
@@ -1902,7 +2046,7 @@
     const modalOverlay = document.getElementById('modal-overlay');
     const modalClose = document.getElementById('modal-close');
     const modalBody = document.getElementById('modal-body');
-    const modalContent = document.querySelector('.modal-content');
+    const modalContent = document.getElementById('modal-content');
 
     // Close modal when clicking the X button
     modalClose.addEventListener('click', closeModal);
@@ -1924,6 +2068,20 @@
     function closeModal() {
       modalOverlay.style.display = 'none';
       modalBody.innerHTML = '';
+      
+      // Get stored scroll position
+      const scrollY = document.body.style.top;
+      
+      // Remove modal class and restore scroll
+      document.body.classList.remove('modal-open');
+      document.body.style.top = '';
+      
+      // Restore scroll position
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY || '0') * -1);
+      }
+      
+      modalOverlay.scrollTop = 0;
     }
 
     async function showFullPost(markdownFile, image, title, objectPosition) {
@@ -1982,10 +2140,44 @@
         modalContent += html;
         
         modalBody.innerHTML = modalContent;
-        modalOverlay.style.display = 'flex';
+        
+        // Show modal
+        modalOverlay.style.display = 'block';
+        
+        // Force height recalculation on mobile
+        if (isMobile) {
+          requestAnimationFrame(() => {
+            const bodyHeight = modalBody.scrollHeight;
+            modalContent.style.minHeight = (bodyHeight + 120) + 'px';
+          });
+        }
+        
+        // Store current scroll position
+        const scrollY = window.scrollY;
+        
+        // Add class to body for mobile fixes
+        document.body.classList.add('modal-open');
+        document.body.style.top = `-${scrollY}px`;
+        
+        // Ensure modal starts at top and proper sizing
+        setTimeout(() => {
+          modalOverlay.scrollTop = 0;
+          
+          // Force recalculation of heights for mobile
+          if (isMobile) {
+            modalContent.style.minHeight = modalBody.scrollHeight + 100 + 'px';
+          }
+          
+          // Debug - log modal height
+          console.log('Modal overlay height:', modalOverlay.scrollHeight);
+          console.log('Modal content height:', modalContent.scrollHeight);
+          console.log('Modal body height:', modalBody.scrollHeight);
+          console.log('Modal overlay scrollable:', modalOverlay.scrollHeight > modalOverlay.clientHeight);
+        }, 100);
         
         // Initialize mermaid diagrams after content is loaded
-        try {
+        if (window.mermaid) {
+          try {
           mermaid.initialize({
             startOnLoad: false,
             theme: 'dark',
@@ -2021,9 +2213,56 @@
             querySelector: '.mermaid'
           });
           
-          console.log('Mermaid diagrams initialized');
-        } catch (mermaidErr) {
-          console.error('Error initializing mermaid:', mermaidErr);
+            console.log('Mermaid diagrams initialized');
+          } catch (mermaidErr) {
+            console.error('Error initializing mermaid:', mermaidErr);
+          }
+        } else {
+          // Load mermaid if needed and there are diagrams
+          const hasMermaidDiagrams = modalBody.querySelector('.mermaid');
+          if (hasMermaidDiagrams) {
+            window.loadMermaid();
+            window.pendingMermaidInit = function() {
+              try {
+                mermaid.initialize({
+                  startOnLoad: false,
+                  theme: 'dark',
+                  securityLevel: 'loose',
+                  themeCSS: `
+                    .node rect, .node circle, .node ellipse, .node polygon, .node path {
+                      fill: #000000;
+                      stroke: rgba(79, 70, 229, 0.7);
+                    }
+                    .edgePath .path {
+                      stroke: rgba(79, 70, 229, 0.7);
+                    }
+                    .label {
+                      color: #000000 !important;
+                    }
+                    .label foreignObject {
+                      overflow: visible;
+                    }
+                    .nodeLabel {
+                      color: #000000 !important;
+                      font-weight: 600;
+                    }
+                    .node text {
+                      fill: #000000 !important;
+                    }
+                    .node foreignObject div {
+                      color: #000000 !important;
+                    }
+                  `
+                });
+                mermaid.run({
+                  querySelector: '.mermaid'
+                });
+                console.log('Mermaid diagrams initialized');
+              } catch (mermaidErr) {
+                console.error('Error initializing mermaid:', mermaidErr);
+              }
+            };
+          }
         }
         
         // Ensure focus is trapped in the modal for accessibility
