@@ -920,7 +920,8 @@
       }
       
       .modal-article-image {
-        height: 150px;
+        max-height: 22vh; /* Even smaller on mobile devices */
+        min-height: 120px;
         width: calc(100% + 40px);
         margin: -60px -20px 20px -20px;
         border-radius: 0;
@@ -1004,7 +1005,8 @@
       }
       
       .modal-article-image {
-        height: 180px;
+        max-height: 20vh; /* Very small on tiny screens */
+        min-height: 100px;
         margin: -20px -12px 20px -12px;
       }
       
@@ -1051,13 +1053,29 @@
     /* Modal styling for article content */
     .modal-article-image {
       width: 100%;
-      height: 220px;
+      max-height: 35vh; /* Use viewport height for better scaling */
+      min-height: 180px; /* Minimum height to ensure visibility */
+      height: auto; /* Allow natural height adaptation */
       object-fit: cover;
       object-position: center 35%; /* Default position, can be overridden with inline style */
       border-radius: 12px;
       margin: -32px -32px 32px -32px;
       display: block;
       box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
+    
+    /* Modern browsers with aspect-ratio support */
+    @supports (aspect-ratio: 16/9) {
+      .modal-article-image {
+        aspect-ratio: 16/9; /* Maintain consistent aspect ratio when supported */
+      }
+    }
+    
+    /* Fallback for older browsers without aspect-ratio support */
+    @supports not (aspect-ratio: 16/9) {
+      .modal-article-image {
+        height: 220px; /* Fallback fixed height for older browsers */
+      }
     }
 
     .modal-content img {
@@ -1176,7 +1194,8 @@
     /* Responsive modal image adjustments */
     @media (min-width: 1024px) {
       .modal-article-image {
-        height: 280px;
+        max-height: 40vh; /* Slightly larger on desktop */
+        min-height: 240px;
       }
       
       .modal-content {
@@ -1194,6 +1213,14 @@
       }
     }
     
+    /* Medium screens / Tablets */
+    @media (min-width: 601px) and (max-width: 1023px) {
+      .modal-article-image {
+        max-height: 30vh; /* Balanced size for tablets */
+        min-height: 200px;
+      }
+    }
+    
     @media (max-width: 600px) {
       .modal-content {
         padding: 20px;
@@ -1208,7 +1235,8 @@
       }
       
       .modal-article-image {
-        height: 180px;
+        max-height: 25vh; /* Smaller on mobile to leave room for content */
+        min-height: 150px;
         margin: -20px -20px 20px -20px;
       }
     }
@@ -1272,7 +1300,7 @@
             <span class="cursor"></span>
           </h1>
         </div>
-        <p class="hero-subtitle">Cybersecurity Student | Developer | Problem Solver</p>
+        <p class="hero-subtitle">Software Engineer | Problem Solver</p>
       </div>
     </div>
 
@@ -1295,11 +1323,11 @@
       <h2 class="panel-title"><i class="fas fa-user"></i>About Me</h2>
       <div class="panel-content">
         <hr class="profile-divider">
-        I am a Cybersecurity student at <a href="" id="college-link">Bellevue College</a>. 
+        I am a recent graduate from <a href="" id="college-link">Bellevue College</a> and currently work as a Backend Software Engineer at T-Mobile on the Quantum team, focusing on AI technologies.
 
-        Currently, I have been exploring the many resources available to me and learning as much as I can as well as working on side-projects that seem to be never-ending...
+        <br><br>I'm passionate about building scalable systems and exploring the intersection of user experience and artificial intelligence. My role involves developing scalable systems that can handle high traffic and high concurrency.
 
-        For fun, I enjoy listening to music (life is better with a soundtrack), get some <a href="" id="restaurant-link">Italian food</a>, and absolutely destroy my friends in Fifa.
+       <br><br> When I'm not coding, I enjoy listening to music (life is better with a soundtrack), getting some <a href="" id="restaurant-link">Italian food</a>, and absolutely destroying my friends in FIFA.
       </div>
     </div>
 

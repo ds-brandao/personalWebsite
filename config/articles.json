@@ -1,5 +1,15 @@
 [
-    {
+  
+  {
+    "title": "Fan Out and Fan In",
+    "summary": "An overview of the Fan Out and Fan In pattern.",
+    "markdown": "/blog-posts/fan-in-out.md",
+    "image": "/images/blog/napoleon.jpeg",
+    "objectPosition": "center 47%",
+    "tags": ["Systems Integration"]
+  },
+
+  {
       "title": "A Quick Reality Check",
       "summary": "A quick reality check on what has been happening in my life.",
       "markdown": "/blog-posts/realityCheck.md",
