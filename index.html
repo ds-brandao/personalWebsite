@@ -1287,6 +1287,134 @@
         font-size: 14px;
       }
     }
+
+    /* ============================= */
+    /* Gallery (Masonry) Page Styles */
+    /* ============================= */
+    .gallery-page {
+      display: none;
+      min-height: 100vh;
+      padding: 16px;
+    }
+
+    .gallery-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .gallery-title {
+      font-size: 22px;
+      font-weight: 600;
+    }
+
+    .gallery-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background-color: rgba(30, 30, 30, 0.7);
+      color: var(--text-color);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
+    }
+
+    .gallery-back:hover {
+      background-color: rgba(79, 70, 229, 0.15);
+      border-color: rgba(79, 70, 229, 0.3);
+    }
+
+    .masonry {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    .masonry-column {
+      flex: 1 1 0;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .gallery-card {
+      position: relative;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      overflow: hidden;
+      background-color: var(--card-bg);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+
+    .gallery-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--card-hover-shadow);
+      border-color: rgba(79, 70, 229, 0.3);
+    }
+
+    .gallery-image {
+      width: 100%;
+      height: auto;
+      display: block;
+      object-fit: cover;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+
+    .gallery-card:hover .gallery-image {
+      transform: scale(1.05);
+    }
+
+    .glass-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 14px;
+      background: linear-gradient(
+                  to top,
+                  rgba(15, 15, 15, 0.65) 0%,
+                  rgba(15, 15, 15, 0.35) 50%,
+                  rgba(15, 15, 15, 0.05) 100%
+                );
+      backdrop-filter: blur(6px) saturate(120%);
+      -webkit-backdrop-filter: blur(6px) saturate(120%);
+      color: #fff;
+      opacity: 0;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    .gallery-card:hover .glass-overlay {
+      opacity: 1;
+    }
+
+    .glass-overlay h3 {
+      font-size: 15px;
+      font-weight: 600;
+      margin: 0 0 6px 0;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    }
+
+    .glass-overlay p {
+      font-size: 13px;
+      opacity: 0.95;
+      line-height: 1.5;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.45);
+    }
+
+    @media (max-width: 800px) {
+      .masonry {
+        gap: 12px;
+      }
+      .gallery-title {
+        font-size: 20px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1385,9 +1513,18 @@
           <a href="" id="footer-github-link" target="_blank"><i class="fab fa-github"></i></a>
           <a href="" id="footer-linkedin-link" target="_blank"><i class="fab fa-linkedin"></i></a>
           <a href="mailto:" id="footer-email-link"><i class="fas fa-envelope"></i></a>
+          <a href="#gallery" id="footer-gallery-link" title="Photo Gallery"><i class="fas fa-images"></i></a>
         </div>
       </div>
     </footer>
+  </div>
+
+  <!-- Gallery Page (hidden by default; shown when URL hash is #gallery) -->
+  <div id="gallery-page" class="gallery-page" aria-hidden="true">
+    <div class="gallery-header">
+      <button id="gallery-back" class="gallery-back"><i class="fas fa-arrow-left"></i><span>Back</span></button>
+    </div>
+    <div id="masonry" class="masonry" aria-live="polite" aria-busy="false"></div>
   </div>
 
   <!-- Modal -->
@@ -1599,6 +1736,9 @@
       if (window.debugMode) {
         console.log('Debug mode enabled');
       }
+
+      // Setup simple hash routing (home vs gallery)
+      setupRouting();
     });
 
     // Fetch GitHub Repos with fallback to local JSON
@@ -2405,6 +2545,223 @@
         })
         .catch(err => console.error('Error loading articles:', err));
     };
+
+    /* ============================= */
+    /* Gallery (Masonry) Page Logic  */
+    /* ============================= */
+    const galleryState = {
+      initialized: false,
+      images: []
+    };
+
+    function setupRouting() {
+      window.addEventListener('hashchange', handleRouting);
+      document.getElementById('gallery-back').addEventListener('click', () => {
+        window.location.hash = '';
+      });
+      handleRouting();
+    }
+
+    function handleRouting() {
+      const hash = window.location.hash;
+      if (hash === '#gallery') {
+        showGallery();
+      } else {
+        showHome();
+      }
+    }
+
+    function showGallery() {
+      const mainLayout = document.querySelector('.main-layout');
+      const galleryPage = document.getElementById('gallery-page');
+      if (mainLayout) mainLayout.style.display = 'none';
+      if (galleryPage) {
+        galleryPage.style.display = 'block';
+        galleryPage.setAttribute('aria-hidden', 'false');
+      }
+      if (!galleryState.initialized) {
+        initGallery();
+        galleryState.initialized = true;
+      }
+    }
+
+    function showHome() {
+      const mainLayout = document.querySelector('.main-layout');
+      const galleryPage = document.getElementById('gallery-page');
+      if (galleryPage) {
+        galleryPage.style.display = 'none';
+        galleryPage.setAttribute('aria-hidden', 'true');
+      }
+      if (mainLayout) mainLayout.style.display = 'grid';
+    }
+
+    function isMobileDevice() {
+      return window.matchMedia('(max-width: 800px)').matches;
+    }
+
+    function getGalleryColumnCount() {
+      if (isMobileDevice()) return 2;
+      if (window.innerWidth < 1024) return 3;
+      return 4;
+    }
+
+    function getColumnOffsets(columnCount) {
+      if (columnCount === 2) return [0, 60];
+      if (columnCount === 3) return [0, 40, 80];
+      return [0, 40, 80, 20];
+    }
+
+    function distributeImagesByHeights(images, columnCount) {
+      const columns = Array.from({ length: columnCount }, () => []);
+      const heights = new Array(columnCount).fill(0);
+      images.forEach(img => {
+        const shortestIndex = heights.indexOf(Math.min(...heights));
+        columns[shortestIndex].push(img);
+        heights[shortestIndex] += (img.height || 400) + 16; // include gap
+      });
+      return columns;
+    }
+
+    function createGalleryCard(image) {
+      const card = document.createElement('div');
+      card.className = 'gallery-card';
+
+      const img = document.createElement('img');
+      img.className = 'gallery-image';
+      img.src = image.src;
+      img.alt = image.title || 'Photo';
+      img.loading = 'lazy';
+      img.decoding = 'async';
+      if (image.height) {
+        img.style.height = image.height + 'px';
+      }
+
+      const overlay = document.createElement('div');
+      overlay.className = 'glass-overlay';
+      const title = document.createElement('h3');
+      title.textContent = image.title || '';
+      const desc = document.createElement('p');
+      desc.textContent = image.description || '';
+      overlay.appendChild(title);
+      overlay.appendChild(desc);
+
+      card.appendChild(img);
+      card.appendChild(overlay);
+      return card;
+    }
+
+    function buildMasonry(columnsData) {
+      const container = document.getElementById('masonry');
+      if (!container) return;
+      container.innerHTML = '';
+      const offsets = getColumnOffsets(columnsData.length);
+      columnsData.forEach((col, idx) => {
+        const colEl = document.createElement('div');
+        colEl.className = 'masonry-column';
+        colEl.style.marginTop = (offsets[idx] || 0) + 'px';
+        col.forEach(img => colEl.appendChild(createGalleryCard(img)));
+        container.appendChild(colEl);
+      });
+    }
+
+    const debouncedRebuild = debounce(() => {
+      if (!galleryState.initialized) return;
+      const count = getGalleryColumnCount();
+      const cols = distributeImagesByHeights(galleryState.images, count);
+      buildMasonry(cols);
+    }, 150);
+
+    function initGallery() {
+      // Fetch once per page load; reuse cached images afterwards
+      if (!galleryState.images || galleryState.images.length === 0) {
+        refreshGalleryFromDirectory();
+      } else {
+        const columnCount = getGalleryColumnCount();
+        const columns = distributeImagesByHeights(galleryState.images, columnCount);
+        buildMasonry(columns);
+      }
+      window.addEventListener('resize', debouncedRebuild);
+    }
+
+    async function refreshGalleryFromDirectory() {
+      const container = document.getElementById('masonry');
+      if (container) container.setAttribute('aria-busy', 'true');
+      try {
+        const listingUrl = `images/blog/?_=${Date.now()}`;
+        const res = await fetch(listingUrl, { cache: 'no-cache' });
+        if (!res.ok) throw new Error(`Directory list failed: ${res.status}`);
+        const html = await res.text();
+        const files = extractImageFileNamesFromAutoindex(html)
+          .map(name => `images/blog/${name}`);
+        const unique = Array.from(new Set(files));
+        const images = await probeImageDimensions(unique);
+        // Optional: natural title from filename
+        galleryState.images = images.map((img, idx) => ({
+          id: String(idx + 1),
+          src: img.src,
+          title: toTitleFromFilename(img.src),
+          description: '',
+          height: img.height
+        }));
+        const columnCount = getGalleryColumnCount();
+        const columns = distributeImagesByHeights(galleryState.images, columnCount);
+        buildMasonry(columns);
+      } catch (e) {
+        console.error('Gallery refresh failed:', e);
+      } finally {
+        if (container) container.setAttribute('aria-busy', 'false');
+      }
+    }
+
+    function extractImageFileNamesFromAutoindex(indexHtml) {
+      // Parse nginx autoindex listing; fallback to regex if DOMParser blocked
+      try {
+        const doc = new DOMParser().parseFromString(indexHtml, 'text/html');
+        const anchors = Array.from(doc.querySelectorAll('a'));
+        return anchors
+          .map(a => a.getAttribute('href'))
+          .filter(href => href && isImagePath(href))
+          .map(href => href.replace(/^\/?images\/blog\//, ''));
+      } catch {
+        const matches = indexHtml.match(/href=["']([^"']+)["']/g) || [];
+        return matches
+          .map(m => m.replace(/href=(["'])/, '').replace(/\1$/, ''))
+          .filter(href => isImagePath(href))
+          .map(href => href.replace(/^\/?images\/blog\//, ''));
+      }
+    }
+
+    function isImagePath(path) {
+      return /\.(jpe?g|png|gif|webp|avif)$/i.test(path) && !/\?_=/i.test(path);
+    }
+
+    function probeImageDimensions(srcList) {
+      const loaders = srcList.map(src => new Promise(resolve => {
+        const img = new Image();
+        img.loading = 'eager';
+        img.referrerPolicy = 'no-referrer';
+        img.onload = function() {
+          const targetWidth = 400; // normalize heights assuming ~400px width
+          const scale = targetWidth / img.naturalWidth;
+          const height = Math.max(260, Math.round(img.naturalHeight * scale));
+          resolve({ src, width: targetWidth, height });
+        };
+        img.onerror = function() {
+          // fallback height if cannot load
+          resolve({ src, width: 400, height: 360 });
+        };
+        img.src = src + (src.includes('?') ? '&' : '?') + '_=' + Date.now();
+      }));
+      return Promise.all(loaders);
+    }
+
+    function toTitleFromFilename(src) {
+      const name = src.split('/').pop() || '';
+      const base = name.replace(/\.[^.]+$/, '');
+      return base
+        .replace(/[-_]+/g, ' ')
+        .replace(/\b\w/g, c => c.toUpperCase());
+    }
   </script>
 </body>
 </html>
