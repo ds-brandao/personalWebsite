@@ -1,216 +1,207 @@
 # Personal Website
 
-Built as a single-page application with Docker containerization for easy development and deployment.
+A modern, responsive personal portfolio website built with **React**, **TypeScript**, **Tailwind CSS**, and **Framer Motion**.
 
-## 🌟 Features
+## Features
 
-- **Dynamic Typing Animation**: Hero section with rotating phrases.
-- **Blog System**: Markdown-based articles with tag filtering and modal reading experience
+- **Modern React Architecture**: Component-based design with TypeScript for type safety
+- **Tailwind CSS**: Utility-first styling with custom dark theme
+- **Framer Motion Animations**: Smooth, performant animations throughout
+- **Dynamic Typing Animation**: Hero section with rotating phrases
+- **Blog System**: Markdown-based articles with tag filtering and modal reading
 - **GitHub Integration**: Automatically fetches and displays GitHub repositories
-- **Responsive Design**: Mobile-first CSS Grid layout with asymmetrical panel design
-- **Tag-based Filtering**: Organized content filtering system with predefined categories
-- **Docker Development**: Containerized development environment with live reloading
+- **Responsive Design**: Mobile-first layout with adaptive grid system
+- **Docker Development**: Containerized development and production environments
 
-## 🏗️ Architecture
+## Tech Stack
 
-This website is built as a static single-page application with the following architecture:
+- **Frontend**: React 18+, TypeScript, Vite
+- **Styling**: Tailwind CSS with custom theme
+- **Animations**: Framer Motion
+- **Markdown**: react-markdown with GitHub Flavored Markdown
+- **Icons**: react-icons (Feather Icons)
+- **Build**: Vite, PostCSS
+- **Server**: Nginx (production)
+- **Container**: Docker with multi-stage builds
 
-### Core Components
+## Project Structure
 
-- **`index.html`**: Main application file containing all HTML, CSS, and JavaScript
-- **`config/config.json`**: Configuration file for personal information, social links, and tag definitions
-- **`config/articles.json`**: Blog post metadata including titles, summaries, file paths, and tags
-- **`blog-posts/`**: Directory containing Markdown blog post files
-- **`images/`**: Static image assets for the website and blog posts
-- **`nginx.conf`**: Web server configuration with CORS headers and GitHub API proxy
-- **`Dockerfile` & `docker-compose.yaml`**: Container configuration for development
+```
+├── react-app/                  # React application
+│   ├── src/
+│   │   ├── components/         # React components
+│   │   │   ├── Hero.tsx        # Typing animation hero section
+│   │   │   ├── About.tsx       # About me section
+│   │   │   ├── Articles.tsx    # Blog posts with filtering
+│   │   │   ├── Projects.tsx    # GitHub repositories
+│   │   │   ├── Contact.tsx     # Contact information
+│   │   │   ├── Footer.tsx      # Footer with social links
+│   │   │   └── ArticleModal.tsx # Full article reader
+│   │   ├── hooks/              # Custom React hooks
+│   │   │   └── useConfig.ts    # Data fetching hooks
+│   │   ├── types/              # TypeScript type definitions
+│   │   ├── App.tsx             # Main application component
+│   │   ├── main.tsx            # Entry point
+│   │   └── index.css           # Global styles & Tailwind
+│   ├── public/
+│   │   ├── config/             # Configuration files
+│   │   │   ├── config.json     # Personal info & tags
+│   │   │   └── articles.json   # Blog post metadata
+│   │   ├── blog-posts/         # Markdown blog posts
+│   │   └── images/             # Static images
+│   ├── package.json
+│   ├── tailwind.config.js
+│   └── vite.config.ts
+├── Dockerfile                  # Multi-stage Docker build
+├── docker-compose.yaml         # Development environment
+├── nginx.conf                  # Production server config
+└── README.md
+```
 
-### Layout Structure
+## Development Setup
 
-The website uses a CSS Grid layout with the following areas:
-- **Articles Panel**: Left column displaying blog posts with filtering
-- **About Panel**: Center-top section with personal information
-- **Contact Panel**: Center-bottom section with social links
-- **Projects Panel**: Right column showing GitHub repositories
-- **Typing Animation**: Center section with rotating text phrases
+### Prerequisites
+- Node.js 18+ (for local development)
+- Docker and Docker Compose (for containerized development)
 
-## 📝 How Articles Are Written and Managed
+### Local Development
 
-### Writing Articles
-
-1. **Create Markdown File**: Write your article in Markdown format and save it in the `blog-posts/` directory
-   ```markdown
-   # Article Title
-   
-   Your article content goes here...
+1. **Clone and install**:
+   ```bash
+   git clone https://github.com/ds-brandao/personalWebsite.git
+   cd personalWebsite/react-app
+   npm install
    ```
 
-2. **Add Article Metadata**: Update `config/articles.json` with your article information:
+2. **Start development server**:
+   ```bash
+   npm run dev
+   ```
+
+3. **Access the website**: http://localhost:5173
+
+### Docker Development
+
+1. **Start with Docker Compose**:
+   ```bash
+   docker compose up dev
+   ```
+
+2. **Access the website**: http://localhost:5173
+
+### Production Build
+
+```bash
+cd react-app
+npm run build
+```
+
+Or with Docker:
+```bash
+docker build -t personal-website .
+docker run -p 80:80 personal-website
+```
+
+## Configuration
+
+### Personal Information
+
+Update `react-app/public/config/config.json`:
+
+```json
+{
+  "personal": {
+    "name": "Your Name",
+    "college": { "name": "University", "url": "https://..." },
+    "favoriteRestaurant": { "name": "Restaurant", "url": "https://..." }
+  },
+  "social": {
+    "github": { "username": "your-username", "url": "https://github.com/..." },
+    "email": "your@email.com",
+    "linkedin": "https://linkedin.com/in/..."
+  },
+  "tags": { ... }
+}
+```
+
+### Adding Blog Posts
+
+1. **Create Markdown file** in `react-app/public/blog-posts/`:
+   ```markdown
+   # Article Title
+
+   Your content here...
+   ```
+
+2. **Add metadata** to `react-app/public/config/articles.json`:
    ```json
    {
-     "title": "Your Article Title",
-     "summary": "Brief description of the article",
-     "markdown": "/blog-posts/your-article.md",
-     "image": "/images/blog/your-image.jpg",
+     "title": "Article Title",
+     "summary": "Brief description",
+     "markdown": "/blog-posts/article.md",
+     "image": "/images/blog/article.jpg",
      "objectPosition": "center 50%",
      "tags": ["Tag1", "Tag2"]
    }
    ```
 
-### Article Configuration
-
-- **`title`**: Display name for the article
-- **`summary`**: Brief description shown in the article list
-- **`markdown`**: Path to the Markdown file (relative to the website root)
-- **`image`**: Path to the hero image for the article
-- **`objectPosition`**: CSS object-position for image cropping (e.g., "center 75%")
-- **`tags`**: Array of predefined tags for categorization
-
-### Adding Images
-
-Place article images in the `images/blog/` directory and reference them in the article metadata. The `objectPosition` property allows you to control how images are cropped and displayed.
-
-## 🏷️ Tag System
-
-Tags are predefined in `config/config.json` and provide categorization and filtering for articles.
-
-### Tag Configuration
-
-Each tag includes:
-- **`color`**: CSS class name for styling
-- **`description`**: Tooltip text explaining the tag's purpose
-
 ### Available Tags
 
-The current tag system includes:
-- **Security**: Cybersecurity and privacy topics
-- **Coding**: Programming and software development
-- **AI**: Artificial intelligence and machine learning
-- **Tutorial**: Step-by-step guides and how-to content
-- **Project**: Personal and professional projects
-- **Intro**: Blog introductions and personal journey
-- **CI/CD**: Continuous Integration/Continuous Deployment
-- **Home Lab**: Home lab setup and experiments
-- **Systems Integration**: Integration and automation topics
-- **Life**: Personal reflections and experiences
+| Tag | Color | Description |
+|-----|-------|-------------|
+| Security | Rose | Cybersecurity topics |
+| Coding | Emerald | Programming |
+| AI | Cyan | Artificial intelligence |
+| Tutorial | Amber | How-to guides |
+| Project | Purple | Projects |
+| CI/CD | Blue | DevOps |
+| Home Lab | Orange | Home lab |
+| Systems Integration | Indigo | Integration |
+| Life | Pink | Personal |
 
-### Adding New Tags
+### Customizing the Hero
 
-1. Add the tag definition to `config/config.json`:
-   ```json
-   "YourTag": {
-     "color": "your-color-class",
-     "description": "Description of what this tag represents"
-   }
-   ```
-
-2. Add corresponding CSS styling for the color class in `index.html`
-
-## 📊 Article Order
-
-Articles are displayed in the order they appear in the `config/articles.json` array. The most recent or featured articles should be placed at the beginning of the array for prominence.
-
-To reorder articles:
-1. Open `config/articles.json`
-2. Rearrange the article objects in your desired display order
-3. Save the file - changes will be reflected immediately
-
-## 🔗 Public Links and Social Media
-
-### GitHub Repository
-- **Repository**
-- **GitHub Profile**
-
-### Social Links
-- **LinkedIn**
-- **Email**
-
-These links are configured in `config/config.json` under the `social` section and are automatically integrated throughout the website.
-
-## 🚀 Development Setup
-
-### Prerequisites
-- Docker and Docker Compose installed on your system
-
-### Getting Started
-
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/ds-brandao/personalWebsite.git
-   cd mywebsite2
-   ```
-
-2. **Start the development environment**:
-   ```bash
-   docker compose up --build
-   ```
-
-3. **Access the website**:
-   - Website: http://localhost:3000
-   - Direct Nginx: http://localhost (port 80)
-
-### Development Features
-
-- **Live Reloading**: Browser-sync automatically refreshes the page when files change
-- **CORS Proxy**: Nginx proxies GitHub API calls to avoid CORS issues
-- **Hot Reload**: Changes to HTML, CSS, JavaScript, JSON, and Markdown files trigger automatic reload
-
-### File Structure
-```
-├── index.html              # Main application file
-├── config/
-│   ├── config.json         # Personal info and tags
-│   └── articles.json       # Blog post metadata
-├── blog-posts/             # Markdown blog posts
-├── images/                 # Static image assets
-├── nginx.conf              # Web server configuration
-├── Dockerfile              # Container configuration
-├── docker-compose.yaml     # Development environment
-└── README.md               # This file
-```
-
-## 🛠️ Customization
-
-### Personal Information
-
-Update `config/config.json` with your personal details:
-- Name and title
-- College/education information
-- Social media links
-- Contact information
-
-### Typing Animation
-
-Modify the phrases in the typing animation by editing the `phrases` array in `index.html`:
-```javascript
-const phrases = ["I'm Your Name", "Your phrase here", "Another phrase", "Final phrase"];
+Edit `react-app/src/components/Hero.tsx`:
+```typescript
+const phrases = [
+  "I'm Your Name",
+  "I build amazing things",
+  "I solve problems",
+];
 ```
 
 ### Styling
 
-The website uses CSS custom properties (variables) for theming. Modify the `:root` section in `index.html` to change colors, fonts, and spacing.
+The website uses Tailwind CSS with custom colors defined in `tailwind.config.js`:
 
-## 📦 Deployment
+```javascript
+colors: {
+  'bg': '#0a0a0a',
+  'surface-1': '#141414',
+  'accent': '#6366f1',
+  // ...
+}
+```
 
-This website can be deployed to any static hosting service or container platform:
+## Deployment
 
-1. **Static Hosting** (Netlify, Vercel, GitHub Pages):
-   - Build: No build step required
-   - Publish directory: `/` (root)
+### Static Hosting (Vercel, Netlify)
 
-2. **Container Platform** (Docker, Kubernetes):
-   - Use the provided Dockerfile
-   - Expose port 80
-   - Mount volumes for dynamic content updates
+1. Connect your repository
+2. Set build command: `cd react-app && npm install && npm run build`
+3. Set publish directory: `react-app/dist`
 
-## 🤝 Contributing
+### Docker/Container Platform
 
-This is a personal website template. Feel free to fork and adapt it for your own use. Key areas for enhancement:
-- Additional tag categories
-- Theme customization
-- Mobile responsiveness improvements
-- Performance optimizations
+```bash
+docker build -t personal-website .
+docker run -d -p 80:80 personal-website
+```
 
-## 📄 License
+### GitHub Actions
 
-This project is open source and available for personal and educational use.
+The included workflow automatically builds and deploys on push to `main`.
+
+## License
+
+Open source for personal and educational use.
