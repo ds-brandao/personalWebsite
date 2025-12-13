@@ -1,29 +1,26 @@
 services:
+  # Development server with hot reloading
+  dev:
+    image: node:20-alpine
+    working_dir: /app
+    volumes:
+      - ./react-app:/app
+      - react_node_modules:/app/node_modules
+    ports:
+      - "5173:5173"
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    environment:
+      - NODE_ENV=development
+
+  # Production build with Nginx
   web:
     build: .
-    volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/nginx.conf
-      - ./projects:/usr/share/nginx/html/projects
-      - ./articles:/usr/share/nginx/html/articles
-      - ./images:/usr/share/nginx/html/images
-      - ./index.html:/usr/share/nginx/html/index.html
-      - ./blog-posts:/usr/share/nginx/html/blog-posts
-      - ./config:/usr/share/nginx/html/config
-    expose:
-      - "80"
-    command: nginx -g 'daemon off;'
-
-  browsersync:
-    image: node:18-alpine
-    working_dir: /usr/src/app
-    volumes:
-      - .:/usr/src/app
-    command: sh -c "npm install -g browser-sync && browser-sync start --proxy web:80 --files '.' --port 3000 --host 0.0.0.0 --no-open"
     ports:
-      - "3000:3000"
+      - "80:80"
     depends_on:
-      - web
-    deploy:
-      resources:
-        limits:
-          memory: 512M
+      - dev
+    profiles:
+      - production
+
+volumes:
+  react_node_modules:
