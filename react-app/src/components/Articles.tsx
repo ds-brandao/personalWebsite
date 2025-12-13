@@ -121,12 +121,13 @@ export default function Articles({ articles, config, onArticleClick }: ArticlesP
                     isFeatured ? 'lg:col-span-2' : ''
                   }`}
                 >
-                  {article.image && (
+                  {(article.thumbnail || article.image) && (
                     <div className={`relative overflow-hidden ${isFeatured ? 'h-56' : 'h-44'}`}>
                       <img
-                        src={article.image}
+                        src={article.thumbnail || article.image}
                         alt={article.title}
                         loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                         style={{ objectPosition: article.objectPosition || 'center' }}
                       />

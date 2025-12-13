@@ -1,10 +1,11 @@
 [
-  
+
   {
     "title": "Fan Out and Fan In",
     "summary": "An overview of the Fan Out and Fan In pattern.",
     "markdown": "/blog-posts/fan-in-out.md",
-    "image": "/images/blog/napoleon.jpeg",
+    "image": "/images/blog/optimized/napoleon-full.webp",
+    "thumbnail": "/images/blog/optimized/napoleon-thumb.webp",
     "objectPosition": "center 47%",
     "tags": ["Systems Integration"]
   },
@@ -13,15 +14,17 @@
       "title": "A Quick Reality Check",
       "summary": "A quick reality check on what has been happening in my life.",
       "markdown": "/blog-posts/realityCheck.md",
-      "image": "/images/blog/inlv.jpeg",
+      "image": "/images/blog/optimized/inlv-full.webp",
+      "thumbnail": "/images/blog/optimized/inlv-thumb.webp",
       "objectPosition": "center 75%",
       "tags": ["Life"]
     },
     {
-      "title": "From Hire to Wire", 
+      "title": "From Hire to Wire",
       "summary": "The importance of the synchronization between your HR and IT systems.",
       "markdown": "/blog-posts/hireToWire.md",
-      "image": "/images/blog/lvbuilding.jpeg",
+      "image": "/images/blog/optimized/lvbuilding-full.webp",
+      "thumbnail": "/images/blog/optimized/lvbuilding-thumb.webp",
       "objectPosition": "center 55%",
       "tags": ["Systems Integration"]
     },
@@ -29,7 +32,8 @@
       "title": "Leveraging GitHub Self-Hosted Runners for CI/CD in a Home Lab",
       "summary": "My experience with self-hosted runners and how I use them to automate my CI/CD pipeline in my home lab environment.",
       "markdown": "/blog-posts/githubrunners.md",
-      "image": "/images/blog/outlv.jpeg",
+      "image": "/images/blog/optimized/outlv-full.webp",
+      "thumbnail": "/images/blog/optimized/outlv-thumb.webp",
       "objectPosition": "center 55%",
       "tags": ["CI/CD", "Home Lab"]
     },
@@ -37,7 +41,8 @@
       "title": "A Take on Agents in Helpdesk",
       "summary": "Where does AI agents fit in the complex landscape of helpdesk tools?",
       "markdown": "/blog-posts/aiHelpdesk.md",
-      "image": "/images/blog/people.jpeg",
+      "image": "/images/blog/optimized/people-full.webp",
+      "thumbnail": "/images/blog/optimized/people-thumb.webp",
       "objectPosition": "center 80%",
       "tags": ["AI", "Security"]
     },
@@ -45,7 +50,8 @@
       "title": "My First Post",
       "summary": "An introduction to my new blog. I discuss my goals, what readers can expect, and why I decided to start sharing my thoughts online.",
       "markdown": "/blog-posts/firstBlogPost.md",
-      "image": "/images/blog/firstBlogPost.jpeg",
+      "image": "/images/blog/optimized/firstBlogPost-full.webp",
+      "thumbnail": "/images/blog/optimized/firstBlogPost-thumb.webp",
       "objectPosition": "center 43%",
       "tags": ["Intro"]
     }

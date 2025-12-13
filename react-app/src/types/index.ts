@@ -30,6 +30,7 @@ export interface Article {
   summary: string;
   markdown: string;
   image: string;
+  thumbnail?: string;
   objectPosition?: string;
   tags: string[];
 }

@@ -231,10 +231,12 @@ const MermaidDiagram = ({ code }: MermaidDiagramProps) => {
 export default function ArticleModal({ article, isOpen, onClose }: ArticleModalProps) {
   const [content, setContent] = useState<string>('');
   const [loading, setLoading] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   useEffect(() => {
     if (article?.markdown && isOpen) {
       setLoading(true);
+      setImageLoaded(false);
       fetch(article.markdown)
         .then(res => res.text())
         .then(text => {
@@ -300,13 +302,27 @@ export default function ArticleModal({ article, isOpen, onClose }: ArticleModalP
 
             {/* Scrollable Container */}
             <div className="overflow-y-auto flex-1 custom-scrollbar">
-              {/* Hero Image */}
+              {/* Hero Image with Progressive Loading */}
               {article.image && (
                 <div className="relative h-[400px] md:h-[500px] w-full shrink-0">
+                  {/* Thumbnail placeholder (blurred, shown immediately) */}
+                  {article.thumbnail && !imageLoaded && (
+                    <img
+                      src={article.thumbnail}
+                      alt=""
+                      aria-hidden="true"
+                      className="absolute inset-0 w-full h-full object-cover blur-sm scale-105"
+                      style={{ objectPosition: article.objectPosition || 'center 35%' }}
+                    />
+                  )}
+                  {/* Full quality image (loads in background, fades in when ready) */}
                   <img
                     src={article.image}
                     alt={article.title}
-                    className="absolute inset-0 w-full h-full object-cover"
+                    onLoad={() => setImageLoaded(true)}
+                    className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
+                      imageLoaded ? 'opacity-100' : 'opacity-0'
+                    }`}
                     style={{ objectPosition: article.objectPosition || 'center 35%' }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a1a] via-[#1a1a1a]/60 to-transparent" />
