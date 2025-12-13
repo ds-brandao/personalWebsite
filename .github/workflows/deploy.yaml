@@ -14,11 +14,14 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
-        ref: ${{ github.event.pull_request.head.sha }}
+        ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
         fetch-depth: 0
 
     - name: Verify project structure
       run: |
+        echo "Deploying commit: $(git rev-parse HEAD)"
+        echo "Commit message: $(git log -1 --pretty=%B)"
+        echo ""
         echo "Checking React app structure..."
         ls -la
         ls -la ./react-app
@@ -51,7 +54,8 @@ jobs:
     - name: Build React app Docker image
       run: |
         echo "Building React app with multi-stage Docker build..."
-        docker build -t personal-website .
+        # Use --no-cache to ensure latest code is always built
+        docker build --no-cache -t personal-website .
 
     - name: Run production container
       run: |
