@@ -1,15 +1,17 @@
-import { useCallback } from 'react';
-import Particles from '@tsparticles/react';
+import { useEffect, useState } from 'react';
+import Particles, { initParticlesEngine } from '@tsparticles/react';
 import { loadSlim } from '@tsparticles/slim';
-import type { Container, Engine, ISourceOptions } from '@tsparticles/engine';
+import type { ISourceOptions } from '@tsparticles/engine';
 
 export default function ParticleBackground() {
-  const particlesInit = useCallback(async (engine: Engine) => {
-    await loadSlim(engine);
-  }, []);
+  const [init, setInit] = useState(false);
 
-  const particlesLoaded = useCallback(async (_container: Container | undefined) => {
-    // Particles loaded
+  useEffect(() => {
+    initParticlesEngine(async (engine) => {
+      await loadSlim(engine);
+    }).then(() => {
+      setInit(true);
+    });
   }, []);
 
   const options: ISourceOptions = {
@@ -40,7 +42,7 @@ export default function ParticleBackground() {
         animation: {
           enable: true,
           speed: 0.5,
-          minimumValue: 0.1,
+          startValue: 'random',
           sync: false,
         },
       },
@@ -49,7 +51,7 @@ export default function ParticleBackground() {
         animation: {
           enable: true,
           speed: 1,
-          minimumValue: 0.3,
+          startValue: 'random',
           sync: false,
         },
       },
@@ -97,11 +99,13 @@ export default function ParticleBackground() {
     detectRetina: true,
   };
 
+  if (!init) {
+    return null;
+  }
+
   return (
     <Particles
       id="starfield-particles"
-      init={particlesInit}
-      loaded={particlesLoaded}
       options={options}
       className="fixed inset-0 pointer-events-none"
       style={{ zIndex: 1 }}
