@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Hero,
   Articles,
@@ -7,6 +7,7 @@ import {
   Footer,
   ArticleModal,
   ParticleBackground,
+  LoadingScreen,
 } from './components';
 import { useConfig, useArticles, useGitHubRepos } from './hooks/useConfig';
 import type { Article } from './types';
@@ -20,6 +21,29 @@ function App() {
 
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showLoadingScreen, setShowLoadingScreen] = useState(true);
+  const [dataReady, setDataReady] = useState(false);
+
+  // Track when data is ready
+  useEffect(() => {
+    if (!configLoading) {
+      setDataReady(true);
+    }
+  }, [configLoading]);
+
+  const handleLoadingComplete = useCallback(() => {
+    // Only hide loading screen if data is ready
+    if (dataReady) {
+      setShowLoadingScreen(false);
+    }
+  }, [dataReady]);
+
+  // If data becomes ready after loading animation, hide loading screen
+  useEffect(() => {
+    if (dataReady && !showLoadingScreen) {
+      return;
+    }
+  }, [dataReady, showLoadingScreen]);
 
   const handleArticleClick = (article: Article) => {
     setSelectedArticle(article);
@@ -31,19 +55,18 @@ function App() {
     setTimeout(() => setSelectedArticle(null), 300);
   };
 
-  if (configLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-bg">
-        <div className="text-center">
-          <div className="w-12 h-12 border-2 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-text-secondary">Loading...</p>
-        </div>
-      </div>
-    );
+  // Show loading screen
+  if (showLoadingScreen) {
+    return <LoadingScreen onComplete={handleLoadingComplete} minDisplayTime={2500} />;
   }
 
   return (
-    <div className="min-h-screen bg-bg relative overflow-hidden">
+    <motion.div
+      className="min-h-screen bg-bg relative overflow-hidden"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5, ease: 'easeOut', delay: 0.1 }}
+    >
       {/* Starfield Particle Background */}
       <ParticleBackground />
 
@@ -158,7 +181,7 @@ function App() {
         isOpen={isModalOpen}
         onClose={handleCloseModal}
       />
-    </div>
+    </motion.div>
   );
 }
 
