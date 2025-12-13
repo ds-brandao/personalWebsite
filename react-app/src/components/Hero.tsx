@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { FiMail, FiLinkedin, FiGithub } from 'react-icons/fi';
+import type { Config } from '../types';
 
 const phrases = [
   "I'm Daniel Brandao",
@@ -8,10 +10,35 @@ const phrases = [
   "I break things to fix them"
 ];
 
-export default function Hero() {
+interface HeroProps {
+  config: Config | null;
+}
+
+export default function Hero({ config }: HeroProps) {
   const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0);
   const [currentText, setCurrentText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const contacts = [
+    {
+      icon: FiMail,
+      href: `mailto:${config?.social.email || ''}`,
+      label: 'Email',
+      newTab: false,
+    },
+    {
+      icon: FiLinkedin,
+      href: config?.social.linkedin || '',
+      label: 'LinkedIn',
+      newTab: true,
+    },
+    {
+      icon: FiGithub,
+      href: config?.social.github.url || '',
+      label: 'GitHub',
+      newTab: true,
+    },
+  ];
 
   useEffect(() => {
     const currentPhrase = phrases[currentPhraseIndex];
@@ -43,46 +70,82 @@ export default function Hero() {
       transition={{ duration: 0.5 }}
       className="relative"
     >
-      <div className="glass-card p-8 md:p-12 text-center relative overflow-hidden">
-        {/* Animated gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-accent/10 via-transparent to-accent-light/10 animate-gradient" />
-
-        {/* Glowing orbs */}
-        <div className="absolute -top-20 -right-20 w-40 h-40 bg-accent/20 rounded-full blur-3xl animate-float" />
-        <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-accent-light/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '-3s' }} />
+      <div className="apple-glass-card p-5 relative overflow-hidden">
+        {/* Light refraction effect at top */}
+        <div className="absolute inset-x-0 top-0 h-12 bg-gradient-to-b from-white/10 to-transparent rounded-t-3xl" />
+        {/* Subtle edge highlight */}
+        <div className="absolute inset-x-4 top-[1px] h-[1px] bg-gradient-to-r from-transparent via-white/40 to-transparent" />
 
         <div className="relative z-10">
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="mb-4"
-          >
-            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-text-primary mb-2 min-h-[2.5rem]">
-              <span className="gradient-text">{currentText}</span>
-              <span className="inline-block w-[3px] h-6 md:h-8 bg-accent ml-1 animate-blink rounded-sm" />
-            </h1>
-          </motion.div>
+          {/* Hero Section */}
+          <div className="text-center mb-4">
+            <motion.div
+              initial={{ y: 10, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            >
+              <h1 className="text-lg md:text-xl font-bold text-text-primary h-7 mb-1">
+                <span className="gradient-text">{currentText}</span>
+                <span className="inline-block w-[2px] h-4 md:h-5 bg-accent ml-1 animate-blink rounded-sm" />
+              </h1>
+            </motion.div>
 
-          <motion.p
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className="text-text-secondary text-sm md:text-base font-medium"
-          >
-            Software Engineer | Problem Solver
-          </motion.p>
+            <motion.p
+              initial={{ y: 10, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.4 }}
+              className="text-text-secondary text-xs font-medium"
+            >
+              Software Engineer
+            </motion.p>
+          </div>
 
-          {/* Decorative elements */}
+          {/* Divider */}
+          <div className="relative h-[1px] w-full mb-4">
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+          </div>
+
+          {/* About Section */}
           <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.6, type: 'spring' }}
-            className="flex justify-center gap-3 mt-6"
+            initial={{ y: 10, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.5 }}
           >
-            <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-            <span className="w-2 h-2 rounded-full bg-accent-light animate-pulse" style={{ animationDelay: '0.2s' }} />
-            <span className="w-2 h-2 rounded-full bg-accent animate-pulse" style={{ animationDelay: '0.4s' }} />
+            <div className="text-text-secondary text-xs leading-relaxed space-y-1.5 mb-4">
+              <p>
+                Backend Software Engineer at T-Mobile (Quantum team), focusing on AI. Graduate from{' '}
+                <a
+                  href={config?.personal.college.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-accent hover:text-accent-light transition-colors font-medium"
+                >
+                  {config?.personal.college.name || 'Bellevue College'}
+                </a>.
+              </p>
+              <p className="text-text-secondary/80">
+                Passionate about scalable systems & AI/UX intersection.
+              </p>
+            </div>
+
+            {/* Contact Icons */}
+            <div className="flex items-center justify-center gap-3">
+              {contacts.map((contact, index) => (
+                <motion.a
+                  key={contact.label}
+                  href={contact.href}
+                  target={contact.newTab ? '_blank' : undefined}
+                  rel={contact.newTab ? 'noopener noreferrer' : undefined}
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ delay: 0.6 + index * 0.1, type: 'spring' }}
+                  className="p-2.5 rounded-xl bg-white/10 border border-white/20 text-text-primary/80 hover:text-white hover:bg-white/20 hover:border-white/30 hover:scale-105 transition-all shadow-sm"
+                  title={contact.label}
+                >
+                  <contact.icon className="w-4 h-4" />
+                </motion.a>
+              ))}
+            </div>
           </motion.div>
         </div>
       </div>

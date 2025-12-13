@@ -42,6 +42,39 @@
     @apply transition-all duration-300 hover:border-accent/30 hover:shadow-lg hover:shadow-accent/10 hover:-translate-y-1;
   }
 
+  /* Liquid Glass Card - Premium glass morphism effect */
+  .liquid-glass-card {
+    @apply backdrop-blur-xl border border-white/[0.08] rounded-2xl;
+    background: linear-gradient(
+      135deg,
+      rgba(25, 25, 35, 0.85) 0%,
+      rgba(20, 20, 30, 0.9) 50%,
+      rgba(25, 25, 40, 0.85) 100%
+    );
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+  }
+
+  /* Apple-style Glass Card - Light frosted glass on dark background */
+  .apple-glass-card {
+    @apply rounded-3xl;
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.12) 0%,
+      rgba(255, 255, 255, 0.08) 50%,
+      rgba(255, 255, 255, 0.05) 100%
+    );
+    backdrop-filter: blur(24px) saturate(180%) brightness(1.1);
+    -webkit-backdrop-filter: blur(24px) saturate(180%) brightness(1.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.25),
+      0 0 0 1px rgba(255, 255, 255, 0.1) inset,
+      0 2px 4px rgba(255, 255, 255, 0.1) inset;
+  }
+
   .gradient-text {
     @apply bg-gradient-to-r from-accent to-accent-light bg-clip-text text-transparent;
   }
@@ -96,7 +129,7 @@
   }
 }
 
-/* Markdown Content Styles */
+/* Markdown Content Styles (Basic) */
 .markdown-content {
   @apply text-text-primary leading-relaxed;
 }
@@ -150,7 +183,269 @@
   @apply rounded-xl my-4 max-w-full;
 }
 
+/* Enhanced Markdown Reader Styles (for ArticleModal) */
+.markdown-content-reader {
+  @apply text-lg leading-loose;
+  color: #e8e8e8;
+}
+
+.markdown-content-reader h1 {
+  @apply text-4xl md:text-5xl font-bold mb-8 mt-0 tracking-tight;
+  background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.markdown-content-reader h2 {
+  @apply text-2xl md:text-3xl font-semibold mb-6 mt-12 pb-3 border-b border-white/10;
+  color: #f5f5f5;
+}
+
+.markdown-content-reader h3 {
+  @apply text-xl md:text-2xl font-semibold mb-4 mt-10;
+  color: #f0f0f0;
+}
+
+.markdown-content-reader h4 {
+  @apply text-lg md:text-xl font-semibold mb-3 mt-8;
+  color: #e8e8e8;
+}
+
+.markdown-content-reader p {
+  @apply mb-6 text-lg leading-loose;
+  color: #e5e5e5;
+}
+
+.markdown-content-reader a {
+  @apply text-accent hover:text-accent-light underline underline-offset-4 decoration-accent/50 hover:decoration-accent transition-all;
+}
+
+.markdown-content-reader ul,
+.markdown-content-reader ol {
+  @apply mb-6 pl-6 space-y-3;
+  color: #e5e5e5;
+}
+
+.markdown-content-reader li {
+  @apply text-lg leading-relaxed;
+}
+
+.markdown-content-reader ul li {
+  @apply relative pl-2;
+}
+
+.markdown-content-reader ul li::marker {
+  @apply text-accent;
+}
+
+.markdown-content-reader ol li::marker {
+  @apply text-accent font-semibold;
+}
+
+.markdown-content-reader blockquote {
+  @apply border-l-4 border-accent pl-6 py-4 my-8 rounded-r-xl italic;
+  background: linear-gradient(90deg, rgba(99, 102, 241, 0.1) 0%, transparent 100%);
+  color: #d0d0d0;
+}
+
+.markdown-content-reader blockquote p {
+  @apply mb-0;
+  color: inherit;
+}
+
+.markdown-content-reader code {
+  @apply font-mono px-2 py-1 rounded-md text-base;
+  background: #2a2a2a;
+  color: #e0e7ff;
+}
+
+.markdown-content-reader pre {
+  @apply p-6 rounded-xl overflow-x-auto my-8 border border-white/10;
+  background: #1e1e1e;
+}
+
+.markdown-content-reader pre code {
+  @apply bg-transparent p-0 text-sm md:text-base;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+.markdown-content-reader img {
+  @apply rounded-xl my-8 max-w-full shadow-xl;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Wide diagrams break out of prose */
+@media (min-width: 1024px) {
+  .mermaid {
+    width: 120%;
+    margin-left: -10%;
+  }
+}
+
+.markdown-content-reader hr {
+  @apply my-12 border-white/10;
+}
+
+.markdown-content-reader table {
+  @apply w-full my-8 text-base;
+}
+
+.markdown-content-reader th {
+  @apply text-left p-4 border-b border-white/20 font-semibold;
+  background: #252525;
+  color: #f0f0f0;
+}
+
+.markdown-content-reader td {
+  @apply p-4 border-b border-white/5;
+  color: #c8c8c8;
+}
+
+.markdown-content-reader tr:hover td {
+  background: rgba(99, 102, 241, 0.05);
+}
+
+/* Strong/Bold text in reader */
+.markdown-content-reader strong {
+  @apply font-semibold;
+  color: #f5f5f5;
+}
+
+/* Emphasis/Italic in reader */
+.markdown-content-reader em {
+  @apply italic;
+  color: #d8d8d8;
+}
+
 /* Mermaid Diagrams */
 .mermaid {
   @apply bg-surface-2/50 p-6 rounded-xl my-6 text-center overflow-x-auto border border-white/5;
+}
+
+/* Mermaid rendered container - white background for readability */
+.mermaid-rendered {
+  @apply bg-white rounded-xl;
+}
+
+.mermaid-rendered svg {
+  @apply max-w-full h-auto;
+}
+
+/* Force black text on all mermaid diagram elements */
+.mermaid-rendered text,
+.mermaid-rendered tspan,
+.mermaid-rendered span,
+.mermaid-rendered .nodeLabel,
+.mermaid-rendered .edgeLabel,
+.mermaid-rendered .label,
+.mermaid-rendered .cluster-label,
+.mermaid-rendered .labelText,
+.mermaid-rendered .messageText,
+.mermaid-rendered .loopText,
+.mermaid-rendered .noteText,
+.mermaid-rendered [class*="label"],
+.mermaid-rendered [class*="text"],
+.mermaid-rendered foreignObject,
+.mermaid-rendered foreignObject * {
+  fill: #000000 !important;
+  color: #000000 !important;
+  stroke: none !important;
+}
+
+.mermaid-rendered svg text,
+.mermaid-rendered svg tspan {
+  fill: #000000 !important;
+  color: #000000 !important;
+}
+
+.mermaid-rendered .edgePath path,
+.mermaid-rendered .flowchart-link {
+  stroke: #374151 !important;
+  stroke-width: 2px !important;
+}
+
+.mermaid-rendered .marker,
+.mermaid-rendered marker path {
+  fill: #374151 !important;
+  stroke: #374151 !important;
+}
+
+.mermaid-rendered .node rect,
+.mermaid-rendered .node polygon,
+.mermaid-rendered .node circle,
+.mermaid-rendered .node path {
+  fill: #ffffff !important;
+  stroke: #374151 !important;
+  stroke-width: 2px !important;
+}
+
+.mermaid-rendered .cluster rect {
+  fill: #f3f4f6 !important;
+  stroke: #9ca3af !important;
+}
+
+/* Mermaid lightbox fullscreen view */
+.mermaid-lightbox {
+  @apply bg-white rounded-2xl p-8 shadow-2xl;
+  max-width: 95vw;
+  max-height: 90vh;
+}
+
+.mermaid-lightbox svg {
+  @apply max-w-full max-h-[80vh] w-auto h-auto;
+}
+
+/* Force black text in lightbox too */
+.mermaid-lightbox text,
+.mermaid-lightbox tspan,
+.mermaid-lightbox span,
+.mermaid-lightbox .nodeLabel,
+.mermaid-lightbox .edgeLabel,
+.mermaid-lightbox .label,
+.mermaid-lightbox .cluster-label,
+.mermaid-lightbox .labelText,
+.mermaid-lightbox .messageText,
+.mermaid-lightbox .loopText,
+.mermaid-lightbox .noteText,
+.mermaid-lightbox [class*="label"],
+.mermaid-lightbox [class*="text"],
+.mermaid-lightbox foreignObject,
+.mermaid-lightbox foreignObject * {
+  fill: #000000 !important;
+  color: #000000 !important;
+  stroke: none !important;
+}
+
+.mermaid-lightbox svg text,
+.mermaid-lightbox svg tspan {
+  fill: #000000 !important;
+  color: #000000 !important;
+}
+
+.mermaid-lightbox .edgePath path,
+.mermaid-lightbox .flowchart-link {
+  stroke: #374151 !important;
+  stroke-width: 2px !important;
+}
+
+.mermaid-lightbox .marker,
+.mermaid-lightbox marker path {
+  fill: #374151 !important;
+  stroke: #374151 !important;
+}
+
+.mermaid-lightbox .node rect,
+.mermaid-lightbox .node polygon,
+.mermaid-lightbox .node circle,
+.mermaid-lightbox .node path {
+  fill: #ffffff !important;
+  stroke: #374151 !important;
+  stroke-width: 2px !important;
+}
+
+.mermaid-lightbox .cluster rect {
+  fill: #f3f4f6 !important;
+  stroke: #9ca3af !important;
 }

@@ -25,7 +25,12 @@ jobs:
         ls -la ./react-app/public/config
 
     - name: Stop existing containers
-      run: docker compose down || true
+      run: |
+        # Stop docker-compose services (legacy)
+        docker compose down || true
+        # Stop and remove standalone container if it exists
+        docker stop personal-website || true
+        docker rm personal-website || true
 
     - name: Build React app Docker image
       run: |
@@ -61,6 +66,8 @@ jobs:
           echo "Config file is accessible (HTTP $HTTP_CODE)"
         else
           echo "Config file returned HTTP $HTTP_CODE"
+          docker logs personal-website
+          exit 1
         fi
 
         # Test articles.json
@@ -69,6 +76,8 @@ jobs:
           echo "Articles file is accessible (HTTP $HTTP_CODE)"
         else
           echo "Articles file returned HTTP $HTTP_CODE"
+          docker logs personal-website
+          exit 1
         fi
 
         echo "Website deployment successful!"

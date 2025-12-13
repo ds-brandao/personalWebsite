@@ -2,12 +2,11 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Hero,
-  About,
   Articles,
   Projects,
-  Contact,
   Footer,
   ArticleModal,
+  ParticleBackground,
 } from './components';
 import { useConfig, useArticles, useGitHubRepos } from './hooks/useConfig';
 import type { Article } from './types';
@@ -45,8 +44,11 @@ function App() {
 
   return (
     <div className="min-h-screen bg-bg relative overflow-hidden">
+      {/* Starfield Particle Background */}
+      <ParticleBackground />
+
       {/* Background Effects */}
-      <div className="fixed inset-0 pointer-events-none">
+      <div className="fixed inset-0 pointer-events-none" style={{ zIndex: 0 }}>
         {/* Gradient orbs */}
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-accent/10 rounded-full blur-3xl" />
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent-light/10 rounded-full blur-3xl" />
@@ -64,14 +66,14 @@ function App() {
       {/* Main Content */}
       <main className="relative z-10">
         <div className="max-w-7xl mx-auto px-4 py-8">
-          {/* Desktop Layout */}
+          {/* Desktop Layout - Articles take 2/3, Sidebar takes 1/3 */}
           <div className="hidden lg:grid lg:grid-cols-3 gap-6 min-h-[calc(100vh-4rem)]">
-            {/* Left Column - Articles */}
+            {/* Main Content - Articles (2/3 width) */}
             <motion.div
               initial={{ opacity: 0, x: -30 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5 }}
-              className="row-span-2"
+              className="col-span-2"
             >
               <div className="sticky top-8 h-[calc(100vh-4rem)]">
                 <Articles
@@ -82,21 +84,15 @@ function App() {
               </div>
             </motion.div>
 
-            {/* Center Column */}
-            <div className="space-y-6">
-              <Hero />
-              <About config={config} />
-              <Contact config={config} />
-            </div>
-
-            {/* Right Column - Projects */}
+            {/* Sidebar (1/3 width) */}
             <motion.div
               initial={{ opacity: 0, x: 30 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="row-span-2"
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="flex flex-col gap-4 h-[calc(100vh-4rem)] sticky top-8"
             >
-              <div className="sticky top-8 h-[calc(100vh-4rem)]">
+              <Hero config={config} />
+              <div className="flex-1 min-h-0">
                 <Projects
                   repos={repos}
                   loading={reposLoading}
@@ -110,18 +106,17 @@ function App() {
           {/* Tablet Layout */}
           <div className="hidden md:grid md:grid-cols-2 lg:hidden gap-6">
             <div className="col-span-2">
-              <Hero />
+              <Hero config={config} />
             </div>
-            <About config={config} />
-            <Contact config={config} />
-            <div className="h-[500px]">
+            {/* Articles full width with increased height */}
+            <div className="col-span-2 h-[650px]">
               <Articles
                 articles={articles}
                 config={config}
                 onArticleClick={handleArticleClick}
               />
             </div>
-            <div className="h-[500px]">
+            <div className="col-span-2 h-[400px]">
               <Projects
                 repos={repos}
                 loading={reposLoading}
@@ -133,16 +128,16 @@ function App() {
 
           {/* Mobile Layout */}
           <div className="md:hidden space-y-6">
-            <Hero />
-            <About config={config} />
-            <div className="h-[500px]">
+            <Hero config={config} />
+            {/* Articles with increased height for mobile */}
+            <div className="h-[650px]">
               <Articles
                 articles={articles}
                 config={config}
                 onArticleClick={handleArticleClick}
               />
             </div>
-            <div className="h-[500px]">
+            <div className="h-[400px]">
               <Projects
                 repos={repos}
                 loading={reposLoading}
@@ -150,7 +145,6 @@ function App() {
                 githubUrl={config?.social.github.url}
               />
             </div>
-            <Contact config={config} />
           </div>
         </div>
       </main>

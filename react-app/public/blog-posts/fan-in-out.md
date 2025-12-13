@@ -20,37 +20,22 @@ The **fan-out/fan-in** pattern offered the balance I needed:
 ## Architecture Diagram
 
 ```mermaid
-flowchart LR
-    %% Add styling for white boxes with dark text (consistent with other posts)
-    classDef default fill:#FFFFFF,stroke:#333,stroke-width:2px,color:#333
-    %% Ingress
-    A[Azure Queue<br/>Backlog of work] -->|Dequeues in batches| B[Durable Orchestrator]
-
-    %% Fan-Out
-    subgraph "Fan-Out (Per Orchestration)"
-      direction LR
-      B -->|Up to 10 items per batch| C1[Activity 1<br/>HTTP Call + Transform]
-      B -->|Up to 10 items per batch| C2[Activity 2<br/>HTTP Call + Transform]
-      B -->|Up to 10 items per batch| C3[Activity 3<br/>HTTP Call + Transform]
-      B -->|...| Cn[Activity N<br/>HTTP Call + Transform]
-    end
-
-    %% Retry/Backoff
-    classDef retry stroke-dasharray: 4 2
-    C1 -. Exponential backoff<br/>(max 5 attempts) .-> C1
-    C2 -. Exponential backoff<br/>(max 5 attempts) .-> C2
-    C3 -. Exponential backoff<br/>(max 5 attempts) .-> C3
-    Cn -. Exponential backoff<br/>(max 5 attempts) .-> Cn
-    class C1,C2,C3,Cn retry
-
-    %% Fan-In
-    C1 & C2 & C3 & Cn --> D[Fan-In Aggregation<br/>Map: Item → Final Status]
-
-    %% Egress
-    D --> E[Persist Results<br/>JSON Document Store]
-
-    %% Notes
-    F[[Rate Limit Guardrails<br/>~1000 items/min]] --- B
+flowchart TB
+    A[Azure Queue] -->|Dequeue batches| B[Durable Orchestrator]
+    
+    B -->|Batch| C1[Activity 1]
+    B -->|Batch| C2[Activity 2]
+    B -->|Batch| C3[Activity 3]
+    B -->|Batch| C4[Activity N]
+    
+    C1 --> D[Fan-In]
+    C2 --> D
+    C3 --> D
+    C4 --> D
+    
+    D --> E[Persist to JSON Store]
+    
+    F[[Rate Limit 1000/min]] -.-> B
 ```
 
 In my implementation, each orchestration in Azure Durable Functions took up to ten queue messages at a time. This batching kept concurrency predictable, avoided overwhelming the API, and still processed work quickly. All the heavy lifting happened during the fan-out phase — each batch item was sent as a separate HTTP request, the response was transformed, and if an API call failed, a retry mechanism with exponential backoff (up to five attempts) handled it gracefully. This approach made the system resilient to rate-limit errors and network hiccups.

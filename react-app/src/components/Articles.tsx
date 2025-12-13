@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { FiEdit3, FiChevronRight } from 'react-icons/fi';
 import type { Article, Config } from '../types';
 
@@ -65,7 +65,7 @@ export default function Articles({ articles, config, onArticleClick }: ArticlesP
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.5 }}
-      className="glass-card p-6 h-full flex flex-col"
+      className="apple-glass-card p-6 h-full flex flex-col"
     >
       <h2 className="text-xl font-semibold text-text-primary mb-4 flex items-center gap-3">
         <span className="p-2 rounded-lg bg-accent/10 text-accent">
@@ -103,61 +103,76 @@ export default function Articles({ articles, config, onArticleClick }: ArticlesP
         ))}
       </div>
 
-      {/* Articles List */}
-      <div className="flex-1 overflow-y-auto pr-2 space-y-4">
-        <AnimatePresence mode="popLayout">
-          {filteredArticles.map((article, index) => (
-            <motion.article
-              key={article.title}
-              layout
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.3, delay: index * 0.05 }}
-              onClick={() => onArticleClick(article)}
-              className="bg-surface-2/50 border border-white/5 rounded-xl overflow-hidden cursor-pointer group glass-card-hover"
-            >
-              {article.image && (
-                <div className="relative h-32 overflow-hidden">
-                  <img
-                    src={article.image}
-                    alt={article.title}
-                    loading="lazy"
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    style={{ objectPosition: article.objectPosition || 'center' }}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-surface-2 to-transparent opacity-60" />
-                </div>
-              )}
+      {/* Articles Grid */}
+      <div className="flex-1 overflow-y-auto pr-2">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          {filteredArticles.map((article, index) => {
+              const isFeatured = index === 0;
+              return (
+                <motion.article
+                  key={article.title}
+                  layout
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.3, delay: index * 0.05 }}
+                  onClick={() => onArticleClick(article)}
+                  className={`bg-surface-2/50 border border-white/5 rounded-xl overflow-hidden cursor-pointer group glass-card-hover ${
+                    isFeatured ? 'lg:col-span-2' : ''
+                  }`}
+                >
+                  {article.image && (
+                    <div className={`relative overflow-hidden ${isFeatured ? 'h-56' : 'h-44'}`}>
+                      <img
+                        src={article.image}
+                        alt={article.title}
+                        loading="lazy"
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        style={{ objectPosition: article.objectPosition || 'center' }}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-surface-2 via-surface-2/20 to-transparent opacity-80" />
+                      {/* Featured badge */}
+                      {isFeatured && (
+                        <div className="absolute top-4 left-4 px-3 py-1 bg-accent/90 text-white text-xs font-semibold rounded-full backdrop-blur-sm">
+                          Latest
+                        </div>
+                      )}
+                    </div>
+                  )}
 
-              <div className="p-4">
-                {/* Tags */}
-                {article.tags && article.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    {article.tags.map(tag => (
-                      <span key={tag} className={`tag-base ${getTagClass(tag)}`}>
-                        {tag}
+                  <div className={`${isFeatured ? 'p-6' : 'p-4'}`}>
+                    {/* Tags */}
+                    {article.tags && article.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {article.tags.map(tag => (
+                          <span key={tag} className={`tag-base ${getTagClass(tag)}`}>
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    <h3 className={`font-semibold text-text-primary mb-2 group-hover:text-accent transition-colors ${
+                      isFeatured ? 'text-xl' : 'text-base'
+                    }`}>
+                      {article.title}
+                    </h3>
+
+                    <p className={`text-text-secondary line-clamp-2 mb-4 ${isFeatured ? 'text-base' : 'text-sm'}`}>
+                      {article.summary}
+                    </p>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-text-secondary/70 group-hover:text-text-secondary transition-colors">
+                        Click to read
                       </span>
-                    ))}
+                      <FiChevronRight className="w-4 h-4 text-accent opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+                    </div>
                   </div>
-                )}
-
-                <h3 className="text-base font-semibold text-text-primary mb-2 group-hover:text-accent transition-colors">
-                  {article.title}
-                </h3>
-
-                <p className="text-text-secondary text-sm line-clamp-2 mb-3">
-                  {article.summary}
-                </p>
-
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-text-secondary">Click to read</span>
-                  <FiChevronRight className="w-4 h-4 text-accent opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
-                </div>
-              </div>
-            </motion.article>
-          ))}
-        </AnimatePresence>
+                </motion.article>
+              );
+            })}
+        </div>
       </div>
     </motion.section>
   );
