@@ -28,9 +28,25 @@ jobs:
       run: |
         # Stop docker-compose services (legacy)
         docker compose down || true
-        # Stop and remove standalone container if it exists
-        docker stop personal-website || true
-        docker rm personal-website || true
+        
+        # Force stop and remove the personal-website container
+        docker rm -f personal-website || true
+        
+        # Find and stop any container using port 80
+        CONTAINER_ON_80=$(docker ps -q --filter "publish=80" || true)
+        if [ -n "$CONTAINER_ON_80" ]; then
+          echo "Found container(s) using port 80: $CONTAINER_ON_80"
+          docker rm -f $CONTAINER_ON_80 || true
+        fi
+        
+        # Wait for port to be released
+        sleep 3
+        
+        # Verify port 80 is free
+        if lsof -i :80 > /dev/null 2>&1; then
+          echo "Warning: Port 80 still in use by non-Docker process"
+          lsof -i :80 || true
+        fi
 
     - name: Build React app Docker image
       run: |
