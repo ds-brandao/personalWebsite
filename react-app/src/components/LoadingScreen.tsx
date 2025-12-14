@@ -61,6 +61,15 @@ const DSB_LETTERS = {
 
 const COLORS = ['#ffffff', '#a5b4fc', '#818cf8', '#6366f1', '#c7d2fe'];
 
+// Phase timing constants (in milliseconds)
+const FORMING_DURATION = 1200;
+const HOLDING_DURATION = 2800;
+const PRE_EXIT_DURATION = 800;
+const DISSOLVING_DURATION = 1200;
+
+// Bright accent colors for pre-exit phase
+const BRIGHT_COLORS = ['#ffffff', '#c7d2fe', '#a5b4fc', '#e0e7ff', '#f0f5ff'];
+
 /**
  * Generates target positions for DSB letters
  */
@@ -150,13 +159,14 @@ function calculateWaveOffset(
   return { x: waveX, y: waveY };
 }
 
-export default function LoadingScreen({ onComplete, minDisplayTime = 2500 }: LoadingScreenProps) {
+export default function LoadingScreen({ onComplete, minDisplayTime = 6000 }: LoadingScreenProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<Particle[]>([]);
   const animationRef = useRef<number>(0);
-  const phaseRef = useRef<'forming' | 'holding' | 'dissolving'>('forming');
+  const phaseRef = useRef<'forming' | 'holding' | 'pre-exit' | 'dissolving'>('forming');
   const phaseStartRef = useRef<number>(Date.now());
   const [isVisible, setIsVisible] = useState(true);
+  const centerRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 
   const initializeParticles = useCallback(() => {
     const canvas = canvasRef.current;
@@ -166,6 +176,13 @@ export default function LoadingScreen({ onComplete, minDisplayTime = 2500 }: Loa
     particlesRef.current = createParticles(targets, canvas.width, canvas.height);
     phaseRef.current = 'forming';
     phaseStartRef.current = Date.now();
+    
+    // Calculate center of letters for pre-exit scale effect
+    if (targets.length > 0) {
+      const sumX = targets.reduce((acc, t) => acc + t.x, 0);
+      const sumY = targets.reduce((acc, t) => acc + t.y, 0);
+      centerRef.current = { x: sumX / targets.length, y: sumY / targets.length };
+    }
   }, []);
 
   const updateFormingPhase = useCallback((particle: Particle, progress: number, time: number) => {
@@ -187,28 +204,76 @@ export default function LoadingScreen({ onComplete, minDisplayTime = 2500 }: Loa
     particle.y += waveOffset.y * waveStrength * 1.5;
   }, []);
 
+  const updatePreExitPhase = useCallback((particle: Particle, progress: number, time: number) => {
+    const center = centerRef.current;
+    
+    // Use eased progress for smoother transitions
+    const easedProgress = easeOutQuart(progress);
+    
+    // Scale factor increases smoothly from 1.0 to 1.08 during pre-exit
+    const scaleFactor = 1 + easedProgress * 0.08;
+    
+    // Calculate scaled position from center
+    const baseX = particle.targetX;
+    const baseY = particle.targetY;
+    const scaledX = center.x + (baseX - center.x) * scaleFactor;
+    const scaledY = center.y + (baseY - center.y) * scaleFactor;
+    
+    // Smoothly intensify wave motion (starts at 1.0 to match holding phase)
+    const waveOffset = calculateWaveOffset(time, particle, baseX);
+    const waveIntensity = 1 + easedProgress * 0.5;
+    
+    particle.x = scaledX + waveOffset.x * waveIntensity;
+    particle.y = scaledY + waveOffset.y * waveIntensity;
+    
+    // Gradually shift color toward brighter accent using probability
+    // Probability increases smoothly from 0% to 15% per frame
+    const colorShiftProbability = easedProgress * 0.15;
+    if (Math.random() < colorShiftProbability) {
+      particle.color = BRIGHT_COLORS[Math.floor(Math.random() * BRIGHT_COLORS.length)];
+    }
+    
+    // Smoothly increase opacity for glow buildup
+    particle.opacity = Math.min(1, 0.7 + easedProgress * 0.3);
+  }, []);
+
   const updateDissolvingPhase = useCallback((particle: Particle, elapsed: number, time: number) => {
-    // Initialize velocity on first dissolve frame
+    const center = centerRef.current;
+    
+    // Initialize velocity on first dissolve frame - faster burst from center
     if (particle.vx === 0 && particle.vy === 0) {
-      const angle = Math.random() * Math.PI * 2;
-      const speed = 2 + Math.random() * 4;
+      // Direction from center for dramatic outward burst
+      const dx = particle.x - center.x;
+      const dy = particle.y - center.y;
+      
+      // Base outward direction with some randomness
+      const angle = Math.atan2(dy, dx) + (Math.random() - 0.5) * 0.8;
+      const speed = 6 + Math.random() * 6; // Faster burst (was 2-6, now 6-12)
+      
       particle.vx = Math.cos(angle) * speed;
-      particle.vy = Math.sin(angle) * speed;
+      particle.vy = Math.sin(angle) * speed - 1.5; // Slight upward bias
     }
 
-    // Base movement
+    // Base movement with faster initial speed
     particle.x += particle.vx;
     particle.y += particle.vy;
-    particle.vx *= 0.98;
-    particle.vy *= 0.98;
+    particle.vx *= 0.96; // Slightly more friction for dramatic deceleration
+    particle.vy *= 0.96;
+    particle.vy += 0.05; // Subtle gravity effect
     
     // Add wave motion to dispersal for curved wave paths
     const waveOffset = calculateWaveOffset(time, particle, particle.x);
-    const waveDecay = Math.max(0, 1 - elapsed / 800);
-    particle.x += waveOffset.x * 0.3 * waveDecay;
-    particle.y += waveOffset.y * 0.3 * waveDecay;
+    const waveDecay = Math.max(0, 1 - elapsed / 600);
+    particle.x += waveOffset.x * 0.4 * waveDecay;
+    particle.y += waveOffset.y * 0.4 * waveDecay;
     
-    particle.opacity = Math.max(0, 1 - elapsed / 1000);
+    // Fade out with slight delay for trail effect
+    const fadeDelay = 150; // Start fading after 150ms
+    const fadeProgress = Math.max(0, (elapsed - fadeDelay) / (DISSOLVING_DURATION - fadeDelay));
+    particle.opacity = Math.max(0, 1 - fadeProgress);
+    
+    // Shrink particles as they disperse for trail effect
+    particle.size = Math.max(1, particle.size * 0.995);
   }, []);
 
   const animate = useCallback(() => {
@@ -221,13 +286,21 @@ export default function LoadingScreen({ onComplete, minDisplayTime = 2500 }: Loa
     const particles = particlesRef.current;
 
     // Phase transitions
-    if (phaseRef.current === 'forming' && elapsed > 1200) {
+    if (phaseRef.current === 'forming' && elapsed > FORMING_DURATION) {
       phaseRef.current = 'holding';
       phaseStartRef.current = time;
-    } else if (phaseRef.current === 'holding' && elapsed > minDisplayTime - 1200 - 1000) {
+    } else if (phaseRef.current === 'holding' && elapsed > HOLDING_DURATION) {
+      phaseRef.current = 'pre-exit';
+      phaseStartRef.current = time;
+    } else if (phaseRef.current === 'pre-exit' && elapsed > PRE_EXIT_DURATION) {
       phaseRef.current = 'dissolving';
       phaseStartRef.current = time;
-    } else if (phaseRef.current === 'dissolving' && elapsed > 1000) {
+      // Reset velocities for dissolving phase
+      particles.forEach((p) => {
+        p.vx = 0;
+        p.vy = 0;
+      });
+    } else if (phaseRef.current === 'dissolving' && elapsed > DISSOLVING_DURATION) {
       setIsVisible(false);
       return;
     }
@@ -239,13 +312,16 @@ export default function LoadingScreen({ onComplete, minDisplayTime = 2500 }: Loa
     // Update and draw particles
     particles.forEach((particle) => {
       if (phaseRef.current === 'forming') {
-        const progress = Math.min(elapsed / 1200, 1);
+        const progress = Math.min(elapsed / FORMING_DURATION, 1);
         updateFormingPhase(particle, progress, time);
       } else if (phaseRef.current === 'holding') {
         // Wave oscillation around target position during holding
         const waveOffset = calculateWaveOffset(time, particle, particle.targetX);
         particle.x = particle.targetX + waveOffset.x;
         particle.y = particle.targetY + waveOffset.y;
+      } else if (phaseRef.current === 'pre-exit') {
+        const progress = Math.min(elapsed / PRE_EXIT_DURATION, 1);
+        updatePreExitPhase(particle, progress, time);
       } else if (phaseRef.current === 'dissolving') {
         updateDissolvingPhase(particle, elapsed, time);
       }
@@ -259,17 +335,50 @@ export default function LoadingScreen({ onComplete, minDisplayTime = 2500 }: Loa
       ctx.globalAlpha = 1;
     });
 
-    // Draw subtle glow effect around formed letters during holding phase
-    if (phaseRef.current === 'holding') {
-      const glowIntensity = 0.1 + Math.sin(time / 500) * 0.05;
+    // Draw glow effect around formed letters during holding and pre-exit phases
+    if (phaseRef.current === 'holding' || phaseRef.current === 'pre-exit') {
+      let glowIntensity: number;
+      let glowRadius: number;
+      let pulseSpeed: number;
+      
+      // Base values that match between phases for smooth transition
+      const baseGlowIntensity = 0.1;
+      const basePulseAmplitude = 0.05;
+      const basePulseSpeed = 500;
+      const baseGlowRadius = 3;
+      
+      if (phaseRef.current === 'holding') {
+        // Subtle pulsing glow during holding
+        pulseSpeed = basePulseSpeed;
+        glowIntensity = baseGlowIntensity + Math.sin(time / pulseSpeed) * basePulseAmplitude;
+        glowRadius = baseGlowRadius;
+      } else {
+        // Smoothly intensifying glow during pre-exit
+        const progress = Math.min(elapsed / PRE_EXIT_DURATION, 1);
+        const easedProgress = easeOutQuart(progress);
+        
+        // Smoothly transition pulse speed from 500ms to 150ms
+        pulseSpeed = basePulseSpeed - easedProgress * 350;
+        
+        // Smoothly increase base intensity and pulse amplitude
+        const intensityBoost = easedProgress * 0.3;
+        const amplitudeBoost = easedProgress * 0.15;
+        glowIntensity = (baseGlowIntensity + intensityBoost) + 
+                        Math.sin(time / pulseSpeed) * (basePulseAmplitude + amplitudeBoost);
+        
+        // Smoothly grow glow radius from 3x to 5x
+        glowRadius = baseGlowRadius + easedProgress * 2;
+      }
+      
       particles.forEach((particle) => {
         ctx.beginPath();
-        ctx.arc(particle.x, particle.y, particle.size * 3, 0, Math.PI * 2);
+        ctx.arc(particle.x, particle.y, particle.size * glowRadius, 0, Math.PI * 2);
         const gradient = ctx.createRadialGradient(
           particle.x, particle.y, 0,
-          particle.x, particle.y, particle.size * 3
+          particle.x, particle.y, particle.size * glowRadius
         );
         gradient.addColorStop(0, `rgba(99, 102, 241, ${glowIntensity})`);
+        gradient.addColorStop(0.5, `rgba(165, 180, 252, ${glowIntensity * 0.5})`);
         gradient.addColorStop(1, 'transparent');
         ctx.fillStyle = gradient;
         ctx.fill();
@@ -277,7 +386,7 @@ export default function LoadingScreen({ onComplete, minDisplayTime = 2500 }: Loa
     }
 
     animationRef.current = requestAnimationFrame(animate);
-  }, [minDisplayTime, updateFormingPhase, updateDissolvingPhase]);
+  }, [minDisplayTime, updateFormingPhase, updatePreExitPhase, updateDissolvingPhase]);
 
   // Handle canvas resize
   useEffect(() => {
