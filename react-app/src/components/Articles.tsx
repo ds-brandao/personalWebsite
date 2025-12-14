@@ -124,7 +124,7 @@ export default function Articles({ articles, config, onArticleClick }: ArticlesP
                   {article.image && (
                     <div className={`relative overflow-hidden ${isFeatured ? 'h-56' : 'h-44'}`}>
                       <img
-                        src={article.image}
+                        src={article.thumbnail || article.image}
                         alt={article.title}
                         loading="lazy"
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"

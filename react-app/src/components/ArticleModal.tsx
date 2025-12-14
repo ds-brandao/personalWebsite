@@ -57,6 +57,56 @@ interface ArticleModalProps {
   onClose: () => void;
 }
 
+interface ProgressiveImageProps {
+  src: string;
+  thumbnail?: string;
+  alt: string;
+  className?: string;
+  style?: React.CSSProperties;
+}
+
+const ProgressiveImage = ({ src, thumbnail, alt, className, style }: ProgressiveImageProps) => {
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [currentSrc, setCurrentSrc] = useState(thumbnail || src);
+
+  useEffect(() => {
+    // Reset state when src changes
+    setIsLoaded(false);
+    setCurrentSrc(thumbnail || src);
+
+    // Preload the full-resolution image
+    const img = new Image();
+    img.src = src;
+    img.onload = () => {
+      setCurrentSrc(src);
+      setIsLoaded(true);
+    };
+  }, [src, thumbnail]);
+
+  return (
+    <div className="absolute inset-0 overflow-hidden">
+      {/* Thumbnail/placeholder with blur */}
+      {thumbnail && !isLoaded && (
+        <img
+          src={thumbnail}
+          alt={alt}
+          className={`absolute inset-0 w-full h-full object-cover scale-105 blur-sm ${className || ''}`}
+          style={style}
+        />
+      )}
+      {/* Full resolution image */}
+      <img
+        src={currentSrc}
+        alt={alt}
+        className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
+          isLoaded || !thumbnail ? 'opacity-100' : 'opacity-0'
+        } ${className || ''}`}
+        style={style}
+      />
+    </div>
+  );
+};
+
 function getTagClass(tag: string): string {
   const normalizedTag = tag.toLowerCase().replace(/[\/\s]/g, '-');
   const tagClasses: Record<string, string> = {
@@ -303,10 +353,10 @@ export default function ArticleModal({ article, isOpen, onClose }: ArticleModalP
               {/* Hero Image */}
               {article.image && (
                 <div className="relative h-[400px] md:h-[500px] w-full shrink-0">
-                  <img
+                  <ProgressiveImage
                     src={article.image}
+                    thumbnail={article.thumbnail}
                     alt={article.title}
-                    className="absolute inset-0 w-full h-full object-cover"
                     style={{ objectPosition: article.objectPosition || 'center 35%' }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a1a] via-[#1a1a1a]/60 to-transparent" />
