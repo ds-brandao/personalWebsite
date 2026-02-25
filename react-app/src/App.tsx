@@ -8,6 +8,7 @@ import {
   ArticleModal,
   ParticleBackground,
   LoadingScreen,
+  FeaturedArticle,
 } from './components';
 import { useConfig, useArticles, useGitHubRepos } from './hooks/useConfig';
 import type { Article } from './types';
@@ -115,6 +116,7 @@ function App() {
               className="flex flex-col gap-4 h-[calc(100vh-4rem)] sticky top-8"
             >
               <Hero config={config} />
+              <FeaturedArticle />
               <div className="flex-1 min-h-0">
                 <Projects
                   repos={repos}
@@ -130,6 +132,9 @@ function App() {
           <div className="hidden md:grid md:grid-cols-2 lg:hidden gap-6">
             <div className="col-span-2">
               <Hero config={config} />
+            </div>
+            <div className="col-span-2">
+              <FeaturedArticle />
             </div>
             {/* Articles full width with increased height */}
             <div className="col-span-2 h-[650px]">
@@ -152,6 +157,7 @@ function App() {
           {/* Mobile Layout */}
           <div className="md:hidden space-y-6">
             <Hero config={config} />
+            <FeaturedArticle />
             {/* Articles with increased height for mobile */}
             <div className="h-[650px]">
               <Articles

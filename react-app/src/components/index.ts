@@ -6,3 +6,4 @@ export { default as Footer } from './Footer';
 export { default as ArticleModal } from './ArticleModal';
 export { default as ParticleBackground } from './ParticleBackground';
 export { default as LoadingScreen } from './LoadingScreen';
+export { default as FeaturedArticle } from './FeaturedArticle';
