@@ -11,6 +11,7 @@ import { Projects } from "./Projects";
 import { ArticleModal } from "./ArticleModal";
 import { DotNav } from "./DotNav";
 import { Footer } from "./Footer";
+import { PenguinCompanion } from "./penguin";
 
 interface PageClientProps {
   config: Config;
@@ -27,6 +28,7 @@ export function PageClient({ config, articles, repos }: PageClientProps) {
       {loading && <LoadingScreen onComplete={() => setLoading(false)} />}
 
       <EmberCanvas className="fixed inset-0 z-0" />
+      <PenguinCompanion />
 
       <main className="relative z-10">
         <SceneContainer id="hero">
