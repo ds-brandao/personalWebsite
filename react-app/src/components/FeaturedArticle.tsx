@@ -28,6 +28,7 @@ export default function FeaturedArticle({ config }: FeaturedArticleProps) {
   const handleClose = useCallback(() => {
     setIsIframeOpen(false);
     setIframeLoading(true);
+    setIframeError(false);
   }, []);
 
   // Handle escape key and body overflow
@@ -89,6 +90,7 @@ export default function FeaturedArticle({ config }: FeaturedArticleProps) {
                 key={item.url}
                 onClick={() => handleOpen(index)}
                 className="w-full text-left group cursor-pointer"
+                aria-label={`Open ${item.title} from ${item.source}`}
               >
                 <div className="bg-white/5 border border-white/10 rounded-xl p-4 transition-all duration-300 group-hover:border-accent/30 group-hover:bg-accent/5 group-hover:shadow-lg group-hover:shadow-accent/5">
                   <div className="flex items-start justify-between gap-3">
