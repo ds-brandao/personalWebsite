@@ -12,13 +12,15 @@ import {
 } from "./sprites";
 
 // Canvas size with padding for jump animations
-const CANVAS_W = SPRITE_WIDTH * PIXEL_SCALE + 16; // 64
-const CANVAS_H = SPRITE_HEIGHT * PIXEL_SCALE + 32; // 96 (extra top space for jumps)
+const CANVAS_W = SPRITE_WIDTH * PIXEL_SCALE + 16; // 8px padding each side
+const CANVAS_H = SPRITE_HEIGHT * PIXEL_SCALE + 32; // 8px bottom + 24px top for jump clearance
 
 // Physics constants
 const GRAVITY = 0.6;
 const TERMINAL_VELOCITY = 12;
 const SCROLL_UP_TUMBLE_THRESHOLD = 30; // px/frame delta to trigger tumble
+const POKE_JUMP_VELOCITY = -6;
+const SCROLL_IDLE_THRESHOLD = 100; // ms without scroll to consider "stopped"
 
 // Idle timer thresholds (ms)
 const IDLE_LOOK_DELAY = 5000;
@@ -109,7 +111,7 @@ export function PenguinCompanion() {
     // Scroll handler
     const handleScroll = () => {
       const currentY = window.scrollY;
-      scrollDeltaRef.current = currentY - lastScrollYRef.current;
+      scrollDeltaRef.current += currentY - lastScrollYRef.current;
       lastScrollYRef.current = currentY;
       scrollIdleTimerRef.current = 0;
     };
@@ -130,7 +132,7 @@ export function PenguinCompanion() {
         setState("poked");
         // Give a little upward velocity for the jump
         physicsRef.current.yOffset = 0;
-        physicsRef.current.velocity = -6;
+        physicsRef.current.velocity = POKE_JUMP_VELOCITY;
         physicsRef.current.isFalling = true;
       }
     };
@@ -190,7 +192,7 @@ export function PenguinCompanion() {
         physics.velocity = 0;
         physics.isFalling = false;
       } else if (
-        scrollIdleTimerRef.current > 100 &&
+        scrollIdleTimerRef.current > SCROLL_IDLE_THRESHOLD &&
         physics.isFalling
       ) {
         // Scroll stopped after falling -> landing
