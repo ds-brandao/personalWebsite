@@ -111,6 +111,8 @@ export async function getProjectAnalyses(
     const result = results[i];
     if (result.status === "fulfilled") {
       analyses[repos[i].name] = result.value;
+    } else {
+      console.error(`Analysis failed for ${repos[i].name}:`, result.reason);
     }
   }
 
