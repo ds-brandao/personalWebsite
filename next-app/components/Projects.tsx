@@ -1,17 +1,22 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "motion/react";
-import { GitHubRepo } from "@/types";
+import { motion, AnimatePresence } from "motion/react";
+import { GitHubRepo, ProjectAnalysis } from "@/types";
 import { ProjectCard } from "./ProjectCard";
 import { ProjectDetail } from "./ProjectDetail";
 
 interface ProjectsProps {
   repos: GitHubRepo[];
+  analyses: Record<string, ProjectAnalysis>;
 }
 
-export function Projects({ repos }: ProjectsProps) {
-  const [selectedRepo, setSelectedRepo] = useState<GitHubRepo | null>(null);
+export function Projects({ repos, analyses }: ProjectsProps) {
+  const [selectedRepo, setSelectedRepo] = useState<GitHubRepo | null>(
+    repos[0] ?? null
+  );
+
+  const analysis = selectedRepo ? analyses[selectedRepo.name] ?? null : null;
 
   return (
     <div className="px-6 md:px-12 lg:px-20 py-20 max-w-7xl mx-auto">
@@ -20,9 +25,9 @@ export function Projects({ repos }: ProjectsProps) {
       </h2>
 
       {/* Horizontal scroll - desktop */}
-      <div className="hidden md:block overflow-x-auto pb-4 scrollbar-thin">
+      <div className="hidden md:block overflow-x-auto overflow-y-visible pb-4 scrollbar-thin">
         <motion.div
-          className="flex gap-6"
+          className="flex gap-6 p-3"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
@@ -42,11 +47,7 @@ export function Projects({ repos }: ProjectsProps) {
               <ProjectCard
                 repo={repo}
                 isSelected={selectedRepo?.id === repo.id}
-                onClick={() =>
-                  setSelectedRepo(
-                    selectedRepo?.id === repo.id ? null : repo
-                  )
-                }
+                onClick={() => setSelectedRepo(repo)}
               />
             </motion.div>
           ))}
@@ -60,39 +61,42 @@ export function Projects({ repos }: ProjectsProps) {
             key={repo.id}
             repo={repo}
             isSelected={selectedRepo?.id === repo.id}
-            onClick={() =>
-              setSelectedRepo(
-                selectedRepo?.id === repo.id ? null : repo
-              )
-            }
+            onClick={() => setSelectedRepo(repo)}
           />
         ))}
       </div>
 
       {/* AI-powered detail panel */}
-      {selectedRepo && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: "auto" }}
-          exit={{ opacity: 0, height: 0 }}
-          className="mt-8 bg-surface-1 rounded-xl border border-surface-3/50 p-6"
-        >
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-display text-xl font-semibold text-text-primary">
-              {selectedRepo.name}
-            </h3>
-            <a
-              href={selectedRepo.html_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm text-ember hover:text-ember-glow transition-colors"
-            >
-              View on GitHub →
-            </a>
-          </div>
-          <ProjectDetail repo={selectedRepo} />
-        </motion.div>
-      )}
+      <AnimatePresence mode="wait">
+        {selectedRepo && (
+          <motion.div
+            key={selectedRepo.id}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+            className="mt-8 bg-surface-1 rounded-xl border border-surface-3/50 p-6"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-display text-xl font-semibold text-text-primary">
+                {selectedRepo.name}
+              </h3>
+              <a
+                href={selectedRepo.html_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-ember hover:text-ember-glow transition-colors"
+              >
+                View on GitHub &rarr;
+              </a>
+            </div>
+            <ProjectDetail
+              analysis={analysis}
+              repoUrl={selectedRepo.html_url}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
