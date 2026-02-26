@@ -10,80 +10,99 @@ import {
   type PenguinState,
   type SpriteFrame,
 } from "./sprites";
+import { resolveWaypoints, findWaypoint, type ResolvedWaypoint } from "./waypoints";
+import { decideBehavior, nextDecisionDelay } from "./behavior";
 
-// Canvas size with padding for jump animations
-const CANVAS_W = SPRITE_WIDTH * PIXEL_SCALE + 16; // 8px padding each side
-const CANVAS_H = SPRITE_HEIGHT * PIXEL_SCALE + 32; // 8px bottom + 24px top for jump clearance
+const PENGUIN_W = SPRITE_WIDTH * PIXEL_SCALE;
+const PENGUIN_H = SPRITE_HEIGHT * PIXEL_SCALE;
 
-// Physics constants
-const GRAVITY = 0.6;
-const TERMINAL_VELOCITY = 12;
-const SCROLL_UP_TUMBLE_THRESHOLD = 30; // px/frame delta to trigger tumble
-const POKE_JUMP_VELOCITY = -6;
-const SCROLL_IDLE_THRESHOLD = 100; // ms without scroll to consider "stopped"
+// Physics
+const GRAVITY = 0.8;
+const TERMINAL_VELOCITY = 14;
+const WALK_SPEED = 1.5;
+const JUMP_VX = 3;
+const JUMP_VY = -10;
+const SCROLL_TUMBLE_THRESHOLD = 40;
 
-// Idle timer thresholds (ms)
-const IDLE_LOOK_DELAY = 5000;
-const IDLE_SHUFFLE_DELAY = 7000;
-const IDLE_YAWN_DELAY = 10000;
-
-interface PenguinPhysics {
-  yOffset: number;    // vertical offset from floor (0 = on floor, positive = above)
-  velocity: number;   // vertical velocity (positive = downward)
-  isFalling: boolean;
+interface PenguinWorld {
+  x: number; // page-space x
+  y: number; // page-space y (top of penguin)
+  vx: number;
+  vy: number;
+  onSurface: boolean;
+  facingRight: boolean;
+  currentWaypointId: string | null;
+  targetWaypointId: string | null;
+  targetX: number | null;
 }
 
 export function PenguinCompanion() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animFrameRef = useRef<number>(0);
 
-  // State refs (mutable, not triggering re-renders)
+  // Penguin state
   const stateRef = useRef<PenguinState>("idle");
   const frameIndexRef = useRef(0);
   const frameTimerRef = useRef(0);
   const lastTimeRef = useRef(0);
-  const physicsRef = useRef<PenguinPhysics>({
-    yOffset: 0,
-    velocity: 0,
-    isFalling: false,
+  const worldRef = useRef<PenguinWorld>({
+    x: 100,
+    y: 0,
+    vx: 0,
+    vy: 0,
+    onSurface: false,
+    facingRight: true,
+    currentWaypointId: "ground",
+    targetWaypointId: null,
+    targetX: null,
   });
+
+  // Behavior timer
+  const behaviorTimerRef = useRef(0);
+  const behaviorDelayRef = useRef(nextDecisionDelay());
+  const actionTimerRef = useRef(0);
+  const actionDurationRef = useRef(0);
+  const justArrivedRef = useRef(true);
+
+  // Waypoints cache (refreshed periodically)
+  const waypointsRef = useRef<ResolvedWaypoint[]>([]);
+  const waypointRefreshRef = useRef(0);
 
   // Scroll tracking
   const lastScrollYRef = useRef(0);
   const scrollDeltaRef = useRef(0);
-  const scrollIdleTimerRef = useRef(0);
-
-  // Idle animation timer
-  const idleTimerRef = useRef(0);
 
   const setState = useCallback((newState: PenguinState) => {
     if (stateRef.current === newState) return;
     stateRef.current = newState;
     frameIndexRef.current = 0;
     frameTimerRef.current = 0;
-    idleTimerRef.current = 0;
   }, []);
 
   const drawSprite = useCallback(
-    (ctx: CanvasRenderingContext2D, frame: SpriteFrame, yOffset: number) => {
-      const offsetX = 8; // horizontal padding
-      const baseY = CANVAS_H - SPRITE_HEIGHT * PIXEL_SCALE - 8; // floor position
-      const drawY = baseY - yOffset;
+    (ctx: CanvasRenderingContext2D, frame: SpriteFrame, screenX: number, screenY: number, flipH: boolean) => {
+      ctx.save();
+      if (flipH) {
+        ctx.translate(screenX + PENGUIN_W, screenY);
+        ctx.scale(-1, 1);
+      } else {
+        ctx.translate(screenX, screenY);
+      }
 
       for (let row = 0; row < frame.length; row++) {
         for (let col = 0; col < frame[row].length; col++) {
           const colorIdx = frame[row][col];
-          if (colorIdx === 0) continue; // transparent
-          const color = PENGUIN_PALETTE[colorIdx];
-          ctx.fillStyle = color;
+          if (colorIdx === 0) continue;
+          ctx.fillStyle = PENGUIN_PALETTE[colorIdx];
           ctx.fillRect(
-            offsetX + col * PIXEL_SCALE,
-            drawY + row * PIXEL_SCALE,
+            col * PIXEL_SCALE,
+            row * PIXEL_SCALE,
             PIXEL_SCALE,
             PIXEL_SCALE
           );
         }
       }
+      ctx.restore();
     },
     []
   );
@@ -94,17 +113,22 @@ export function PenguinCompanion() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // DPR setup
-    const dpr = window.devicePixelRatio || 1;
-    canvas.width = CANVAS_W * dpr;
-    canvas.height = CANVAS_H * dpr;
-    canvas.style.width = `${CANVAS_W}px`;
-    canvas.style.height = `${CANVAS_H}px`;
-    ctx.scale(dpr, dpr);
+    const resize = () => {
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = window.innerWidth * dpr;
+      canvas.height = window.innerHeight * dpr;
+      canvas.style.width = `${window.innerWidth}px`;
+      canvas.style.height = `${window.innerHeight}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.imageSmoothingEnabled = false;
+    };
+    resize();
+    window.addEventListener("resize", resize);
 
-    // Disable image smoothing for crisp pixels
-    ctx.imageSmoothingEnabled = false;
-
+    // Initial position: bottom of page
+    const initY = document.documentElement.scrollHeight - PENGUIN_H;
+    worldRef.current.y = initY;
+    worldRef.current.x = 100;
     lastScrollYRef.current = window.scrollY;
     lastTimeRef.current = performance.now();
 
@@ -113,142 +137,262 @@ export function PenguinCompanion() {
       const currentY = window.scrollY;
       scrollDeltaRef.current += currentY - lastScrollYRef.current;
       lastScrollYRef.current = currentY;
-      scrollIdleTimerRef.current = 0;
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
 
-    // Click handler
+    // Click handler (hit-test on penguin position)
     const handleClick = (e: MouseEvent) => {
-      const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      // Check if click is within the penguin area
+      const world = worldRef.current;
+      const screenX = world.x - window.scrollX;
+      const screenY = world.y - window.scrollY;
+      const mx = e.clientX;
+      const my = e.clientY;
+
       if (
-        x >= 0 && x <= CANVAS_W &&
-        y >= 0 && y <= CANVAS_H &&
-        stateRef.current !== "falling" &&
-        stateRef.current !== "tumble"
+        mx >= screenX && mx <= screenX + PENGUIN_W &&
+        my >= screenY && my <= screenY + PENGUIN_H &&
+        stateRef.current !== "tumble" &&
+        stateRef.current !== "getting-up"
       ) {
         setState("poked");
-        // Give a little upward velocity for the jump
-        physicsRef.current.yOffset = 0;
-        physicsRef.current.velocity = POKE_JUMP_VELOCITY;
-        physicsRef.current.isFalling = true;
+        world.vy = -8;
+        world.onSurface = false;
+        world.targetWaypointId = null;
+        world.targetX = null;
+        actionTimerRef.current = 0;
+        actionDurationRef.current = 0;
       }
     };
-    canvas.addEventListener("click", handleClick);
+    window.addEventListener("click", handleClick);
 
-    // Animation loop
     const animate = (now: number) => {
-      const dt = now - lastTimeRef.current;
+      const dt = Math.min(now - lastTimeRef.current, 50); // cap at 50ms
       lastTimeRef.current = now;
+      const w = window.innerWidth;
+      const h = window.innerHeight;
 
-      ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
+      ctx.clearRect(0, 0, w, h);
 
       const state = stateRef.current;
       const anim = ANIMATIONS[state];
-      const physics = physicsRef.current;
+      const world = worldRef.current;
+
+      // --- Refresh waypoints every 2 seconds ---
+      waypointRefreshRef.current += dt;
+      if (waypointRefreshRef.current > 2000) {
+        waypointsRef.current = resolveWaypoints();
+        waypointRefreshRef.current = 0;
+      }
+      const waypoints = waypointsRef.current;
 
       // --- Frame advancement ---
       frameTimerRef.current += dt;
       if (frameTimerRef.current >= anim.frameDuration) {
         frameTimerRef.current -= anim.frameDuration;
         frameIndexRef.current++;
-
         if (frameIndexRef.current >= anim.frames.length) {
           if (anim.loop) {
             frameIndexRef.current = 0;
           } else {
-            // Transition to next state
             frameIndexRef.current = anim.frames.length - 1;
-            if (anim.next) {
-              setState(anim.next);
+            if (anim.next) setState(anim.next);
+          }
+        }
+      }
+
+      // --- Scroll reactions ---
+      const scrollDelta = scrollDeltaRef.current;
+      scrollDeltaRef.current = 0;
+      if (
+        scrollDelta < -SCROLL_TUMBLE_THRESHOLD &&
+        state !== "tumble" &&
+        state !== "getting-up" &&
+        state !== "poked"
+      ) {
+        setState("tumble");
+        world.targetWaypointId = null;
+        world.targetX = null;
+        actionTimerRef.current = 0;
+        actionDurationRef.current = 0;
+      }
+
+      // --- Physics ---
+      if (!world.onSurface) {
+        world.vy += GRAVITY;
+        if (world.vy > TERMINAL_VELOCITY) world.vy = TERMINAL_VELOCITY;
+      }
+      world.x += world.vx;
+      world.y += world.vy;
+
+      // Floor collision (page bottom)
+      const pageBottom = document.documentElement.scrollHeight - PENGUIN_H;
+      if (world.y >= pageBottom) {
+        world.y = pageBottom;
+        if (world.vy > 2) {
+          setState("landing");
+        }
+        world.vy = 0;
+        world.vx = 0;
+        world.onSurface = true;
+      }
+
+      // Surface collision with waypoints
+      if (!world.onSurface && world.vy > 0) {
+        for (const wp of waypoints) {
+          if (
+            world.x + PENGUIN_W > wp.x &&
+            world.x < wp.x + wp.width &&
+            world.y + PENGUIN_H >= wp.y &&
+            world.y + PENGUIN_H - world.vy < wp.y
+          ) {
+            // Landed on this waypoint
+            world.y = wp.y - PENGUIN_H;
+            world.vy = 0;
+            world.vx = 0;
+            world.onSurface = true;
+            world.currentWaypointId = wp.id;
+            justArrivedRef.current = true;
+            if (state === "falling" || state === "jump") setState("landing");
+            break;
+          }
+        }
+      }
+
+      // Edge detection: fell off a surface
+      if (world.onSurface && world.currentWaypointId) {
+        const wp = findWaypoint(waypoints, world.currentWaypointId);
+        if (wp && (world.x + PENGUIN_W < wp.x || world.x > wp.x + wp.width)) {
+          // Walked off the edge
+          world.onSurface = false;
+          world.vy = 0;
+          if (state === "walk-right" || state === "walk-left") {
+            setState("trip");
+          }
+          world.currentWaypointId = null;
+          world.targetWaypointId = null;
+          world.targetX = null;
+        }
+      }
+
+      // Keep penguin in horizontal bounds
+      if (world.x < 0) world.x = 0;
+      if (world.x > document.documentElement.scrollWidth - PENGUIN_W) {
+        world.x = document.documentElement.scrollWidth - PENGUIN_W;
+      }
+
+      // --- Walking toward target ---
+      if (
+        world.onSurface &&
+        world.targetX !== null &&
+        (state === "walk-right" || state === "walk-left")
+      ) {
+        const dx = world.targetX - world.x;
+        if (Math.abs(dx) < WALK_SPEED * 2) {
+          // Arrived at target x
+          world.x = world.targetX;
+          world.vx = 0;
+          world.targetX = null;
+
+          if (world.targetWaypointId) {
+            // Check if we need to jump to a different surface
+            const targetWp = findWaypoint(waypoints, world.targetWaypointId);
+            const currentWp = world.currentWaypointId
+              ? findWaypoint(waypoints, world.currentWaypointId)
+              : null;
+
+            if (targetWp && currentWp && Math.abs(targetWp.y - currentWp.y) > PENGUIN_H) {
+              // Need to jump
+              setState("jump");
+              world.vy = JUMP_VY;
+              world.vx = targetWp.x > world.x ? JUMP_VX : -JUMP_VX;
+              world.onSurface = false;
+              world.currentWaypointId = null;
+            } else if (targetWp) {
+              world.currentWaypointId = world.targetWaypointId;
+              world.targetWaypointId = null;
+              justArrivedRef.current = true;
+              setState("idle");
+            }
+          } else {
+            setState("idle");
+          }
+        } else {
+          world.vx = dx > 0 ? WALK_SPEED : -WALK_SPEED;
+          world.facingRight = dx > 0;
+          if (dx > 0 && state !== "walk-right") setState("walk-right");
+          if (dx < 0 && state !== "walk-left") setState("walk-left");
+        }
+      }
+
+      // --- Belly slide movement ---
+      if (state === "belly-slide" && world.onSurface) {
+        world.x += world.facingRight ? 3 : -3;
+      }
+
+      // --- Action timer ---
+      if (actionDurationRef.current > 0) {
+        actionTimerRef.current += dt;
+        if (actionTimerRef.current >= actionDurationRef.current) {
+          actionTimerRef.current = 0;
+          actionDurationRef.current = 0;
+          setState("idle");
+        }
+      }
+
+      // --- Behavior tree ---
+      if (
+        world.onSurface &&
+        state === "idle" &&
+        actionDurationRef.current === 0 &&
+        world.targetX === null
+      ) {
+        behaviorTimerRef.current += dt;
+        if (behaviorTimerRef.current >= behaviorDelayRef.current || justArrivedRef.current) {
+          behaviorTimerRef.current = 0;
+          behaviorDelayRef.current = nextDecisionDelay();
+          const currentWp = world.currentWaypointId
+            ? findWaypoint(waypoints, world.currentWaypointId)
+            : null;
+          const decision = decideBehavior(
+            currentWp ?? null,
+            waypoints,
+            justArrivedRef.current
+          );
+          justArrivedRef.current = false;
+
+          if (decision.type === "action") {
+            setState(decision.state);
+            actionDurationRef.current = decision.duration;
+            actionTimerRef.current = 0;
+          } else if (decision.type === "move") {
+            const targetWp = findWaypoint(waypoints, decision.targetWaypointId);
+            if (targetWp) {
+              world.targetWaypointId = decision.targetWaypointId;
+              // Walk to a random x on the target surface
+              const targetX = targetWp.x + Math.random() * (targetWp.width - PENGUIN_W);
+              world.targetX = Math.max(targetWp.x, Math.min(targetX, targetWp.x + targetWp.width - PENGUIN_W));
+              world.facingRight = world.targetX > world.x;
+              setState(world.facingRight ? "walk-right" : "walk-left");
             }
           }
         }
       }
 
-      // --- Scroll-driven state transitions ---
-      const delta = scrollDeltaRef.current;
-      scrollIdleTimerRef.current += dt;
-
-      if (delta > 2 && state !== "tumble" && state !== "getting-up") {
-        // Scrolling down -> falling
-        if (state !== "falling") setState("falling");
-        physics.isFalling = true;
-        physics.velocity += GRAVITY;
-        if (physics.velocity > TERMINAL_VELOCITY)
-          physics.velocity = TERMINAL_VELOCITY;
-        physics.yOffset = Math.max(0, physics.yOffset - physics.velocity);
-      } else if (
-        delta < -SCROLL_UP_TUMBLE_THRESHOLD &&
-        state !== "tumble" &&
-        state !== "getting-up" &&
-        state !== "poked"
-      ) {
-        // Scrolling up fast -> tumble
-        setState("tumble");
-        physics.yOffset = 0;
-        physics.velocity = 0;
-        physics.isFalling = false;
-      } else if (
-        scrollIdleTimerRef.current > SCROLL_IDLE_THRESHOLD &&
-        physics.isFalling
-      ) {
-        // Scroll stopped after falling -> landing
-        if (physics.yOffset > 0) {
-          // Still in the air, apply gravity to bring down
-          physics.velocity += GRAVITY;
-          physics.yOffset -= physics.velocity;
-          if (physics.yOffset <= 0) {
-            physics.yOffset = 0;
-            physics.velocity = 0;
-            physics.isFalling = false;
-            if (state === "falling") setState("landing");
-          }
-        } else {
-          // On the ground
-          if (state === "falling") setState("landing");
-          physics.isFalling = false;
-          physics.velocity = 0;
-        }
-      }
-
-      // Poke physics (jump arc)
-      if (state === "poked" && physics.isFalling) {
-        physics.velocity += GRAVITY;
-        physics.yOffset -= physics.velocity;
-        if (physics.yOffset <= 0) {
-          physics.yOffset = 0;
-          physics.velocity = 0;
-          physics.isFalling = false;
-        }
-      }
-
-      // Reset scroll delta (consumed)
-      scrollDeltaRef.current = 0;
-
-      // --- Idle timer ---
-      if (state === "idle") {
-        idleTimerRef.current += dt;
-        if (idleTimerRef.current > IDLE_YAWN_DELAY && Math.random() < 0.01) {
-          setState("idle-yawn");
-        } else if (
-          idleTimerRef.current > IDLE_SHUFFLE_DELAY &&
-          Math.random() < 0.008
-        ) {
-          setState("idle-shuffle");
-        } else if (
-          idleTimerRef.current > IDLE_LOOK_DELAY &&
-          Math.random() < 0.01
-        ) {
-          setState("idle-look");
-        }
-      }
-
       // --- Draw ---
-      const frame = anim.frames[frameIndexRef.current] ?? anim.frames[0];
-      drawSprite(ctx, frame, physics.yOffset);
+      const screenX = world.x - window.scrollX;
+      const screenY = world.y - window.scrollY;
+
+      // Only draw if penguin is visible on screen
+      if (
+        screenX + PENGUIN_W > 0 &&
+        screenX < w &&
+        screenY + PENGUIN_H > 0 &&
+        screenY < h
+      ) {
+        const frame = anim.frames[frameIndexRef.current] ?? anim.frames[0];
+        const shouldFlip = anim.flipH ?? !world.facingRight;
+        drawSprite(ctx, frame, screenX, screenY, shouldFlip);
+      }
 
       animFrameRef.current = requestAnimationFrame(animate);
     };
@@ -257,15 +401,16 @@ export function PenguinCompanion() {
 
     return () => {
       cancelAnimationFrame(animFrameRef.current);
+      window.removeEventListener("resize", resize);
       window.removeEventListener("scroll", handleScroll);
-      canvas.removeEventListener("click", handleClick);
+      window.removeEventListener("click", handleClick);
     };
   }, [setState, drawSprite]);
 
   return (
     <canvas
       ref={canvasRef}
-      className="fixed bottom-4 left-6 z-30 hidden md:block cursor-pointer"
+      className="fixed inset-0 z-30 hidden md:block pointer-events-none"
       style={{ imageRendering: "pixelated" }}
       aria-label="Interactive penguin companion"
       role="img"
