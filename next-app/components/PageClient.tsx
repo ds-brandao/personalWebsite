@@ -5,7 +5,12 @@ import { Config, Article, GitHubRepo } from "@/types";
 import { EmberCanvas } from "./EmberCanvas";
 import { LoadingScreen } from "./LoadingScreen";
 import { SceneContainer } from "./SceneContainer";
+import { Hero } from "./Hero";
+import { Articles } from "./Articles";
+import { Projects } from "./Projects";
+import { ArticleModal } from "./ArticleModal";
 import { DotNav } from "./DotNav";
+import { Footer } from "./Footer";
 
 interface PageClientProps {
   config: Config;
@@ -25,37 +30,32 @@ export function PageClient({ config, articles, repos }: PageClientProps) {
 
       <main className="relative z-10">
         <SceneContainer id="hero">
-          <div className="flex items-center justify-center h-full">
-            <h1 className="font-display text-6xl font-bold gradient-text">
-              {config.personal.name}
-            </h1>
-          </div>
+          <Hero config={config} />
         </SceneContainer>
 
         <SceneContainer id="articles" minHeight>
-          <div className="px-6 py-20">
-            <h2 className="font-display text-4xl font-bold text-text-primary mb-8">
-              Writing
-            </h2>
-            <p className="text-text-secondary">
-              Articles section — {articles.length} posts
-            </p>
-          </div>
+          <Articles
+            articles={articles}
+            tags={config.tags}
+            onArticleClick={setSelectedArticle}
+          />
         </SceneContainer>
 
         <SceneContainer id="projects" minHeight>
-          <div className="px-6 py-20">
-            <h2 className="font-display text-4xl font-bold text-text-primary mb-8">
-              Projects
-            </h2>
-            <p className="text-text-secondary">
-              Projects section — {repos.length} repos
-            </p>
-          </div>
+          <Projects repos={repos} />
         </SceneContainer>
+
+        <Footer config={config} />
       </main>
 
       <DotNav />
+
+      {selectedArticle && (
+        <ArticleModal
+          article={selectedArticle}
+          onClose={() => setSelectedArticle(null)}
+        />
+      )}
     </>
   );
 }
