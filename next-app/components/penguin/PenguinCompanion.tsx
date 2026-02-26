@@ -21,6 +21,7 @@ const GRAVITY = 0.8;
 const TERMINAL_VELOCITY = 14;
 const WALK_SPEED = 1.5;
 const SCROLL_TUMBLE_THRESHOLD = 40;
+const OFFSCREEN_RELOCATE_DELAY = 1500; // ms before penguin follows viewport
 
 interface PenguinWorld {
   x: number; // page-space x
@@ -69,6 +70,9 @@ export function PenguinCompanion() {
   // Scroll tracking
   const lastScrollYRef = useRef(0);
   const scrollDeltaRef = useRef(0);
+
+  // Off-screen tracking for viewport following
+  const offScreenTimerRef = useRef(0);
 
   const setState = useCallback((newState: PenguinState) => {
     if (stateRef.current === newState) return;
@@ -123,10 +127,11 @@ export function PenguinCompanion() {
     resize();
     window.addEventListener("resize", resize);
 
-    // Initial position: bottom of page
-    const initY = document.documentElement.scrollHeight - PENGUIN_H;
-    worldRef.current.y = initY;
-    worldRef.current.x = 100;
+    // Initial position: fall in from top of current viewport
+    worldRef.current.y = window.scrollY - PENGUIN_H;
+    worldRef.current.x = 60 + Math.random() * 200;
+    worldRef.current.onSurface = false;
+    worldRef.current.vy = 0;
     lastScrollYRef.current = window.scrollY;
     lastTimeRef.current = performance.now();
 
@@ -411,6 +416,45 @@ export function PenguinCompanion() {
             }
           }
         }
+      }
+
+      // --- Off-screen relocation: follow the viewport ---
+      const penguinScreenY = world.y - window.scrollY;
+      const isOnScreen =
+        penguinScreenY + PENGUIN_H > -PENGUIN_H &&
+        penguinScreenY < h + PENGUIN_H;
+
+      if (!isOnScreen) {
+        offScreenTimerRef.current += dt;
+        if (offScreenTimerRef.current >= OFFSCREEN_RELOCATE_DELAY && waypoints.length > 0) {
+          // Find waypoints visible in the current viewport
+          const viewTop = window.scrollY;
+          const viewBottom = viewTop + h;
+          const visibleWps = waypoints.filter(
+            (wp) => wp.y >= viewTop - PENGUIN_H && wp.y <= viewBottom + PENGUIN_H
+          );
+          const targetWp = visibleWps.length > 0
+            ? visibleWps[Math.floor(Math.random() * visibleWps.length)]
+            : null;
+
+          if (targetWp) {
+            // Teleport above the waypoint and fall in
+            world.x = targetWp.x + Math.random() * Math.max(0, targetWp.width - PENGUIN_W);
+            world.y = targetWp.y - PENGUIN_H - 80; // start 80px above the surface
+            world.vx = 0;
+            world.vy = 0;
+            world.onSurface = false;
+            world.currentWaypointId = null;
+            world.targetWaypointId = null;
+            world.targetX = null;
+            setState("falling");
+            actionTimerRef.current = 0;
+            actionDurationRef.current = 0;
+          }
+          offScreenTimerRef.current = 0;
+        }
+      } else {
+        offScreenTimerRef.current = 0;
       }
 
       // --- Draw ---
