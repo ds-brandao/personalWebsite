@@ -101,14 +101,15 @@ export function getCardWaypoints(): Waypoint[] {
     });
   });
 
-  // Project cards (horizontal scroll items)
-  const projectCards = document.querySelectorAll("#projects .flex > div");
+  // Project cards (desktop horizontal scroll items only)
+  const projectCards = document.querySelectorAll("#projects .overflow-x-auto .flex > div");
   projectCards.forEach((el, i) => {
     const id = `project-${i}`;
     waypoints.push({
       id,
       getRect: () => {
         const rect = el.getBoundingClientRect();
+        if (rect.width === 0) return null; // hidden element
         return {
           x: rect.left + window.scrollX,
           y: rect.top + window.scrollY,
@@ -136,7 +137,7 @@ export interface ResolvedWaypoint {
   connections: string[];
 }
 
-// Resolve all waypoints to current positions
+// Resolve all waypoints to current positions, enriching cross-connections
 export function resolveWaypoints(): ResolvedWaypoint[] {
   const all = [...getWaypoints(), ...getCardWaypoints()];
   const resolved: ResolvedWaypoint[] = [];
@@ -150,8 +151,44 @@ export function resolveWaypoints(): ResolvedWaypoint[] {
         y: rect.y,
         width: rect.width,
         actions: wp.actions,
-        connections: wp.connections,
+        connections: [...wp.connections],
       });
+    }
+  }
+
+  // Enrich connections: section edges should link to their child cards
+  const cardIds = resolved.filter((wp) => wp.id.startsWith("card-")).map((wp) => wp.id);
+  const projectIds = resolved.filter((wp) => wp.id.startsWith("project-")).map((wp) => wp.id);
+
+  const articlesTop = resolved.find((wp) => wp.id === "articles-top");
+  if (articlesTop && cardIds.length > 0) {
+    // articles-top can reach the first few cards
+    for (const id of cardIds.slice(0, 3)) {
+      if (!articlesTop.connections.includes(id)) articlesTop.connections.push(id);
+    }
+  }
+
+  const projectsTop = resolved.find((wp) => wp.id === "projects-top");
+  if (projectsTop && projectIds.length > 0) {
+    // projects-top can reach the first few project cards
+    for (const id of projectIds.slice(0, 3)) {
+      if (!projectsTop.connections.includes(id)) projectsTop.connections.push(id);
+    }
+  }
+
+  // Last article card connects to projects-top
+  if (cardIds.length > 0) {
+    const lastCard = resolved.find((wp) => wp.id === cardIds[cardIds.length - 1]);
+    if (lastCard && !lastCard.connections.includes("projects-top")) {
+      lastCard.connections.push("projects-top");
+    }
+  }
+
+  // Last project card connects to footer-top
+  if (projectIds.length > 0) {
+    const lastProject = resolved.find((wp) => wp.id === projectIds[projectIds.length - 1]);
+    if (lastProject && !lastProject.connections.includes("footer-top")) {
+      lastProject.connections.push("footer-top");
     }
   }
 

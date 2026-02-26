@@ -19,9 +19,9 @@ const PENGUIN_H = SPRITE_HEIGHT * PIXEL_SCALE;
 // Physics
 const GRAVITY = 0.8;
 const TERMINAL_VELOCITY = 14;
-const WALK_SPEED = 2.5;
-const SCROLL_TUMBLE_THRESHOLD = 40;
-const OFFSCREEN_RELOCATE_DELAY = 1500; // ms before penguin follows viewport
+const WALK_SPEED = 3;
+const SCROLL_TUMBLE_THRESHOLD = 80;
+const OFFSCREEN_RELOCATE_DELAY = 1000; // ms before penguin follows viewport
 
 interface PenguinWorld {
   x: number; // page-space x
@@ -63,9 +63,9 @@ export function PenguinCompanion() {
   const actionDurationRef = useRef(0);
   const justArrivedRef = useRef(true);
 
-  // Waypoints cache (refreshed periodically; start past threshold to resolve on first frame)
+  // Waypoints cache (refreshed every second; start past threshold to resolve on first frame)
   const waypointsRef = useRef<ResolvedWaypoint[]>([]);
-  const waypointRefreshRef = useRef(2001);
+  const waypointRefreshRef = useRef(1001);
 
   // Scroll tracking
   const lastScrollYRef = useRef(0);
@@ -181,9 +181,9 @@ export function PenguinCompanion() {
       const anim = ANIMATIONS[state];
       const world = worldRef.current;
 
-      // --- Refresh waypoints every 2 seconds ---
+      // --- Refresh waypoints every second ---
       waypointRefreshRef.current += dt;
-      if (waypointRefreshRef.current > 2000) {
+      if (waypointRefreshRef.current > 1000) {
         waypointsRef.current = resolveWaypoints();
         waypointRefreshRef.current = 0;
       }
@@ -209,30 +209,14 @@ export function PenguinCompanion() {
       scrollDeltaRef.current = 0;
 
       if (
-        scrollDelta > 5 &&
-        state !== "falling" &&
+        Math.abs(scrollDelta) > SCROLL_TUMBLE_THRESHOLD &&
         state !== "tumble" &&
         state !== "getting-up" &&
         state !== "poked" &&
+        state !== "falling" &&
         state !== "landing"
       ) {
-        // Scrolling down -> penguin falls
-        setState("falling");
-        world.onSurface = false;
-        world.vy = 2;
-        world.vx = 0;
-        world.currentWaypointId = null;
-        world.targetWaypointId = null;
-        world.targetX = null;
-        actionTimerRef.current = 0;
-        actionDurationRef.current = 0;
-      } else if (
-        scrollDelta < -SCROLL_TUMBLE_THRESHOLD &&
-        state !== "tumble" &&
-        state !== "getting-up" &&
-        state !== "poked"
-      ) {
-        // Scrolling up fast -> tumble
+        // Very fast scroll in either direction -> tumble
         setState("tumble");
         world.targetWaypointId = null;
         world.targetX = null;
@@ -264,14 +248,15 @@ export function PenguinCompanion() {
         }
       }
 
-      // Surface collision with waypoints
+      // Surface collision with waypoints (generous tolerance to prevent pass-through)
       if (!world.onSurface && world.vy > 0) {
+        const sweepDist = Math.max(world.vy, PENGUIN_H / 2);
         for (const wp of waypoints) {
           if (
             world.x + PENGUIN_W > wp.x &&
             world.x < wp.x + wp.width &&
-            world.y + PENGUIN_H >= wp.y &&
-            world.y + PENGUIN_H - world.vy < wp.y
+            world.y + PENGUIN_H >= wp.y - 2 &&
+            world.y + PENGUIN_H - sweepDist < wp.y
           ) {
             // Landed on this waypoint
             world.y = wp.y - PENGUIN_H;
