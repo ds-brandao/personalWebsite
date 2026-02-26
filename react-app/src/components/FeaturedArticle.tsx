@@ -12,10 +12,12 @@ const FEATURED_ARTICLE = {
 export default function FeaturedArticle() {
   const [isIframeOpen, setIsIframeOpen] = useState(false);
   const [iframeLoading, setIframeLoading] = useState(true);
+  const [iframeError, setIframeError] = useState(false);
 
   const handleOpen = () => {
     setIsIframeOpen(true);
     setIframeLoading(true);
+    setIframeError(false);
   };
 
   const handleClose = useCallback(() => {
@@ -150,7 +152,7 @@ export default function FeaturedArticle() {
 
                 {/* Iframe */}
                 <div className="flex-1 relative bg-white">
-                  {iframeLoading && (
+                  {iframeLoading && !iframeError && (
                     <div className="absolute inset-0 flex items-center justify-center bg-[#1a1a1a] z-10">
                       <div className="flex flex-col items-center gap-4">
                         <div className="w-10 h-10 border-4 border-accent border-t-transparent rounded-full animate-spin" />
@@ -160,13 +162,36 @@ export default function FeaturedArticle() {
                       </div>
                     </div>
                   )}
-                  <iframe
-                    src={FEATURED_ARTICLE.url}
-                    title={FEATURED_ARTICLE.title}
-                    className="w-full h-full border-0"
-                    onLoad={() => setIframeLoading(false)}
-                    sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
-                  />
+                  {iframeError ? (
+                    <div className="absolute inset-0 flex items-center justify-center bg-[#1a1a1a] z-10">
+                      <div className="flex flex-col items-center gap-4 text-center px-6">
+                        <p className="text-text-secondary text-sm">
+                          Unable to load the article in the viewer.
+                        </p>
+                        <a
+                          href={FEATURED_ARTICLE.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 px-4 py-2 bg-accent/20 text-accent border border-accent/30 rounded-lg hover:bg-accent/30 transition-colors text-sm font-medium"
+                        >
+                          Open in new tab
+                          <FiExternalLink className="w-4 h-4" />
+                        </a>
+                      </div>
+                    </div>
+                  ) : (
+                    <iframe
+                      src={FEATURED_ARTICLE.url}
+                      title={FEATURED_ARTICLE.title}
+                      className="w-full h-full border-0"
+                      onLoad={() => setIframeLoading(false)}
+                      onError={() => {
+                        setIframeLoading(false);
+                        setIframeError(true);
+                      }}
+                      sandbox="allow-scripts allow-popups allow-forms"
+                    />
+                  )}
                 </div>
               </motion.div>
             </motion.div>
