@@ -25,7 +25,7 @@ function queryElement(selector: string): { x: number; y: number; width: number }
   };
 }
 
-// Static waypoints defined by page structure
+// Static waypoints defined by page structure (only real visible surfaces)
 export function getWaypoints(): Waypoint[] {
   return [
     {
@@ -51,25 +51,13 @@ export function getWaypoints(): Waypoint[] {
         };
       },
       actions: ["idle", "dance", "belly-slide"],
-      connections: ["articles-top", "ground"],
-    },
-    {
-      id: "articles-top",
-      getRect: () => queryElement("#articles"),
-      actions: ["idle", "peck"],
-      connections: ["hero-floor", "projects-top", "footer-top"],
-    },
-    {
-      id: "projects-top",
-      getRect: () => queryElement("#projects"),
-      actions: ["idle", "peck"],
-      connections: ["articles-top", "footer-top"],
+      connections: ["ground"], // card connections added dynamically
     },
     {
       id: "footer-top",
       getRect: () => queryElement("footer"),
       actions: ["idle", "nap", "sit", "dance"],
-      connections: ["projects-top", "ground"],
+      connections: ["ground"], // project connections added dynamically
     },
   ];
 }
@@ -96,7 +84,6 @@ export function getCardWaypoints(): Waypoint[] {
       connections: [
         ...(i > 0 ? [`card-${i - 1}`] : []),
         `card-${i + 1}`,
-        "articles-top",
       ],
     });
   });
@@ -120,7 +107,6 @@ export function getCardWaypoints(): Waypoint[] {
       connections: [
         ...(i > 0 ? [`project-${i - 1}`] : []),
         `project-${i + 1}`,
-        "projects-top",
       ],
     });
   });
@@ -156,40 +142,46 @@ export function resolveWaypoints(): ResolvedWaypoint[] {
     }
   }
 
-  // Enrich connections: section edges should link to their child cards
+  // Enrich connections: wire real visible surfaces together
   const cardIds = resolved.filter((wp) => wp.id.startsWith("card-")).map((wp) => wp.id);
   const projectIds = resolved.filter((wp) => wp.id.startsWith("project-")).map((wp) => wp.id);
 
-  const articlesTop = resolved.find((wp) => wp.id === "articles-top");
-  if (articlesTop && cardIds.length > 0) {
-    // articles-top can reach the first few cards
-    for (const id of cardIds.slice(0, 3)) {
-      if (!articlesTop.connections.includes(id)) articlesTop.connections.push(id);
-    }
+  const addConn = (wpId: string, targetId: string) => {
+    const wp = resolved.find((w) => w.id === wpId);
+    if (wp && !wp.connections.includes(targetId)) wp.connections.push(targetId);
+  };
+
+  // hero-floor ↔ first article cards
+  for (const id of cardIds.slice(0, 3)) {
+    addConn("hero-floor", id);
+    addConn(id, "hero-floor");
   }
 
-  const projectsTop = resolved.find((wp) => wp.id === "projects-top");
-  if (projectsTop && projectIds.length > 0) {
-    // projects-top can reach the first few project cards
+  // last article card ↔ first project cards
+  if (cardIds.length > 0 && projectIds.length > 0) {
+    const lastCardId = cardIds[cardIds.length - 1];
     for (const id of projectIds.slice(0, 3)) {
-      if (!projectsTop.connections.includes(id)) projectsTop.connections.push(id);
+      addConn(lastCardId, id);
+      addConn(id, lastCardId);
     }
   }
 
-  // Last article card connects to projects-top
-  if (cardIds.length > 0) {
-    const lastCard = resolved.find((wp) => wp.id === cardIds[cardIds.length - 1]);
-    if (lastCard && !lastCard.connections.includes("projects-top")) {
-      lastCard.connections.push("projects-top");
-    }
-  }
-
-  // Last project card connects to footer-top
+  // last project card ↔ footer
   if (projectIds.length > 0) {
-    const lastProject = resolved.find((wp) => wp.id === projectIds[projectIds.length - 1]);
-    if (lastProject && !lastProject.connections.includes("footer-top")) {
-      lastProject.connections.push("footer-top");
+    addConn(projectIds[projectIds.length - 1], "footer-top");
+    addConn("footer-top", projectIds[projectIds.length - 1]);
+  }
+
+  // If no cards, hero connects directly to projects or footer
+  if (cardIds.length === 0 && projectIds.length > 0) {
+    for (const id of projectIds.slice(0, 3)) {
+      addConn("hero-floor", id);
+      addConn(id, "hero-floor");
     }
+  }
+  if (cardIds.length === 0 && projectIds.length === 0) {
+    addConn("hero-floor", "footer-top");
+    addConn("footer-top", "hero-floor");
   }
 
   return resolved;
