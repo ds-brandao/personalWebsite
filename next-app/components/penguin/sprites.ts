@@ -765,6 +765,7 @@ export const ANIMATIONS: Record<PenguinState, AnimationDef> = {
     frames: [SIT_1, SIT_2],
     frameDuration: 500,
     loop: false,
+    next: "idle",
   },
   nap: {
     frames: [NAP_1, NAP_2, NAP_3],

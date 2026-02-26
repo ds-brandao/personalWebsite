@@ -203,12 +203,32 @@ export function PenguinCompanion() {
       // --- Scroll reactions ---
       const scrollDelta = scrollDeltaRef.current;
       scrollDeltaRef.current = 0;
+
       if (
+        scrollDelta > 5 &&
+        state !== "falling" &&
+        state !== "tumble" &&
+        state !== "getting-up" &&
+        state !== "poked" &&
+        state !== "landing"
+      ) {
+        // Scrolling down -> penguin falls
+        setState("falling");
+        world.onSurface = false;
+        world.vy = 2;
+        world.vx = 0;
+        world.currentWaypointId = null;
+        world.targetWaypointId = null;
+        world.targetX = null;
+        actionTimerRef.current = 0;
+        actionDurationRef.current = 0;
+      } else if (
         scrollDelta < -SCROLL_TUMBLE_THRESHOLD &&
         state !== "tumble" &&
         state !== "getting-up" &&
         state !== "poked"
       ) {
+        // Scrolling up fast -> tumble
         setState("tumble");
         world.targetWaypointId = null;
         world.targetX = null;

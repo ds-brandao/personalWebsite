@@ -41,8 +41,14 @@ export function getWaypoints(): Waypoint[] {
     {
       id: "hero-floor",
       getRect: () => {
-        const r = queryElement("#hero");
-        return r ? { x: r.x, y: r.y + window.innerHeight, width: r.width } : null;
+        const el = document.querySelector("#hero");
+        if (!el) return null;
+        const rect = el.getBoundingClientRect();
+        return {
+          x: rect.left + window.scrollX,
+          y: rect.bottom + window.scrollY,
+          width: rect.width,
+        };
       },
       actions: ["idle", "dance", "belly-slide"],
       connections: ["articles-top", "ground"],
@@ -88,10 +94,10 @@ export function getCardWaypoints(): Waypoint[] {
       },
       actions: ["sit", "nap", "peck", "belly-slide"],
       connections: [
-        `card-${i - 1}`,
+        ...(i > 0 ? [`card-${i - 1}`] : []),
         `card-${i + 1}`,
         "articles-top",
-      ].filter((c) => !c.includes("-1")),
+      ],
     });
   });
 
@@ -111,10 +117,10 @@ export function getCardWaypoints(): Waypoint[] {
       },
       actions: ["sit", "push", "belly-slide"],
       connections: [
-        `project-${i - 1}`,
+        ...(i > 0 ? [`project-${i - 1}`] : []),
         `project-${i + 1}`,
         "projects-top",
-      ].filter((c) => !c.includes("--1")),
+      ],
     });
   });
 
