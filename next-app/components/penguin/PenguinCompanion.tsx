@@ -401,9 +401,23 @@ export function PenguinCompanion() {
             const targetWp = findWaypoint(visibleWaypoints, decision.targetWaypointId);
             if (targetWp) {
               world.targetWaypointId = decision.targetWaypointId;
-              // Walk to a random x on the target surface
-              const targetX = targetWp.x + Math.random() * (targetWp.width - PENGUIN_W);
-              world.targetX = Math.max(targetWp.x, Math.min(targetX, targetWp.x + targetWp.width - PENGUIN_W));
+              const currentWp = world.currentWaypointId
+                ? findWaypoint(visibleWaypoints, world.currentWaypointId)
+                : null;
+
+              if (currentWp && Math.abs(targetWp.y - currentWp.y) > PENGUIN_H) {
+                // Different surface: walk to a launch point clamped to current surface
+                const targetCenterX = targetWp.x + targetWp.width / 2;
+                world.targetX = Math.max(
+                  currentWp.x,
+                  Math.min(targetCenterX, currentWp.x + currentWp.width - PENGUIN_W)
+                );
+              } else {
+                // Same surface: walk to a random x within the target's bounds
+                const targetX = targetWp.x + Math.random() * (targetWp.width - PENGUIN_W);
+                world.targetX = Math.max(targetWp.x, Math.min(targetX, targetWp.x + targetWp.width - PENGUIN_W));
+              }
+
               world.facingRight = world.targetX > world.x;
               setState(world.facingRight ? "walk-right" : "walk-left");
             }
