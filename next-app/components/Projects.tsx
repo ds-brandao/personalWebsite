@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion } from "motion/react";
 import { GitHubRepo } from "@/types";
 import { ProjectCard } from "./ProjectCard";
+import { ProjectDetail } from "./ProjectDetail";
 
 interface ProjectsProps {
   repos: GitHubRepo[];
@@ -68,7 +69,7 @@ export function Projects({ repos }: ProjectsProps) {
         ))}
       </div>
 
-      {/* Detail panel placeholder - filled in Task 12 */}
+      {/* AI-powered detail panel */}
       {selectedRepo && (
         <motion.div
           initial={{ opacity: 0, height: 0 }}
@@ -89,9 +90,7 @@ export function Projects({ repos }: ProjectsProps) {
               View on GitHub →
             </a>
           </div>
-          <p className="text-text-secondary">
-            {selectedRepo.description || "No description available."}
-          </p>
+          <ProjectDetail repo={selectedRepo} />
         </motion.div>
       )}
     </div>
