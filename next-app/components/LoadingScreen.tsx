@@ -92,7 +92,7 @@ export function LoadingScreen({ onComplete }: LoadingScreenProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [phase, setPhase] = useState<Phase>("forming");
   const phaseRef = useRef<Phase>("forming");
-  const phaseStartRef = useRef(performance.now());
+  const phaseStartRef = useRef(0);
   const animFrameRef = useRef<number>(0);
   const particlesRef = useRef<LoadingParticle[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -111,6 +111,8 @@ export function LoadingScreen({ onComplete }: LoadingScreenProps) {
   );
 
   useEffect(() => {
+    phaseStartRef.current = performance.now();
+
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");

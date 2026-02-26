@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -17,6 +17,7 @@ interface ArticleModalProps {
 export function ArticleModal({ article, onClose }: ArticleModalProps) {
   const [markdown, setMarkdown] = useState("");
   const [loading, setLoading] = useState(false);
+  const lastFetchedRef = useRef<string | null>(null);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -26,18 +27,32 @@ export function ArticleModal({ article, onClose }: ArticleModalProps) {
   );
 
   useEffect(() => {
-    if (!article) return;
-    setLoading(true);
-    fetch(article.markdown)
-      .then((res) => res.text())
-      .then((text) => {
-        setMarkdown(text);
-        setLoading(false);
-      })
-      .catch(() => {
-        setMarkdown("Failed to load article content.");
-        setLoading(false);
-      });
+    if (!article || article.markdown === lastFetchedRef.current) return;
+    lastFetchedRef.current = article.markdown;
+
+    let cancelled = false;
+
+    const loadArticle = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(article.markdown);
+        const text = await res.text();
+        if (!cancelled) {
+          setMarkdown(text);
+          setLoading(false);
+        }
+      } catch {
+        if (!cancelled) {
+          setMarkdown("Failed to load article content.");
+          setLoading(false);
+        }
+      }
+    };
+    loadArticle();
+
+    return () => {
+      cancelled = true;
+    };
   }, [article]);
 
   useEffect(() => {
@@ -109,11 +124,11 @@ export function ArticleModal({ article, onClose }: ArticleModalProps) {
             <div className="bg-surface-1 rounded-b-xl px-6 md:px-12 py-10">
               {loading ? (
                 <div className="space-y-4">
-                  {[...Array(6)].map((_, i) => (
+                  {[85, 92, 78, 95, 70, 88].map((w, i) => (
                     <div
                       key={i}
                       className="h-4 bg-surface-2 rounded animate-pulse"
-                      style={{ width: `${70 + Math.random() * 30}%` }}
+                      style={{ width: `${w}%` }}
                     />
                   ))}
                 </div>
