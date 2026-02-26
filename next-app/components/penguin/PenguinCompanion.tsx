@@ -19,7 +19,7 @@ const PENGUIN_H = SPRITE_HEIGHT * PIXEL_SCALE;
 // Physics
 const GRAVITY = 0.8;
 const TERMINAL_VELOCITY = 14;
-const WALK_SPEED = 1.5;
+const WALK_SPEED = 2.5;
 const SCROLL_TUMBLE_THRESHOLD = 40;
 const OFFSCREEN_RELOCATE_DELAY = 1500; // ms before penguin follows viewport
 
@@ -73,6 +73,7 @@ export function PenguinCompanion() {
 
   // Off-screen tracking for viewport following
   const offScreenTimerRef = useRef(0);
+  const offScreenScrollYRef = useRef(0); // scrollY when penguin first went off-screen
 
   const setState = useCallback((newState: PenguinState) => {
     if (stateRef.current === newState) return;
@@ -379,7 +380,14 @@ export function PenguinCompanion() {
         }
       }
 
-      // --- Behavior tree ---
+      // --- Viewport-scoped waypoints for behavior ---
+      const viewTop = window.scrollY;
+      const viewBottom = viewTop + h;
+      const visibleWaypoints = waypoints.filter(
+        (wp) => wp.y >= viewTop - PENGUIN_H * 2 && wp.y <= viewBottom + PENGUIN_H * 2
+      );
+
+      // --- Behavior tree (uses only visible waypoints) ---
       if (
         world.onSurface &&
         state === "idle" &&
@@ -391,11 +399,11 @@ export function PenguinCompanion() {
           behaviorTimerRef.current = 0;
           behaviorDelayRef.current = nextDecisionDelay();
           const currentWp = world.currentWaypointId
-            ? findWaypoint(waypoints, world.currentWaypointId)
+            ? findWaypoint(visibleWaypoints, world.currentWaypointId)
             : null;
           const decision = decideBehavior(
             currentWp ?? null,
-            waypoints,
+            visibleWaypoints,
             justArrivedRef.current
           );
           justArrivedRef.current = false;
@@ -405,7 +413,7 @@ export function PenguinCompanion() {
             actionDurationRef.current = decision.duration;
             actionTimerRef.current = 0;
           } else if (decision.type === "move") {
-            const targetWp = findWaypoint(waypoints, decision.targetWaypointId);
+            const targetWp = findWaypoint(visibleWaypoints, decision.targetWaypointId);
             if (targetWp) {
               world.targetWaypointId = decision.targetWaypointId;
               // Walk to a random x on the target surface
@@ -418,38 +426,49 @@ export function PenguinCompanion() {
         }
       }
 
-      // --- Off-screen relocation: follow the viewport ---
+      // --- Off-screen relocation: smooth directional entrance ---
       const penguinScreenY = world.y - window.scrollY;
       const isOnScreen =
         penguinScreenY + PENGUIN_H > -PENGUIN_H &&
         penguinScreenY < h + PENGUIN_H;
 
       if (!isOnScreen) {
+        if (offScreenTimerRef.current === 0) {
+          // Record scrollY when penguin first went off-screen
+          offScreenScrollYRef.current = window.scrollY;
+        }
         offScreenTimerRef.current += dt;
-        if (offScreenTimerRef.current >= OFFSCREEN_RELOCATE_DELAY && waypoints.length > 0) {
-          // Find waypoints visible in the current viewport
-          const viewTop = window.scrollY;
-          const viewBottom = viewTop + h;
-          const visibleWps = waypoints.filter(
-            (wp) => wp.y >= viewTop - PENGUIN_H && wp.y <= viewBottom + PENGUIN_H
-          );
-          const targetWp = visibleWps.length > 0
-            ? visibleWps[Math.floor(Math.random() * visibleWps.length)]
-            : null;
 
-          if (targetWp) {
-            // Teleport above the waypoint and fall in
-            world.x = targetWp.x + Math.random() * Math.max(0, targetWp.width - PENGUIN_W);
-            world.y = targetWp.y - PENGUIN_H - 80; // start 80px above the surface
+        if (offScreenTimerRef.current >= OFFSCREEN_RELOCATE_DELAY && visibleWaypoints.length > 0) {
+          const scrolledUp = window.scrollY < offScreenScrollYRef.current;
+          const targetWp = visibleWaypoints[Math.floor(Math.random() * visibleWaypoints.length)];
+
+          world.currentWaypointId = null;
+          world.targetWaypointId = null;
+          world.targetX = null;
+          actionTimerRef.current = 0;
+          actionDurationRef.current = 0;
+
+          const randX = targetWp.x + Math.random() * Math.max(0, targetWp.width - PENGUIN_W);
+
+          if (scrolledUp) {
+            // User scrolled UP → penguin enters from bottom, jumping up into view
+            world.x = randX;
+            world.y = viewBottom + PENGUIN_H; // just below viewport
             world.vx = 0;
-            world.vy = 0;
+            // Jump up to reach the target waypoint
+            const heightToTravel = world.y - (targetWp.y - PENGUIN_H);
+            world.vy = -Math.min(Math.sqrt(2 * GRAVITY * heightToTravel), 35);
             world.onSurface = false;
-            world.currentWaypointId = null;
-            world.targetWaypointId = null;
-            world.targetX = null;
+            setState("jump");
+          } else {
+            // User scrolled DOWN → penguin falls in from top
+            world.x = randX;
+            world.y = viewTop - PENGUIN_H * 2; // just above viewport
+            world.vx = 0;
+            world.vy = 2;
+            world.onSurface = false;
             setState("falling");
-            actionTimerRef.current = 0;
-            actionDurationRef.current = 0;
           }
           offScreenTimerRef.current = 0;
         }
