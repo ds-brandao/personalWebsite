@@ -20,8 +20,6 @@ const PENGUIN_H = SPRITE_HEIGHT * PIXEL_SCALE;
 const GRAVITY = 0.8;
 const TERMINAL_VELOCITY = 14;
 const WALK_SPEED = 1.5;
-const JUMP_VX = 3;
-const JUMP_VY = -10;
 const SCROLL_TUMBLE_THRESHOLD = 40;
 
 interface PenguinWorld {
@@ -64,9 +62,9 @@ export function PenguinCompanion() {
   const actionDurationRef = useRef(0);
   const justArrivedRef = useRef(true);
 
-  // Waypoints cache (refreshed periodically)
+  // Waypoints cache (refreshed periodically; start past threshold to resolve on first frame)
   const waypointsRef = useRef<ResolvedWaypoint[]>([]);
-  const waypointRefreshRef = useRef(0);
+  const waypointRefreshRef = useRef(2001);
 
   // Scroll tracking
   const lastScrollYRef = useRef(0);
@@ -254,6 +252,10 @@ export function PenguinCompanion() {
         world.vy = 0;
         world.vx = 0;
         world.onSurface = true;
+        if (!world.currentWaypointId) {
+          world.currentWaypointId = "ground";
+          justArrivedRef.current = true;
+        }
       }
 
       // Surface collision with waypoints
@@ -321,10 +323,23 @@ export function PenguinCompanion() {
               : null;
 
             if (targetWp && currentWp && Math.abs(targetWp.y - currentWp.y) > PENGUIN_H) {
-              // Need to jump
-              setState("jump");
-              world.vy = JUMP_VY;
-              world.vx = targetWp.x > world.x ? JUMP_VX : -JUMP_VX;
+              // Need to jump — calculate velocity to reach target height
+              const heightDiff = currentWp.y - targetWp.y; // positive = target is above
+              if (heightDiff > 0) {
+                // Jumping UP: vy needed = -sqrt(2 * gravity * height), capped
+                const neededVy = -Math.min(Math.sqrt(2 * GRAVITY * (heightDiff + PENGUIN_H)), 40);
+                setState("jump");
+                world.vy = neededVy;
+                // Scale horizontal speed to arrive at target x during the arc
+                const jumpDuration = Math.abs(neededVy) * 2 / GRAVITY; // frames in the air
+                const dx = targetWp.x + targetWp.width / 2 - world.x;
+                world.vx = dx / Math.max(jumpDuration, 1);
+              } else {
+                // Target is BELOW: just walk off the edge and fall
+                setState("trip");
+                world.vy = 0;
+                world.vx = targetWp.x > world.x ? WALK_SPEED : -WALK_SPEED;
+              }
               world.onSurface = false;
               world.currentWaypointId = null;
             } else if (targetWp) {
