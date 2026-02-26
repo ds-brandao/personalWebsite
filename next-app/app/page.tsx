@@ -1,14 +1,10 @@
-import { EmberCanvas } from "@/components/EmberCanvas";
+import { getConfig, getArticles, getGitHubRepos } from "@/lib/data";
+import { PageClient } from "@/components/PageClient";
 
-export default function Home() {
-  return (
-    <>
-      <EmberCanvas className="fixed inset-0 z-0" />
-      <div className="relative z-10 min-h-screen flex items-center justify-center">
-        <h1 className="font-display text-6xl font-bold gradient-text">
-          Ember Canvas
-        </h1>
-      </div>
-    </>
-  );
+export default async function Home() {
+  const config = await getConfig();
+  const articles = await getArticles();
+  const repos = await getGitHubRepos(config.social.github.username);
+
+  return <PageClient config={config} articles={articles} repos={repos} />;
 }
