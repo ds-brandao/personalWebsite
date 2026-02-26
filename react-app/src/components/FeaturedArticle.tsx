@@ -1,20 +1,25 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiExternalLink, FiX, FiAward } from 'react-icons/fi';
+import type { Config } from '../types';
 
-const FEATURED_ARTICLE = {
-  title: 'Project Portfolios and Networking Leads to Jobs',
-  source: 'CoE Cyber',
-  url: 'https://coecyber.io/project-portfolios-and-networking-leads-to-jobs',
-};
+interface FeaturedArticleProps {
+  config: Config | null;
+}
 
-export default function FeaturedArticle() {
+export default function FeaturedArticle({ config }: FeaturedArticleProps) {
   const [isIframeOpen, setIsIframeOpen] = useState(false);
   const [iframeLoading, setIframeLoading] = useState(true);
   const [iframeError, setIframeError] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const dialogRef = useRef<HTMLDivElement>(null);
 
-  const handleOpen = () => {
+  const items = config?.featured ?? [];
+  const activeItem = items[activeIndex];
+
+  const handleOpen = (index: number) => {
+    setActiveIndex(index);
     setIsIframeOpen(true);
     setIframeLoading(true);
     setIframeError(false);
@@ -25,20 +30,25 @@ export default function FeaturedArticle() {
     setIframeLoading(true);
   }, []);
 
-  // Handle escape key
+  // Handle escape key and body overflow
   useEffect(() => {
+    if (!isIframeOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') handleClose();
     };
 
-    if (isIframeOpen) {
-      document.addEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'hidden';
-    }
+    document.addEventListener('keydown', handleEscape);
+    document.body.style.overflow = 'hidden';
+
+    // Focus the dialog for accessibility
+    dialogRef.current?.focus();
 
     return () => {
       document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = previousOverflow;
     };
   }, [isIframeOpen, handleClose]);
 
@@ -48,6 +58,8 @@ export default function FeaturedArticle() {
     },
     [handleClose]
   );
+
+  if (items.length === 0) return null;
 
   return (
     <>
@@ -71,134 +83,145 @@ export default function FeaturedArticle() {
 
           <div className="h-[1px] w-6 bg-gradient-to-r from-accent to-accent-light rounded-full mb-3" />
 
-          <button
-            onClick={handleOpen}
-            className="w-full text-left group cursor-pointer"
-          >
-            <div className="bg-white/5 border border-white/10 rounded-xl p-4 transition-all duration-300 group-hover:border-accent/30 group-hover:bg-accent/5 group-hover:shadow-lg group-hover:shadow-accent/5">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs text-accent font-medium mb-1">
-                    {FEATURED_ARTICLE.source}
-                  </p>
-                  <h3 className="text-sm font-medium text-text-primary group-hover:text-accent transition-colors leading-snug">
-                    {FEATURED_ARTICLE.title}
-                  </h3>
+          <div className="space-y-2">
+            {items.map((item, index) => (
+              <button
+                key={item.url}
+                onClick={() => handleOpen(index)}
+                className="w-full text-left group cursor-pointer"
+              >
+                <div className="bg-white/5 border border-white/10 rounded-xl p-4 transition-all duration-300 group-hover:border-accent/30 group-hover:bg-accent/5 group-hover:shadow-lg group-hover:shadow-accent/5">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs text-accent font-medium mb-1">
+                        {item.source}
+                      </p>
+                      <h3 className="text-sm font-medium text-text-primary group-hover:text-accent transition-colors leading-snug">
+                        {item.title}
+                      </h3>
+                    </div>
+                    <div className="p-2 rounded-lg bg-accent/10 text-accent opacity-0 group-hover:opacity-100 transition-all shrink-0">
+                      <FiExternalLink className="w-3.5 h-3.5" />
+                    </div>
+                  </div>
                 </div>
-                <div className="p-2 rounded-lg bg-accent/10 text-accent opacity-0 group-hover:opacity-100 transition-all shrink-0">
-                  <FiExternalLink className="w-3.5 h-3.5" />
-                </div>
-              </div>
-            </div>
-          </button>
+              </button>
+            ))}
+          </div>
         </div>
       </motion.section>
 
       {/* Iframe Modal */}
-      {createPortal(
-        <AnimatePresence>
-          {isIframeOpen && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 md:p-8"
-              onClick={handleBackdropClick}
-            >
+      {activeItem &&
+        createPortal(
+          <AnimatePresence>
+            {isIframeOpen && (
               <motion.div
-                initial={{ opacity: 0, y: 50, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 50, scale: 0.95 }}
-                transition={{ duration: 0.3, type: 'spring', damping: 25 }}
-                className="relative w-full max-w-[95vw] xl:max-w-[1400px] h-[90vh] bg-[#1a1a1a] rounded-2xl overflow-hidden shadow-2xl shadow-black/60 border border-white/5 flex flex-col"
-                onClick={(e) => e.stopPropagation()}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 md:p-8"
+                onClick={handleBackdropClick}
+                role="dialog"
+                aria-modal="true"
+                aria-label={`${activeItem.title} — ${activeItem.source}`}
+                ref={dialogRef}
+                tabIndex={-1}
               >
-                {/* Header Bar */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-[#1a1a1a] shrink-0">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <span className="p-2 rounded-lg bg-accent/10 text-accent shrink-0">
-                      <FiAward className="w-4 h-4" />
-                    </span>
-                    <div className="min-w-0">
-                      <p className="text-xs text-accent font-medium">
-                        {FEATURED_ARTICLE.source}
-                      </p>
-                      <h3 className="text-sm font-medium text-text-primary truncate">
-                        {FEATURED_ARTICLE.title}
-                      </h3>
+                <motion.div
+                  initial={{ opacity: 0, y: 50, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 50, scale: 0.95 }}
+                  transition={{ duration: 0.3, type: 'spring', damping: 25 }}
+                  className="relative w-full max-w-[95vw] xl:max-w-[1400px] h-[90vh] bg-[#1a1a1a] rounded-2xl overflow-hidden shadow-2xl shadow-black/60 border border-white/5 flex flex-col"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {/* Header Bar */}
+                  <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-[#1a1a1a] shrink-0">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className="p-2 rounded-lg bg-accent/10 text-accent shrink-0">
+                        <FiAward className="w-4 h-4" />
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-xs text-accent font-medium">
+                          {activeItem.source}
+                        </p>
+                        <h3 className="text-sm font-medium text-text-primary truncate">
+                          {activeItem.title}
+                        </h3>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      <a
+                        href={activeItem.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2.5 bg-[#252525]/80 backdrop-blur-md border border-white/15 rounded-full text-text-secondary hover:text-accent hover:border-accent/40 transition-all"
+                        title="Open in new tab"
+                      >
+                        <FiExternalLink className="w-4 h-4" />
+                      </a>
+                      <button
+                        onClick={handleClose}
+                        className="p-2.5 bg-[#252525]/80 backdrop-blur-md border border-white/15 rounded-full text-text-primary hover:bg-accent/20 hover:border-accent/40 transition-all group"
+                        aria-label="Close modal"
+                      >
+                        <FiX className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300" />
+                      </button>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 shrink-0">
-                    <a
-                      href={FEATURED_ARTICLE.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-2.5 bg-[#252525]/80 backdrop-blur-md border border-white/15 rounded-full text-text-secondary hover:text-accent hover:border-accent/40 transition-all"
-                      title="Open in new tab"
-                    >
-                      <FiExternalLink className="w-4 h-4" />
-                    </a>
-                    <button
-                      onClick={handleClose}
-                      className="p-2.5 bg-[#252525]/80 backdrop-blur-md border border-white/15 rounded-full text-text-primary hover:bg-accent/20 hover:border-accent/40 transition-all group"
-                      aria-label="Close modal"
-                    >
-                      <FiX className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300" />
-                    </button>
+                  {/* Iframe */}
+                  <div className="flex-1 relative bg-white">
+                    {iframeLoading && !iframeError && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-[#1a1a1a] z-10">
+                        <div className="flex flex-col items-center gap-4">
+                          <div className="w-10 h-10 border-4 border-accent border-t-transparent rounded-full animate-spin" />
+                          <p className="text-text-secondary text-sm">
+                            Loading article...
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    {iframeError ? (
+                      <div className="absolute inset-0 flex items-center justify-center bg-[#1a1a1a] z-10">
+                        <div className="flex flex-col items-center gap-4 text-center px-6">
+                          <p className="text-text-secondary text-sm">
+                            Unable to load the article in the viewer.
+                          </p>
+                          <a
+                            href={activeItem.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-accent/20 text-accent border border-accent/30 rounded-lg hover:bg-accent/30 transition-colors text-sm font-medium"
+                          >
+                            Open in new tab
+                            <FiExternalLink className="w-4 h-4" />
+                          </a>
+                        </div>
+                      </div>
+                    ) : (
+                      <iframe
+                        src={activeItem.url}
+                        title={activeItem.title}
+                        className="w-full h-full border-0"
+                        onLoad={() => setIframeLoading(false)}
+                        onError={() => {
+                          setIframeLoading(false);
+                          setIframeError(true);
+                        }}
+                        sandbox="allow-scripts allow-popups allow-forms"
+                      />
+                    )}
                   </div>
-                </div>
-
-                {/* Iframe */}
-                <div className="flex-1 relative bg-white">
-                  {iframeLoading && !iframeError && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-[#1a1a1a] z-10">
-                      <div className="flex flex-col items-center gap-4">
-                        <div className="w-10 h-10 border-4 border-accent border-t-transparent rounded-full animate-spin" />
-                        <p className="text-text-secondary text-sm">
-                          Loading article...
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                  {iframeError ? (
-                    <div className="absolute inset-0 flex items-center justify-center bg-[#1a1a1a] z-10">
-                      <div className="flex flex-col items-center gap-4 text-center px-6">
-                        <p className="text-text-secondary text-sm">
-                          Unable to load the article in the viewer.
-                        </p>
-                        <a
-                          href={FEATURED_ARTICLE.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 px-4 py-2 bg-accent/20 text-accent border border-accent/30 rounded-lg hover:bg-accent/30 transition-colors text-sm font-medium"
-                        >
-                          Open in new tab
-                          <FiExternalLink className="w-4 h-4" />
-                        </a>
-                      </div>
-                    </div>
-                  ) : (
-                    <iframe
-                      src={FEATURED_ARTICLE.url}
-                      title={FEATURED_ARTICLE.title}
-                      className="w-full h-full border-0"
-                      onLoad={() => setIframeLoading(false)}
-                      onError={() => {
-                        setIframeLoading(false);
-                        setIframeError(true);
-                      }}
-                      sandbox="allow-scripts allow-popups allow-forms"
-                    />
-                  )}
-                </div>
+                </motion.div>
               </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>,
-        document.body
-      )}
+            )}
+          </AnimatePresence>,
+          document.body
+        )}
     </>
   );
 }

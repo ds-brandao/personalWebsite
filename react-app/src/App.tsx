@@ -116,7 +116,7 @@ function App() {
               className="flex flex-col gap-4 h-[calc(100vh-4rem)] sticky top-8"
             >
               <Hero config={config} />
-              <FeaturedArticle />
+              <FeaturedArticle config={config} />
               <div className="flex-1 min-h-0">
                 <Projects
                   repos={repos}
@@ -134,7 +134,7 @@ function App() {
               <Hero config={config} />
             </div>
             <div className="col-span-2">
-              <FeaturedArticle />
+              <FeaturedArticle config={config} />
             </div>
             {/* Articles full width with increased height */}
             <div className="col-span-2 h-[650px]">
@@ -157,7 +157,7 @@ function App() {
           {/* Mobile Layout */}
           <div className="md:hidden space-y-6">
             <Hero config={config} />
-            <FeaturedArticle />
+            <FeaturedArticle config={config} />
             {/* Articles with increased height for mobile */}
             <div className="h-[650px]">
               <Articles

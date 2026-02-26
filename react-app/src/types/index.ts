@@ -23,6 +23,13 @@ export interface Config {
     color: string;
     description: string;
   }>;
+  featured?: FeaturedItem[];
+}
+
+export interface FeaturedItem {
+  title: string;
+  source: string;
+  url: string;
 }
 
 export interface Article {

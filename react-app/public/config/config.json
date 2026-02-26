@@ -64,5 +64,12 @@
       "color": "life",
       "description": "Life, love, and everything in between"
     }
-  }
+  },
+  "featured": [
+    {
+      "title": "Project Portfolios and Networking Leads to Jobs",
+      "source": "CoE Cyber",
+      "url": "https://coecyber.io/project-portfolios-and-networking-leads-to-jobs"
+    }
+  ]
 }
