@@ -1,67 +1,65 @@
 # Personal Website
 
-A modern, responsive personal portfolio website built with **React**, **TypeScript**, **Tailwind CSS**, and **Framer Motion**.
+A modern, responsive personal portfolio website built with **Next.js**, **TypeScript**, **Tailwind CSS**, and **Motion**.
 
 ## Features
 
-- **Modern React Architecture**: Component-based design with TypeScript for type safety
+- **Next.js Server-Side Rendering**: Fast initial page loads with server-side data fetching
 - **Tailwind CSS**: Utility-first styling with custom dark theme
-- **Framer Motion Animations**: Smooth, performant animations throughout
-- **Dynamic Typing Animation**: Hero section with rotating phrases
+- **Motion Animations**: Smooth, performant animations throughout
 - **Blog System**: Markdown-based articles with tag filtering and modal reading
 - **GitHub Integration**: Automatically fetches and displays GitHub repositories
+- **AI Project Analyses**: Pre-generated project insights using OpenAI
 - **Responsive Design**: Mobile-first layout with adaptive grid system
 - **Docker Development**: Containerized development and production environments
 
 ## Tech Stack
 
-- **Frontend**: React 18+, TypeScript, Vite
+- **Framework**: Next.js 16, React 19, TypeScript
 - **Styling**: Tailwind CSS with custom theme
-- **Animations**: Framer Motion
+- **Animations**: Motion (Framer Motion)
 - **Markdown**: react-markdown with GitHub Flavored Markdown
-- **Icons**: react-icons (Feather Icons)
-- **Build**: Vite, PostCSS
-- **Server**: Nginx (production)
+- **AI**: ai SDK + OpenAI (build-time only, via seed script)
+- **Build**: Turbopack (dev), Next.js standalone (production)
 - **Container**: Docker with multi-stage builds
 
 ## Project Structure
 
 ```
-├── react-app/                  # React application
-│   ├── src/
-│   │   ├── components/         # React components
-│   │   │   ├── Hero.tsx        # Typing animation hero section
-│   │   │   ├── About.tsx       # About me section
-│   │   │   ├── Articles.tsx    # Blog posts with filtering
-│   │   │   ├── Projects.tsx    # GitHub repositories
-│   │   │   ├── Contact.tsx     # Contact information
-│   │   │   ├── Footer.tsx      # Footer with social links
-│   │   │   └── ArticleModal.tsx # Full article reader
-│   │   ├── hooks/              # Custom React hooks
-│   │   │   └── useConfig.ts    # Data fetching hooks
-│   │   ├── types/              # TypeScript type definitions
-│   │   ├── App.tsx             # Main application component
-│   │   ├── main.tsx            # Entry point
-│   │   └── index.css           # Global styles & Tailwind
+├── next-app/                   # Next.js application
+│   ├── app/
+│   │   └── page.tsx            # Server component (data fetching)
+│   ├── components/             # React components
+│   │   ├── PageClient.tsx      # Main client layout
+│   │   ├── ArticleCard.tsx     # Blog post cards
+│   │   ├── Projects.tsx        # Project carousel
+│   │   ├── ProjectDetail.tsx   # AI analysis + commits display
+│   │   └── ai-elements/       # AI-generated UI components
+│   ├── ai/
+│   │   └── tools.ts            # AI tool definitions for analysis
+│   ├── lib/
+│   │   └── data.ts             # Server-side data fetching
+│   ├── scripts/
+│   │   └── seed-analyses.ts    # Pre-generate AI project analyses
+│   ├── types/
+│   │   └── index.ts            # TypeScript type definitions
 │   ├── public/
 │   │   ├── config/             # Configuration files
 │   │   │   ├── config.json     # Personal info & tags
-│   │   │   └── articles.json   # Blog post metadata
+│   │   │   ├── articles.json   # Blog post metadata
+│   │   │   └── analyses.json   # Pre-generated AI analyses
 │   │   ├── blog-posts/         # Markdown blog posts
 │   │   └── images/             # Static images
-│   ├── package.json
-│   ├── tailwind.config.js
-│   └── vite.config.ts
+│   └── package.json
 ├── Dockerfile                  # Multi-stage Docker build
 ├── docker-compose.yaml         # Development environment
-├── nginx.conf                  # Production server config
 └── README.md
 ```
 
 ## Development Setup
 
 ### Prerequisites
-- Node.js 18+ (for local development)
+- Node.js 20+ (for local development)
 - Docker and Docker Compose (for containerized development)
 
 ### Local Development
@@ -69,16 +67,27 @@ A modern, responsive personal portfolio website built with **React**, **TypeScri
 1. **Clone and install**:
    ```bash
    git clone https://github.com/ds-brandao/personalWebsite.git
-   cd personalWebsite/react-app
+   cd personalWebsite/next-app
    npm install
    ```
 
-2. **Start development server**:
+2. **Set up environment**:
+   ```bash
+   # Create .env.local with your OpenAI API key (needed for seed script only)
+   echo "OPENAI_API_KEY=your-key-here" > .env.local
+   ```
+
+3. **Generate AI analyses** (optional):
+   ```bash
+   npm run seed
+   ```
+
+4. **Start development server**:
    ```bash
    npm run dev
    ```
 
-3. **Access the website**: http://localhost:5173
+5. **Access the website**: http://localhost:3000
 
 ### Docker Development
 
@@ -87,13 +96,14 @@ A modern, responsive personal portfolio website built with **React**, **TypeScri
    docker compose up dev
    ```
 
-2. **Access the website**: http://localhost:5173
+2. **Access the website**: http://localhost:3000
 
 ### Production Build
 
 ```bash
-cd react-app
+cd next-app
 npm run build
+npm run start
 ```
 
 Or with Docker:
@@ -106,7 +116,7 @@ docker run -p 80:80 personal-website
 
 ### Personal Information
 
-Update `react-app/public/config/config.json`:
+Update `next-app/public/config/config.json`:
 
 ```json
 {
@@ -126,14 +136,14 @@ Update `react-app/public/config/config.json`:
 
 ### Adding Blog Posts
 
-1. **Create Markdown file** in `react-app/public/blog-posts/`:
+1. **Create Markdown file** in `next-app/public/blog-posts/`:
    ```markdown
    # Article Title
 
    Your content here...
    ```
 
-2. **Add metadata** to `react-app/public/config/articles.json`:
+2. **Add metadata** to `next-app/public/config/articles.json`:
    ```json
    {
      "title": "Article Title",
@@ -145,51 +155,7 @@ Update `react-app/public/config/config.json`:
    }
    ```
 
-### Available Tags
-
-| Tag | Color | Description |
-|-----|-------|-------------|
-| Security | Rose | Cybersecurity topics |
-| Coding | Emerald | Programming |
-| AI | Cyan | Artificial intelligence |
-| Tutorial | Amber | How-to guides |
-| Project | Purple | Projects |
-| CI/CD | Blue | DevOps |
-| Home Lab | Orange | Home lab |
-| Systems Integration | Indigo | Integration |
-| Life | Pink | Personal |
-
-### Customizing the Hero
-
-Edit `react-app/src/components/Hero.tsx`:
-```typescript
-const phrases = [
-  "I'm Your Name",
-  "I build amazing things",
-  "I solve problems",
-];
-```
-
-### Styling
-
-The website uses Tailwind CSS with custom colors defined in `tailwind.config.js`:
-
-```javascript
-colors: {
-  'bg': '#0a0a0a',
-  'surface-1': '#141414',
-  'accent': '#6366f1',
-  // ...
-}
-```
-
 ## Deployment
-
-### Static Hosting (Vercel, Netlify)
-
-1. Connect your repository
-2. Set build command: `cd react-app && npm install && npm run build`
-3. Set publish directory: `react-app/dist`
 
 ### Docker/Container Platform
 
