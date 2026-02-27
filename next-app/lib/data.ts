@@ -1,8 +1,5 @@
-import { Config, Article, GitHubRepo } from "@/types";
-import { generateText, stepCountIs } from "ai";
-import { openai } from "@ai-sdk/openai";
-import { tools } from "@/ai/tools";
-import type { ProjectAnalysis, ToolResult } from "@/types";
+import { Config, Article, GitHubRepo, GitHubCommit } from "@/types";
+import type { ProjectAnalysis } from "@/types";
 import fs from "fs";
 import path from "path";
 
@@ -55,66 +52,56 @@ export async function getGitHubRepos(
   }
 }
 
-async function generateAnalysis(repo: GitHubRepo): Promise<ProjectAnalysis> {
-  const result = await generateText({
-    model: openai("gpt-4o-mini"),
-    system: `You are a project analyzer for a developer portfolio. When given information about a GitHub repository, use the available tools to display rich UI components.
-
-IMPORTANT: Only communicate through tool calls. Do NOT include any text responses — all information must be presented via the tools. Do not summarize or repeat what the tools display.
-
-Use these tools to give a comprehensive overview:
-- displayPackageInfo for the top 3-5 dependencies
-- displayCodeSnippet for one interesting code pattern or entry point
-- displayFileStructure for project organization
-- displaySetupCommand for how to install/run
-
-Call all relevant tools in a single response.`,
-    messages: [
-      {
-        role: "user",
-        content: `Analyze this GitHub project and display rich UI components for it:
-- Name: ${repo.name}
-- Description: ${repo.description || "No description"}
-- Language: ${repo.language || "Unknown"}
-- Stars: ${repo.stargazers_count}
-- URL: ${repo.html_url}`,
-      },
-    ],
-    stopWhen: stepCountIs(1),
-    tools,
-  });
-
-  const toolResults: ToolResult[] = [];
-  for (const toolResult of result.toolResults) {
-    toolResults.push({
-      toolName: toolResult.toolName as ToolResult["toolName"],
-      result: toolResult.output as Record<string, unknown>,
-    });
-  }
-
-  return {
-    repoName: repo.name,
-    toolResults,
-    cachedAt: new Date().toISOString(),
-  };
-}
-
-export async function getProjectAnalyses(
+export async function getRepoCommits(
+  owner: string,
   repos: GitHubRepo[]
-): Promise<Record<string, ProjectAnalysis>> {
+): Promise<Record<string, GitHubCommit[]>> {
   const results = await Promise.allSettled(
-    repos.map((repo) => generateAnalysis(repo))
+    repos.map(async (repo) => {
+      const res = await fetch(
+        `https://api.github.com/repos/${owner}/${repo.name}/commits?per_page=3`,
+        {
+          headers: { Accept: "application/vnd.github.v3+json" },
+          next: { revalidate: 300 },
+        }
+      );
+      if (!res.ok) throw new Error(`Commits fetch failed for ${repo.name}`);
+      const data = await res.json();
+      return {
+        name: repo.name,
+        commits: data.map(
+          (c: {
+            sha: string;
+            commit: {
+              message: string;
+              author: { name: string; date: string };
+            };
+          }): GitHubCommit => ({
+            sha: c.sha,
+            message: c.commit.message.split("\n")[0],
+            authorName: c.commit.author.name,
+            date: c.commit.author.date,
+          })
+        ),
+      };
+    })
   );
 
-  const analyses: Record<string, ProjectAnalysis> = {};
-  for (let i = 0; i < repos.length; i++) {
-    const result = results[i];
+  const commits: Record<string, GitHubCommit[]> = {};
+  for (const result of results) {
     if (result.status === "fulfilled") {
-      analyses[repos[i].name] = result.value;
-    } else {
-      console.error(`Analysis failed for ${repos[i].name}:`, result.reason);
+      commits[result.value.name] = result.value.commits;
     }
   }
+  return commits;
+}
 
-  return analyses;
+export async function getProjectAnalyses(): Promise<Record<string, ProjectAnalysis>> {
+  try {
+    const filePath = path.join(process.cwd(), "public", "config", "analyses.json");
+    const raw = fs.readFileSync(filePath, "utf-8");
+    return JSON.parse(raw);
+  } catch {
+    return {};
+  }
 }
