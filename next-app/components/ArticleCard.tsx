@@ -51,9 +51,7 @@ export function ArticleCard({
       onClick={onClick}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className={`cursor-pointer bg-surface-1 rounded-xl overflow-hidden border border-surface-3/50 hover:border-ember/30 transition-colors ${
-        featured ? "md:col-span-2" : ""
-      }`}
+      className="cursor-pointer bg-surface-1 rounded-xl overflow-hidden border border-surface-3/50 hover:border-ember/30 transition-colors h-full flex flex-col"
       style={{
         perspective: "1000px",
         transform: `rotateX(${tilt.rotateX}deg) rotateY(${tilt.rotateY}deg)`,
@@ -61,9 +59,7 @@ export function ArticleCard({
       }}
       whileHover={{ scale: 1.02 }}
     >
-      <div
-        className={`w-full overflow-hidden ${featured ? "h-56" : "h-40"}`}
-      >
+      <div className={`w-full overflow-hidden shrink-0 ${featured ? "h-64" : "h-44"}`}>
         <img
           src={article.image}
           alt={article.title}
@@ -74,14 +70,14 @@ export function ArticleCard({
         />
       </div>
 
-      <div className="p-5">
+      <div className="p-5 flex flex-col flex-1">
         <h3 className="font-display font-semibold text-lg text-text-primary mb-2 line-clamp-2">
           {article.title}
         </h3>
         <p className="text-text-secondary text-sm line-clamp-2 mb-4">
           {article.summary}
         </p>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 mt-auto">
           {article.tags.map((tag) => {
             const colorKey = tagColors[tag]?.color || "";
             const classes =

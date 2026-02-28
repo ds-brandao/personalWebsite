@@ -1,0 +1,302 @@
+{
+  "personalWebsite": {
+    "repoName": "personalWebsite",
+    "toolResults": [
+      {
+        "toolName": "displayPackageInfo",
+        "result": {
+          "name": "personalWebsite",
+          "currentVersion": "1.0.0",
+          "description": "Template for my own personal website",
+          "dependencies": [
+            {
+              "name": "typescript",
+              "version": "^4.5.4"
+            },
+            {
+              "name": "express",
+              "version": "^4.17.1"
+            },
+            {
+              "name": "cors",
+              "version": "^2.8.5"
+            },
+            {
+              "name": "dotenv",
+              "version": "^10.0.0"
+            },
+            {
+              "name": "react",
+              "version": "^17.0.2"
+            }
+          ]
+        }
+      },
+      {
+        "toolName": "displayFileStructure",
+        "result": {
+          "files": [
+            {
+              "path": "src",
+              "type": "folder"
+            },
+            {
+              "path": "public",
+              "type": "folder"
+            },
+            {
+              "path": "package.json",
+              "type": "file"
+            },
+            {
+              "path": "tsconfig.json",
+              "type": "file"
+            },
+            {
+              "path": "README.md",
+              "type": "file"
+            }
+          ]
+        }
+      },
+      {
+        "toolName": "displayCodeSnippet",
+        "result": {
+          "filename": "src/index.ts",
+          "language": "typescript",
+          "code": "import express from 'express';\nimport cors from 'cors';\nimport dotenv from 'dotenv';\n\ndotenv.config();\n\nconst app = express();\napp.use(cors());\napp.get('/', (req, res) => {\n  res.send('Welcome to my personal website!');\n});\n\nconst PORT = process.env.PORT || 3000;\napp.listen(PORT, () => {\n  console.log(`Server running on port ${PORT}`);\n});"
+        }
+      },
+      {
+        "toolName": "displaySetupCommand",
+        "result": {
+          "command": "npm install",
+          "label": "Install Dependencies"
+        }
+      }
+    ],
+    "cachedAt": "2026-02-27T23:43:25.004Z"
+  },
+  "netwiz": {
+    "repoName": "netwiz",
+    "toolResults": [
+      {
+        "toolName": "displayPackageInfo",
+        "result": {
+          "name": "netwiz",
+          "currentVersion": "1.0.0",
+          "description": "Self-Healing Network - llamacon25",
+          "dependencies": [
+            {
+              "name": "express",
+              "version": "4.17.1"
+            },
+            {
+              "name": "typescript",
+              "version": "4.5.4"
+            },
+            {
+              "name": "rxjs",
+              "version": "6.6.3"
+            },
+            {
+              "name": "dotenv",
+              "version": "10.0.0"
+            },
+            {
+              "name": "nodemon",
+              "version": "2.0.12"
+            }
+          ]
+        }
+      },
+      {
+        "toolName": "displayCodeSnippet",
+        "result": {
+          "filename": "index.ts",
+          "language": "typescript",
+          "code": "import express from 'express';\nimport { createServer } from 'http';\nimport { Server } from 'socket.io';\n\nconst app = express();\napp.use(express.json());\n\nconst server = createServer(app);\nconst io = new Server(server);\n\nio.on('connection', (socket) => {\n    console.log('New client connected');\n    socket.on('disconnect', () => {\n        console.log('Client disconnected');\n    });\n});\n\nserver.listen(3000, () => {\n    console.log('Server is running on port 3000');\n});"
+        }
+      },
+      {
+        "toolName": "displayFileStructure",
+        "result": {
+          "files": [
+            {
+              "path": "src",
+              "type": "folder"
+            },
+            {
+              "path": "src/index.ts",
+              "type": "file"
+            },
+            {
+              "path": "package.json",
+              "type": "file"
+            },
+            {
+              "path": "tsconfig.json",
+              "type": "file"
+            },
+            {
+              "path": "README.md",
+              "type": "file"
+            }
+          ]
+        }
+      },
+      {
+        "toolName": "displaySetupCommand",
+        "result": {
+          "command": "npm install",
+          "label": "Install Dependencies"
+        }
+      }
+    ],
+    "cachedAt": "2026-02-27T23:43:27.592Z"
+  },
+  "deep-research": {
+    "repoName": "deep-research",
+    "toolResults": [
+      {
+        "toolName": "displayPackageInfo",
+        "result": {
+          "name": "deep-research",
+          "currentVersion": "1.0.0",
+          "description": "An AI-powered research assistant that performs iterative, deep research on any topic by combining search engines, web scraping, and large language models.",
+          "dependencies": [
+            {
+              "name": "axios",
+              "version": "0.21.1"
+            },
+            {
+              "name": "cheerio",
+              "version": "1.0.0-rc.10"
+            },
+            {
+              "name": "typescript",
+              "version": "4.2.3"
+            },
+            {
+              "name": "express",
+              "version": "4.17.1"
+            }
+          ]
+        }
+      },
+      {
+        "toolName": "displayCodeSnippet",
+        "result": {
+          "filename": "src/index.ts",
+          "language": "typescript",
+          "code": "import express from 'express';\n\nconst app = express();\n\napp.get('/research', async (req, res) => {\n  // Logic for conducting deep research\n});\n\napp.listen(3000, () => {\n  console.log('Server is running on port 3000');\n});"
+        }
+      },
+      {
+        "toolName": "displayFileStructure",
+        "result": {
+          "files": [
+            {
+              "path": "src/",
+              "type": "folder"
+            },
+            {
+              "path": "src/index.ts",
+              "type": "file"
+            },
+            {
+              "path": "src/researchAgent.ts",
+              "type": "file"
+            },
+            {
+              "path": "package.json",
+              "type": "file"
+            },
+            {
+              "path": "tsconfig.json",
+              "type": "file"
+            }
+          ]
+        }
+      },
+      {
+        "toolName": "displaySetupCommand",
+        "result": {
+          "command": "npm install",
+          "label": "Installation Command"
+        }
+      }
+    ],
+    "cachedAt": "2026-02-27T23:43:23.492Z"
+  },
+  "Lansweeper.Helpdesk-Python": {
+    "repoName": "Lansweeper.Helpdesk-Python",
+    "toolResults": [
+      {
+        "toolName": "displayPackageInfo",
+        "result": {
+          "name": "Lansweeper.Helpdesk-Python",
+          "currentVersion": "0.1.0",
+          "description": "A python wrapper for the Lansweeper Helpdesk API",
+          "dependencies": [
+            {
+              "name": "requests",
+              "version": "2.25.1"
+            },
+            {
+              "name": "flask",
+              "version": "1.1.2"
+            },
+            {
+              "name": "pytest",
+              "version": "6.2.3"
+            }
+          ]
+        }
+      },
+      {
+        "toolName": "displayCodeSnippet",
+        "result": {
+          "filename": "lansweeper.py",
+          "language": "python",
+          "code": "class LansweeperAPI:\n    def __init__(self, api_key):\n        self.api_key = api_key\n        self.base_url = 'https://helpdesk.lansweeper.com/api/'\n\n    def get_ticket(self, ticket_id):\n        response = requests.get(f'{self.base_url}ticket/{ticket_id}', headers={'Authorization': f'Bearer {self.api_key}'})\n        return response.json()"
+        }
+      },
+      {
+        "toolName": "displayFileStructure",
+        "result": {
+          "files": [
+            {
+              "path": "lansweeper.py",
+              "type": "file"
+            },
+            {
+              "path": "README.md",
+              "type": "file"
+            },
+            {
+              "path": "requirements.txt",
+              "type": "file"
+            },
+            {
+              "path": "tests/",
+              "type": "folder"
+            },
+            {
+              "path": "tests/test_lansweeper.py",
+              "type": "file"
+            }
+          ]
+        }
+      },
+      {
+        "toolName": "displaySetupCommand",
+        "result": {
+          "command": "pip install -r requirements.txt",
+          "label": "Install dependencies"
+        }
+      }
+    ],
+    "cachedAt": "2026-02-27T23:43:30.756Z"
+  }
+}

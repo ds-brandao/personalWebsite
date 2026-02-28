@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -8,6 +8,7 @@ import rehypeHighlight from "rehype-highlight";
 import rehypeRaw from "rehype-raw";
 import { Article } from "@/types";
 import { X } from "lucide-react";
+import { Mermaid } from "./Mermaid";
 
 interface ArticleModalProps {
   article: Article | null;
@@ -17,7 +18,6 @@ interface ArticleModalProps {
 export function ArticleModal({ article, onClose }: ArticleModalProps) {
   const [markdown, setMarkdown] = useState("");
   const [loading, setLoading] = useState(false);
-  const lastFetchedRef = useRef<string | null>(null);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -27,28 +27,25 @@ export function ArticleModal({ article, onClose }: ArticleModalProps) {
   );
 
   useEffect(() => {
-    if (!article || article.markdown === lastFetchedRef.current) return;
-    lastFetchedRef.current = article.markdown;
+    if (!article) return;
 
     let cancelled = false;
+    setLoading(true);
 
-    const loadArticle = async () => {
-      setLoading(true);
-      try {
-        const res = await fetch(article.markdown);
-        const text = await res.text();
+    fetch(article.markdown)
+      .then((res) => res.text())
+      .then((text) => {
         if (!cancelled) {
           setMarkdown(text);
           setLoading(false);
         }
-      } catch {
+      })
+      .catch(() => {
         if (!cancelled) {
           setMarkdown("Failed to load article content.");
           setLoading(false);
         }
-      }
-    };
-    loadArticle();
+      });
 
     return () => {
       cancelled = true;
@@ -183,11 +180,24 @@ export function ArticleModal({ article, onClose }: ArticleModalProps) {
                           </code>
                         );
                       },
-                      pre: ({ children }) => (
-                        <pre className="bg-surface-2 rounded-lg p-4 overflow-x-auto text-sm mb-4">
-                          {children}
-                        </pre>
-                      ),
+                      pre: ({ children, ...props }) => {
+                        const child = Array.isArray(children) ? children[0] : children;
+                        if (
+                          child &&
+                          typeof child === "object" &&
+                          "props" in child &&
+                          typeof child.props?.className === "string" &&
+                          child.props.className.includes("language-mermaid")
+                        ) {
+                          const text = String(child.props.children).trim();
+                          return <Mermaid chart={text} />;
+                        }
+                        return (
+                          <pre className="bg-surface-2 rounded-lg p-4 overflow-x-auto text-sm mb-4" {...props}>
+                            {children}
+                          </pre>
+                        );
+                      },
                       blockquote: ({ children }) => (
                         <blockquote className="border-l-4 border-ember/50 pl-4 italic text-text-muted my-4">
                           {children}

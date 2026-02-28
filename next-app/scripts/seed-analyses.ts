@@ -1,9 +1,22 @@
+import fs from "fs";
+import path from "path";
+
+// Load .env.local so the script works standalone via `npm run seed`
+try {
+  const envPath = path.join(process.cwd(), ".env.local");
+  for (const line of fs.readFileSync(envPath, "utf-8").split("\n")) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+    const [key, ...rest] = trimmed.split("=");
+    if (key && rest.length)
+      process.env[key.trim()] = rest.join("=").trim().replace(/^["']|["']$/g, "");
+  }
+} catch {}
+
 import { generateText, stepCountIs } from "ai";
 import { openai } from "@ai-sdk/openai";
 import { tools } from "../ai/tools";
 import type { GitHubRepo, ProjectAnalysis, ToolResult } from "../types";
-import fs from "fs";
-import path from "path";
 
 const HIDDEN_REPOS = ["ds-brandao"];
 

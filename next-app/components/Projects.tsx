@@ -2,21 +2,23 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { GitHubRepo, ProjectAnalysis } from "@/types";
+import { GitHubRepo, GitHubCommit, ProjectAnalysis } from "@/types";
 import { ProjectCard } from "./ProjectCard";
 import { ProjectDetail } from "./ProjectDetail";
 
 interface ProjectsProps {
   repos: GitHubRepo[];
   analyses: Record<string, ProjectAnalysis>;
+  commits: Record<string, GitHubCommit[]>;
 }
 
-export function Projects({ repos, analyses }: ProjectsProps) {
+export function Projects({ repos, analyses, commits }: ProjectsProps) {
   const [selectedRepo, setSelectedRepo] = useState<GitHubRepo | null>(
     repos[0] ?? null
   );
 
   const analysis = selectedRepo ? analyses[selectedRepo.name] ?? null : null;
+  const repoCommits = selectedRepo ? commits[selectedRepo.name] ?? [] : [];
 
   return (
     <div className="px-6 md:px-12 lg:px-20 py-20 max-w-7xl mx-auto">
@@ -93,6 +95,7 @@ export function Projects({ repos, analyses }: ProjectsProps) {
             <ProjectDetail
               analysis={analysis}
               repoUrl={selectedRepo.html_url}
+              commits={repoCommits}
             />
           </motion.div>
         )}

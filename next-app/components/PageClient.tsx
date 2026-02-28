@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Config, Article, GitHubRepo, ProjectAnalysis } from "@/types";
+import { Config, Article, GitHubRepo, ProjectAnalysis, GitHubCommit } from "@/types";
 import { EmberCanvas } from "./EmberCanvas";
 import { LoadingScreen } from "./LoadingScreen";
 import { SceneContainer } from "./SceneContainer";
@@ -18,9 +18,10 @@ interface PageClientProps {
   articles: Article[];
   repos: GitHubRepo[];
   analyses: Record<string, ProjectAnalysis>;
+  commits: Record<string, GitHubCommit[]>;
 }
 
-export function PageClient({ config, articles, repos, analyses }: PageClientProps) {
+export function PageClient({ config, articles, repos, analyses, commits }: PageClientProps) {
   const [loading, setLoading] = useState(true);
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
 
@@ -45,7 +46,7 @@ export function PageClient({ config, articles, repos, analyses }: PageClientProp
         </SceneContainer>
 
         <SceneContainer id="projects" minHeight>
-          <Projects repos={repos} analyses={analyses} />
+          <Projects repos={repos} analyses={analyses} commits={commits} />
         </SceneContainer>
 
         <Footer config={config} />

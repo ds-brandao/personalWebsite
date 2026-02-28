@@ -39,3 +39,25 @@ export interface GitHubRepo {
   stargazers_count: number;
   forks_count: number;
 }
+
+export interface GitHubCommit {
+  sha: string;
+  message: string;
+  authorName: string;
+  date: string;
+}
+
+export interface ToolResult {
+  toolName:
+    | "displayPackageInfo"
+    | "displayCodeSnippet"
+    | "displayFileStructure"
+    | "displaySetupCommand";
+  result: Record<string, unknown>;
+}
+
+export interface ProjectAnalysis {
+  repoName: string;
+  toolResults: ToolResult[];
+  cachedAt: string;
+}
