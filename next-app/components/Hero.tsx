@@ -1,102 +1,94 @@
 "use client";
 
 import { motion } from "motion/react";
+import { Mail, Linkedin, Github } from "lucide-react";
 import { Config } from "@/types";
-import { Mail, Linkedin, Github, ChevronDown } from "lucide-react";
-
-interface HeroProps {
-  config: Config;
-}
-
-const stagger = {
-  hidden: {},
-  visible: {
-    transition: { staggerChildren: 0.1 },
-  },
-};
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.15, duration: 0.6, ease: "easeOut" as const },
+  }),
 };
 
-export function Hero({ config }: HeroProps) {
-  const { personal, social } = config;
-
+export function Hero({ config }: { config: Config }) {
   return (
-    <div className="flex flex-col items-center justify-center h-full px-6 text-center">
-      <motion.div
-        variants={stagger}
+    <section className="relative flex flex-col items-center justify-center min-h-screen px-6 text-center">
+      <motion.h1
+        custom={0}
         initial="hidden"
         animate="visible"
-        className="flex flex-col items-center gap-6"
+        variants={fadeUp}
+        className="font-display text-[clamp(3rem,10vw,7rem)] font-black leading-[0.95] tracking-tight text-foreground"
       >
-        <motion.h1
-          variants={fadeUp}
-          className="font-display font-bold gradient-text text-[clamp(3rem,10vw,10rem)] leading-none"
-        >
-          {personal.name}
-        </motion.h1>
+        {config.personal.name}
+      </motion.h1>
 
-        <motion.p
-          variants={fadeUp}
-          className="text-text-secondary text-xl md:text-2xl font-sans"
-        >
-          Software Engineer
-        </motion.p>
+      <motion.p
+        custom={1}
+        initial="hidden"
+        animate="visible"
+        variants={fadeUp}
+        className="mt-4 text-lg md:text-xl text-muted-foreground font-sans"
+      >
+        Software Engineer
+      </motion.p>
 
-        <motion.div variants={fadeUp} className="flex gap-4 mt-4">
-          <a
-            href={`mailto:${social.email}`}
-            className="p-3 rounded-full bg-surface-2 text-text-secondary hover:text-ember hover:bg-surface-3 transition-colors"
-            aria-label="Email"
-          >
-            <Mail size={20} />
-          </a>
-          <a
-            href={social.linkedin}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="p-3 rounded-full bg-surface-2 text-text-secondary hover:text-ember hover:bg-surface-3 transition-colors"
-            aria-label="LinkedIn"
-          >
-            <Linkedin size={20} />
-          </a>
-          <a
-            href={social.github.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="p-3 rounded-full bg-surface-2 text-text-secondary hover:text-ember hover:bg-surface-3 transition-colors"
-            aria-label="GitHub"
-          >
-            <Github size={20} />
-          </a>
-        </motion.div>
+      <motion.div
+        custom={2}
+        initial="hidden"
+        animate="visible"
+        variants={fadeUp}
+        className="flex items-center gap-4 mt-8"
+      >
+        <a
+          href={`mailto:${config.social.email}`}
+          aria-label="Email"
+          className="p-3 rounded-full border border-border text-muted-foreground hover:text-primary hover:border-primary transition-colors"
+        >
+          <Mail className="w-5 h-5" />
+        </a>
+        <a
+          href={config.social.linkedin}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="LinkedIn"
+          className="p-3 rounded-full border border-border text-muted-foreground hover:text-primary hover:border-primary transition-colors"
+        >
+          <Linkedin className="w-5 h-5" />
+        </a>
+        <a
+          href={config.social.github.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="GitHub"
+          className="p-3 rounded-full border border-border text-muted-foreground hover:text-primary hover:border-primary transition-colors"
+        >
+          <Github className="w-5 h-5" />
+        </a>
       </motion.div>
 
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1, duration: 0.6 }}
+        custom={3}
+        initial="hidden"
+        animate="visible"
+        variants={fadeUp}
         className="absolute bottom-10"
       >
         <button
           onClick={() =>
-            document
-              .getElementById("articles")
-              ?.scrollIntoView({ behavior: "smooth" })
+            document.querySelector("#articles")?.scrollIntoView({ behavior: "smooth" })
           }
-          className="text-text-muted hover:text-ember transition-colors"
           aria-label="Scroll down"
+          className="text-muted-foreground hover:text-foreground transition-colors animate-float"
         >
-          <motion.div
-            animate={{ y: [0, 8, 0] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
-          >
-            <ChevronDown size={28} />
-          </motion.div>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M12 5v14M5 12l7 7 7-7" />
+          </svg>
         </button>
       </motion.div>
-    </div>
+    </section>
   );
 }
