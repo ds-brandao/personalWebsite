@@ -1,235 +1,113 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
+import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Article } from "@/types";
-import { X } from "lucide-react";
 import { Mermaid } from "./Mermaid";
 
 interface ArticleModalProps {
-  article: Article | null;
+  article: Article;
   onClose: () => void;
 }
 
 export function ArticleModal({ article, onClose }: ArticleModalProps) {
-  const [markdown, setMarkdown] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    },
-    [onClose]
-  );
+  const [content, setContent] = useState<string>("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!article) return;
-
-    let cancelled = false;
-    setLoading(true);
-
     fetch(article.markdown)
       .then((res) => res.text())
       .then((text) => {
-        if (!cancelled) {
-          setMarkdown(text);
-          setLoading(false);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setMarkdown("Failed to load article content.");
-          setLoading(false);
-        }
+        setContent(text);
+        setLoading(false);
       });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [article]);
-
-  useEffect(() => {
-    document.addEventListener("keydown", handleKeyDown);
-    document.body.style.overflow = article ? "hidden" : "";
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "";
-    };
-  }, [article, handleKeyDown]);
+  }, [article.markdown]);
 
   return (
-    <AnimatePresence>
-      {article && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 bg-bg/90 backdrop-blur-sm overflow-y-auto"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) onClose();
-          }}
-        >
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 40 }}
-            transition={{ duration: 0.3 }}
-            className="max-w-4xl mx-auto my-8"
-          >
-            {/* Close button */}
-            <button
-              onClick={onClose}
-              className="fixed top-6 right-6 z-50 p-2 rounded-full bg-surface-2 text-text-secondary hover:text-ember hover:bg-surface-3 transition-colors"
-              aria-label="Close"
-            >
-              <X size={24} />
-            </button>
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-3xl h-[90vh] p-0 gap-0 overflow-hidden">
+        {/* Hero image */}
+        {article.image && (
+          <div className="relative h-56 w-full overflow-hidden shrink-0">
+            <img
+              src={article.image}
+              alt={article.title}
+              className="w-full h-full object-cover"
+              style={article.objectPosition ? { objectPosition: article.objectPosition } : undefined}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
+          </div>
+        )}
 
-            {/* Hero image */}
-            <div className="relative h-[40vh] overflow-hidden rounded-t-xl">
-              <img
-                src={article.image}
-                alt={article.title}
-                className="w-full h-full object-cover"
-                style={{
-                  objectPosition: article.objectPosition || "center",
+        <ScrollArea className="flex-1 px-8 pb-8">
+          {/* Title area */}
+          <div className={article.image ? "-mt-12 relative z-10" : "pt-8"}>
+            <DialogTitle className="font-display text-3xl md:text-4xl font-bold text-foreground leading-tight">
+              {article.title}
+            </DialogTitle>
+            <div className="flex flex-wrap gap-2 mt-4 mb-8">
+              {article.tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="px-2.5 py-0.5 text-xs font-medium rounded-full bg-muted text-muted-foreground"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Markdown content */}
+          {loading ? (
+            <div className="space-y-4 animate-pulse">
+              <div className="h-4 bg-muted rounded w-3/4" />
+              <div className="h-4 bg-muted rounded w-full" />
+              <div className="h-4 bg-muted rounded w-5/6" />
+            </div>
+          ) : (
+            <article className="prose prose-neutral dark:prose-invert max-w-none
+              prose-headings:font-display prose-headings:font-bold
+              prose-h1:text-2xl prose-h2:text-xl prose-h3:text-lg
+              prose-a:text-primary prose-a:no-underline hover:prose-a:underline
+              prose-code:text-primary prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded
+              prose-pre:bg-card prose-pre:border prose-pre:border-border
+              prose-blockquote:border-l-primary prose-blockquote:text-muted-foreground
+              prose-img:rounded-lg
+            ">
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                rehypePlugins={[rehypeHighlight, rehypeRaw]}
+                components={{
+                  pre({ children, ...props }) {
+                    const child = Array.isArray(children) ? children[0] : children;
+                    if (
+                      child &&
+                      typeof child === "object" &&
+                      "props" in child
+                    ) {
+                      const childProps = child.props as Record<string, unknown>;
+                      if (
+                        typeof childProps.className === "string" &&
+                        childProps.className.includes("language-mermaid")
+                      ) {
+                        return <Mermaid chart={String(childProps.children).trim()} />;
+                      }
+                    }
+                    return <pre {...props}>{children}</pre>;
+                  },
                 }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/40 to-transparent" />
-              <div className="absolute bottom-6 left-6 right-6">
-                <h1 className="font-display text-3xl md:text-4xl font-bold text-text-primary mb-3">
-                  {article.title}
-                </h1>
-                <div className="flex flex-wrap gap-2">
-                  {article.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="tag-base border-ember/40 text-ember bg-ember/10"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Content */}
-            <div className="bg-surface-1 rounded-b-xl px-6 md:px-12 py-10">
-              {loading ? (
-                <div className="space-y-4">
-                  {[85, 92, 78, 95, 70, 88].map((w, i) => (
-                    <div
-                      key={i}
-                      className="h-4 bg-surface-2 rounded animate-pulse"
-                      style={{ width: `${w}%` }}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div className="prose prose-invert max-w-none">
-                  <ReactMarkdown
-                    remarkPlugins={[remarkGfm]}
-                    rehypePlugins={[rehypeHighlight, rehypeRaw]}
-                    components={{
-                      h1: ({ children }) => (
-                        <h1 className="font-display text-3xl font-bold text-text-primary mt-8 mb-4">
-                          {children}
-                        </h1>
-                      ),
-                      h2: ({ children }) => (
-                        <h2 className="font-display text-2xl font-semibold text-text-primary mt-6 mb-3">
-                          {children}
-                        </h2>
-                      ),
-                      h3: ({ children }) => (
-                        <h3 className="font-display text-xl font-semibold text-text-primary mt-5 mb-2">
-                          {children}
-                        </h3>
-                      ),
-                      p: ({ children }) => (
-                        <p className="text-text-secondary leading-relaxed mb-4">
-                          {children}
-                        </p>
-                      ),
-                      a: ({ href, children }) => (
-                        <a
-                          href={href}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-ember hover:text-ember-glow underline underline-offset-2 transition-colors"
-                        >
-                          {children}
-                        </a>
-                      ),
-                      code: ({ className, children, ...props }) => {
-                        const isInline = !className;
-                        if (isInline) {
-                          return (
-                            <code className="bg-surface-2 text-ember-glow px-1.5 py-0.5 rounded text-sm font-mono">
-                              {children}
-                            </code>
-                          );
-                        }
-                        return (
-                          <code className={className} {...props}>
-                            {children}
-                          </code>
-                        );
-                      },
-                      pre: ({ children, ...props }) => {
-                        const child = Array.isArray(children) ? children[0] : children;
-                        if (
-                          child &&
-                          typeof child === "object" &&
-                          "props" in child &&
-                          typeof child.props?.className === "string" &&
-                          child.props.className.includes("language-mermaid")
-                        ) {
-                          const text = String(child.props.children).trim();
-                          return <Mermaid chart={text} />;
-                        }
-                        return (
-                          <pre className="bg-surface-2 rounded-lg p-4 overflow-x-auto text-sm mb-4" {...props}>
-                            {children}
-                          </pre>
-                        );
-                      },
-                      blockquote: ({ children }) => (
-                        <blockquote className="border-l-4 border-ember/50 pl-4 italic text-text-muted my-4">
-                          {children}
-                        </blockquote>
-                      ),
-                      img: ({ src, alt }) => (
-                        <img
-                          src={src}
-                          alt={alt || ""}
-                          className="rounded-lg my-4 w-full"
-                        />
-                      ),
-                      ul: ({ children }) => (
-                        <ul className="list-disc list-inside text-text-secondary space-y-1 mb-4">
-                          {children}
-                        </ul>
-                      ),
-                      ol: ({ children }) => (
-                        <ol className="list-decimal list-inside text-text-secondary space-y-1 mb-4">
-                          {children}
-                        </ol>
-                      ),
-                    }}
-                  >
-                    {markdown}
-                  </ReactMarkdown>
-                </div>
-              )}
-            </div>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+              >
+                {content}
+              </ReactMarkdown>
+            </article>
+          )}
+        </ScrollArea>
+      </DialogContent>
+    </Dialog>
   );
 }
