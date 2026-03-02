@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import { Config, Article, GitHubRepo, ProjectAnalysis, GitHubCommit } from "@/types";
-import { SporeCanvas } from "./SporeCanvas";
-import { LoadingScreen } from "./LoadingScreen";
+import { ParallaxDepth } from "./ParallaxDepth";
 import { Navbar } from "./Navbar";
 import { Hero } from "./Hero";
 import { Articles } from "./Articles";
@@ -21,19 +20,16 @@ interface PageClientProps {
 }
 
 export function PageClient({ config, articles, repos, analyses, commits }: PageClientProps) {
-  const [loading, setLoading] = useState(true);
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
 
   return (
     <>
-      {loading && <LoadingScreen onComplete={() => setLoading(false)} />}
-
-      <SporeCanvas className="fixed inset-0 z-0 pointer-events-none" />
+      <ParallaxDepth />
       <PenguinCompanion />
 
       <Navbar name={config.personal.name} />
 
-      <main className="relative z-10 paper-grain">
+      <main className="relative z-10">
         <div id="hero">
           <Hero config={config} />
         </div>
