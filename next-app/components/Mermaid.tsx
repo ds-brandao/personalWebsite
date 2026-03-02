@@ -15,16 +15,17 @@ export function Mermaid({ chart }: MermaidProps) {
 
     import("mermaid").then((mod) => {
       const mermaid = mod.default;
+      const isDark = document.documentElement.classList.contains("dark");
       mermaid.initialize({
         startOnLoad: false,
-        theme: "dark",
+        theme: isDark ? "dark" : "default",
         themeVariables: {
-          primaryColor: "#f97316",
-          primaryTextColor: "#f5f5f5",
-          primaryBorderColor: "#f97316",
-          lineColor: "#a3a3a3",
-          secondaryColor: "#1c1917",
-          tertiaryColor: "#292524",
+          primaryColor: "#D0643A",
+          primaryTextColor: isDark ? "#FDF9F3" : "#3F3227",
+          primaryBorderColor: "#D0643A",
+          lineColor: "#7E6E5C",
+          secondaryColor: isDark ? "#211A15" : "#FDF9F3",
+          tertiaryColor: isDark ? "#3F3227" : "#D2C3B7",
           fontFamily: "inherit",
         },
       });
@@ -42,7 +43,7 @@ export function Mermaid({ chart }: MermaidProps) {
 
   if (!svg) {
     return (
-      <div className="bg-surface-2 rounded-lg p-4 text-text-muted text-sm animate-pulse">
+      <div className="bg-muted rounded-lg p-4 text-muted-foreground text-sm animate-pulse">
         Loading diagram…
       </div>
     );
