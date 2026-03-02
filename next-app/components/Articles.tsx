@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { Article, Config } from "@/types";
 import { ArticleCard } from "./ArticleCard";
+import { Toggle } from "@/components/ui/toggle";
 
 interface ArticlesProps {
   articles: Article[];
@@ -14,70 +15,68 @@ interface ArticlesProps {
 export function Articles({ articles, tags, onArticleClick }: ArticlesProps) {
   const [activeTag, setActiveTag] = useState<string | null>(null);
 
-  const tagNames = Object.keys(tags);
   const filtered = activeTag
     ? articles.filter((a) => a.tags.includes(activeTag))
     : articles;
 
   return (
-    <div className="px-6 md:px-12 lg:px-20 py-20 max-w-7xl mx-auto">
-      <h2 className="font-display text-4xl md:text-5xl font-bold text-text-primary mb-8">
+    <section className="max-w-6xl mx-auto px-6 py-24">
+      <motion.h2
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        className="font-display text-4xl md:text-5xl font-bold text-foreground mb-4"
+      >
         Writing
-      </h2>
+      </motion.h2>
+      <motion.p
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ delay: 0.1 }}
+        className="text-muted-foreground mb-8 max-w-lg"
+      >
+        Thoughts on software engineering, security, and building things.
+      </motion.p>
 
       {/* Tag filters */}
       <div className="flex flex-wrap gap-2 mb-10">
-        <button
-          onClick={() => setActiveTag(null)}
-          className={`tag-base ${
-            activeTag === null
-              ? "border-ember text-ember bg-ember/10"
-              : "border-surface-3 text-text-muted hover:text-text-secondary hover:border-surface-3"
-          }`}
+        <Toggle
+          pressed={activeTag === null}
+          onPressedChange={() => setActiveTag(null)}
+          className="rounded-full text-xs"
+          size="sm"
         >
           All
-        </button>
-        {tagNames.map((tag) => (
-          <button
-            key={tag}
-            onClick={() => setActiveTag(tag === activeTag ? null : tag)}
-            className={`tag-base ${
-              activeTag === tag
-                ? "border-ember text-ember bg-ember/10"
-                : "border-surface-3 text-text-muted hover:text-text-secondary hover:border-surface-3"
-            }`}
+        </Toggle>
+        {Object.entries(tags).map(([key]) => (
+          <Toggle
+            key={key}
+            pressed={activeTag === key}
+            onPressedChange={() => setActiveTag(activeTag === key ? null : key)}
+            className="rounded-full text-xs"
+            size="sm"
           >
-            {tag}
-          </button>
+            {key}
+          </Toggle>
         ))}
       </div>
 
-      {/* Bento grid */}
-      <motion.div
-        layout
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-      >
+      {/* Masonry-style grid */}
+      <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
         <AnimatePresence mode="popLayout">
           {filtered.map((article, i) => (
-            <motion.div
-              key={article.title}
-              layout
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.3, delay: i * 0.05 }}
-              className={i === 0 ? "md:col-span-2" : ""}
-            >
+            <div key={article.title} className="break-inside-avoid">
               <ArticleCard
                 article={article}
-                featured={i === 0}
+                tags={tags}
                 onClick={() => onArticleClick(article)}
-                tagColors={tags}
+                featured={i === 0 && !activeTag}
               />
-            </motion.div>
+            </div>
           ))}
         </AnimatePresence>
-      </motion.div>
-    </div>
+      </div>
+    </section>
   );
 }
