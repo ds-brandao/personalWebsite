@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { clashDisplay, generalSans } from "./fonts";
+import { fraunces, plusJakartaSans } from "./fonts";
+import { ThemeProvider } from "@/components/ThemeProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -13,9 +14,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${clashDisplay.variable} ${generalSans.variable}`}>
-      <body className="bg-bg text-text-primary font-sans antialiased">
-        {children}
+    <html lang="en" suppressHydrationWarning className={`${fraunces.variable} ${plusJakartaSans.variable}`}>
+      <body className="bg-background text-foreground font-sans antialiased">
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );
