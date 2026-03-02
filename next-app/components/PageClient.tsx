@@ -2,14 +2,13 @@
 
 import { useState } from "react";
 import { Config, Article, GitHubRepo, ProjectAnalysis, GitHubCommit } from "@/types";
-import { EmberCanvas } from "./EmberCanvas";
+import { SporeCanvas } from "./SporeCanvas";
 import { LoadingScreen } from "./LoadingScreen";
-import { SceneContainer } from "./SceneContainer";
+import { Navbar } from "./Navbar";
 import { Hero } from "./Hero";
 import { Articles } from "./Articles";
 import { Projects } from "./Projects";
 import { ArticleModal } from "./ArticleModal";
-import { DotNav } from "./DotNav";
 import { Footer } from "./Footer";
 import { PenguinCompanion } from "./penguin";
 
@@ -29,30 +28,30 @@ export function PageClient({ config, articles, repos, analyses, commits }: PageC
     <>
       {loading && <LoadingScreen onComplete={() => setLoading(false)} />}
 
-      <EmberCanvas className="fixed inset-0 z-0" />
+      <SporeCanvas className="fixed inset-0 z-0 pointer-events-none" />
       <PenguinCompanion />
 
-      <main className="relative z-10">
-        <SceneContainer id="hero">
-          <Hero config={config} />
-        </SceneContainer>
+      <Navbar name={config.personal.name} />
 
-        <SceneContainer id="articles" minHeight>
+      <main className="relative z-10 paper-grain">
+        <div id="hero">
+          <Hero config={config} />
+        </div>
+
+        <div id="articles">
           <Articles
             articles={articles}
             tags={config.tags}
             onArticleClick={setSelectedArticle}
           />
-        </SceneContainer>
+        </div>
 
-        <SceneContainer id="projects" minHeight>
+        <div id="projects">
           <Projects repos={repos} analyses={analyses} commits={commits} />
-        </SceneContainer>
+        </div>
 
         <Footer config={config} />
       </main>
-
-      <DotNav />
 
       {selectedArticle && (
         <ArticleModal
