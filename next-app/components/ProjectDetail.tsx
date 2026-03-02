@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import type { ProjectAnalysis, ToolResult, GitHubCommit } from "@/types";
+import type { ProjectAnalysis, ToolResult, GitHubCommit, GitHubRepo } from "@/types";
 import {
   PackageInfo,
   PackageInfoContent,
@@ -22,8 +22,8 @@ import {
 } from "@/components/ai-elements/commit";
 
 interface ProjectDetailProps {
+  repo: GitHubRepo;
   analysis: ProjectAnalysis | null;
-  repoUrl: string;
   commits: GitHubCommit[];
 }
 
@@ -62,20 +62,20 @@ function getInitials(name: string): string {
 }
 
 export function ProjectDetail({
+  repo,
   analysis,
-  repoUrl,
   commits,
 }: ProjectDetailProps) {
   if (!analysis && commits.length === 0) {
     return (
-      <div className="text-text-secondary p-4">
-        <p className="text-text-muted text-sm">
+      <div className="text-muted-foreground p-4">
+        <p className="text-muted-foreground text-sm">
           No data available. Visit{" "}
           <a
-            href={repoUrl}
+            href={repo.html_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-ember hover:text-ember-glow"
+            className="text-primary hover:text-primary"
           >
             GitHub
           </a>{" "}
@@ -99,7 +99,7 @@ export function ProjectDetail({
 
       {commits.length > 0 && (
         <div className="space-y-2">
-          <span className="font-medium text-text-muted text-xs uppercase tracking-wide">
+          <span className="font-medium text-muted-foreground text-xs uppercase tracking-wide">
             Recent Commits
           </span>
           <div className="space-y-2">
