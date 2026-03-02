@@ -2,11 +2,11 @@
 // 0 = transparent, 1 = body dark, 2 = belly white, 3 = orange accent, 4 = eye white, 5 = pupil
 export const PENGUIN_PALETTE = [
   "transparent", // 0
-  "#1c1917",     // 1 - body (surface-1)
-  "#fafaf9",     // 2 - belly (text-primary)
-  "#f97316",     // 3 - beak/feet (accent)
-  "#fafaf9",     // 4 - eye white
-  "#0c0a09",     // 5 - pupil
+  "#3F3227",     // 1 - body (Claude Brown)
+  "#FDF9F3",     // 2 - belly (Cream)
+  "#D0643A",     // 3 - beak/feet (Rust)
+  "#FDF9F3",     // 4 - eye white (Cream)
+  "#0E0A08",     // 5 - pupil (Deep Noir)
 ];
 
 // Each sprite is a 2D array of palette indices
