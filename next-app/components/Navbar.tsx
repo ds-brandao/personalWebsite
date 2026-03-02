@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion } from "motion/react";
+import { motion, useScroll, useTransform } from "motion/react";
 import { Menu, X } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,9 @@ export function Navbar({ name }: { name: string }) {
     const el = document.querySelector(href);
     el?.scrollIntoView({ behavior: "smooth" });
   };
+
+  const { scrollYProgress } = useScroll();
+  const progressWidth = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
 
   return (
     <motion.header
@@ -89,6 +92,12 @@ export function Navbar({ name }: { name: string }) {
           ))}
         </motion.div>
       )}
+
+      {/* Scroll progress bar */}
+      <motion.div
+        style={{ width: progressWidth }}
+        className="absolute bottom-0 left-0 h-0.5 bg-primary"
+      />
     </motion.header>
   );
 }
