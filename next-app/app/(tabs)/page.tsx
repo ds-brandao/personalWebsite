@@ -1,98 +1,106 @@
-import { getConfig, getGitHubRepos, getRepoCommits } from "@/lib/data";
-import { HomeFeed } from "@/components/HomeFeed";
-import { Card, CardContent } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
-import { Github, Linkedin, Mail, ExternalLink } from "lucide-react";
+import {
+  getConfig,
+  getArticles,
+  getGitHubRepos,
+  getRepoCommits,
+  slugify,
+} from "@/lib/data";
+import { ActivityFeed } from "@/components/ActivityFeed";
+import type { ActivityItem } from "@/components/ActivityFeed";
+import { SocialIcons } from "@/components/SocialIcons";
 
 export const revalidate = 86400;
 
 export default async function HomePage() {
   const config = await getConfig();
-  const repos = await getGitHubRepos(config.social.github.username);
+  const [articles, repos] = await Promise.all([
+    getArticles(),
+    getGitHubRepos(config.social.github.username),
+  ]);
   const commits = await getRepoCommits(config.social.github.username, repos);
+
+  // Build unified feed
+  const feedItems: ActivityItem[] = [];
+
+  // Add commits
+  for (const [repo, repoCommits] of Object.entries(commits)) {
+    for (const c of repoCommits) {
+      feedItems.push({
+        type: "commit",
+        sha: c.sha,
+        message: c.message,
+        repo,
+        author: c.authorName,
+        date: c.date,
+      });
+    }
+  }
+
+  // Add articles (use index as pseudo-chronology — first in array = most recent)
+  for (const article of articles) {
+    feedItems.push({
+      type: "article",
+      title: article.title,
+      summary: article.summary,
+      slug: slugify(article.title),
+      tags: article.tags,
+    });
+  }
+
+  // Add featured
+  if (config.featured) {
+    for (const item of config.featured) {
+      feedItems.push({
+        type: "featured",
+        title: item.title,
+        source: item.source,
+        url: item.url,
+      });
+    }
+  }
+
+  // Sort: commits by date (newest first), then articles/featured appended
+  // Commits have dates; articles/featured don't — interleave by putting
+  // articles and featured between commits
+  const withDates = feedItems.filter(
+    (i) => i.type === "commit"
+  ) as Array<ActivityItem & { type: "commit" }>;
+  const withoutDates = feedItems.filter((i) => i.type !== "commit");
+
+  withDates.sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
+
+  // Interleave: insert non-dated items at positions 2, 5, etc.
+  const merged: ActivityItem[] = [...withDates];
+  let insertIdx = 2;
+  for (const item of withoutDates) {
+    merged.splice(insertIdx, 0, item);
+    insertIdx += 3;
+  }
+
+  const capped = merged.slice(0, 8);
 
   return (
     <div className="py-8 md:py-12">
       {/* Hero */}
-      <section className="mb-8">
+      <section className="mb-10">
         <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground">
           {config.personal.name}
         </h1>
+        <SocialIcons
+          github={config.social.github.url}
+          linkedin={config.social.linkedin}
+          email={config.social.email}
+        />
       </section>
 
-      {/* Socials */}
-      <Card className="mb-6">
-        <CardContent className="p-4 space-y-3">
-          <a
-            href={config.social.github.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-3 text-sm text-foreground hover:text-primary transition-colors"
-          >
-            <Github className="size-5 text-muted-foreground" />
-            <span>github.com/{config.social.github.username}</span>
-          </a>
-          <Separator />
-          <a
-            href={config.social.linkedin}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-3 text-sm text-foreground hover:text-primary transition-colors"
-          >
-            <Linkedin className="size-5 text-muted-foreground" />
-            <span>LinkedIn</span>
-          </a>
-          <Separator />
-          <a
-            href={`mailto:${config.social.email}`}
-            className="flex items-center gap-3 text-sm text-foreground hover:text-primary transition-colors"
-          >
-            <Mail className="size-5 text-muted-foreground" />
-            <span>{config.social.email}</span>
-          </a>
-        </CardContent>
-      </Card>
-
-      {/* Featured */}
-      {config.featured && config.featured.length > 0 && (
-        <section className="mb-8">
-          <h2 className="font-display text-lg font-semibold text-foreground mb-3">
-            Featured
-          </h2>
-          <div className="space-y-3">
-            {config.featured.map((item) => (
-              <a
-                key={item.url}
-                href={item.url}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Card className="transition-shadow hover:shadow-md">
-                  <CardContent className="p-4 flex items-center justify-between gap-3">
-                    <div>
-                      <p className="text-sm font-medium text-foreground">
-                        {item.title}
-                      </p>
-                      <Badge variant="secondary" className="mt-1 text-xs">
-                        {item.source}
-                      </Badge>
-                    </div>
-                    <ExternalLink className="size-4 text-muted-foreground shrink-0" />
-                  </CardContent>
-                </Card>
-              </a>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Activity feed */}
+      {/* Unified activity feed */}
       <section>
         <h2 className="font-display text-xl font-semibold text-foreground mb-4">
           Recent Activity
         </h2>
-        <HomeFeed commits={commits} />
+        <ActivityFeed items={capped} />
       </section>
     </div>
   );
