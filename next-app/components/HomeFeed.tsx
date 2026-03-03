@@ -29,7 +29,7 @@ export function HomeFeed({ commits }: HomeFeedProps) {
       repoCommits.map((c) => ({ ...c, repo }))
     )
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    .slice(0, 15);
+    .slice(0, 3);
 
   return (
     <div className="space-y-3">

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, FileText, Code, User } from "lucide-react";
+import { Home, FileText, Code } from "lucide-react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 
@@ -10,7 +10,6 @@ const tabs = [
   { href: "/", label: "Home", icon: Home },
   { href: "/articles", label: "Articles", icon: FileText },
   { href: "/projects", label: "Projects", icon: Code },
-  { href: "/profile", label: "Profile", icon: User },
 ];
 
 export function BottomTabBar() {

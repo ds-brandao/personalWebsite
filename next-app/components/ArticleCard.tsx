@@ -8,6 +8,12 @@ interface ArticleCardProps {
   slug: string;
 }
 
+function toThumb(src: string): string {
+  return src
+    .replace("/images/blog/", "/images/blog/thumbs/")
+    .replace(/\.(jpeg|jpg|png)$/i, ".webp");
+}
+
 export function ArticleCard({ article, slug }: ArticleCardProps) {
   return (
     <Link href={`/articles/${slug}`}>
@@ -15,7 +21,7 @@ export function ArticleCard({ article, slug }: ArticleCardProps) {
         {article.image && (
           <div className="relative h-40 w-full overflow-hidden">
             <img
-              src={article.image}
+              src={toThumb(article.image)}
               alt={article.title}
               className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
               style={

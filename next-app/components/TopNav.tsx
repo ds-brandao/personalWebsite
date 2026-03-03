@@ -9,7 +9,6 @@ const links = [
   { href: "/", label: "Home" },
   { href: "/articles", label: "Articles" },
   { href: "/projects", label: "Projects" },
-  { href: "/profile", label: "Profile" },
 ];
 
 export function TopNav({ name }: { name: string }) {
