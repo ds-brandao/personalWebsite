@@ -105,3 +105,15 @@ export async function getProjectAnalyses(): Promise<Record<string, ProjectAnalys
     return {};
   }
 }
+
+export function slugify(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
+export async function getArticleBySlug(slug: string): Promise<Article | null> {
+  const articles = await getArticles();
+  return articles.find((a) => slugify(a.title) === slug) ?? null;
+}
