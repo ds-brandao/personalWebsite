@@ -1,26 +1,28 @@
 services:
-  # Development server with hot reloading
   dev:
     image: node:20-alpine
     working_dir: /app
     volumes:
-      - ./react-app:/app
-      - react_node_modules:/app/node_modules
+      - ./next-app:/app
+      - next_node_modules:/app/node_modules
+      - next_cache:/app/.next
     ports:
-      - "5173:5173"
-    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+      - "3000:3000"
+    command: sh -c "npm install && npm run dev -- --hostname 0.0.0.0"
+    env_file:
+      - ./next-app/.env.local
     environment:
       - NODE_ENV=development
 
-  # Production build with Nginx
   web:
     build: .
     ports:
-      - "80:80"
-    depends_on:
-      - dev
+      - "80:3000"
+    env_file:
+      - ./next-app/.env.local
     profiles:
       - production
 
 volumes:
-  react_node_modules:
+  next_node_modules:
+  next_cache:

@@ -1,12 +1,12 @@
 FROM node:20-alpine AS dependencies
 WORKDIR /app
-COPY next-app/package*.json ./
+COPY package*.json ./
 RUN npm ci
 
 FROM node:20-alpine AS builder
 WORKDIR /app
 COPY --from=dependencies /app/node_modules ./node_modules
-COPY next-app/ .
+COPY . .
 ENV NODE_ENV=production
 RUN npm run build
 

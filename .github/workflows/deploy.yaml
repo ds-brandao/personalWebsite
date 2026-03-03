@@ -22,47 +22,42 @@ jobs:
         echo "Deploying commit: $(git rev-parse HEAD)"
         echo "Commit message: $(git log -1 --pretty=%B)"
         echo ""
-        echo "Checking React app structure..."
+        echo "Checking Next.js app structure..."
         ls -la
-        ls -la ./react-app
-        ls -la ./react-app/public/config
+        ls -la ./next-app
+        ls -la ./next-app/public/config
 
     - name: Stop existing containers
       run: |
-        # Stop docker-compose services (legacy)
         docker compose down || true
-        
-        # Force stop and remove the personal-website container
         docker rm -f personal-website || true
-        
-        # Find and stop any container using port 80
+
         CONTAINER_ON_80=$(docker ps -q --filter "publish=80" || true)
         if [ -n "$CONTAINER_ON_80" ]; then
           echo "Found container(s) using port 80: $CONTAINER_ON_80"
           docker rm -f $CONTAINER_ON_80 || true
         fi
-        
-        # Wait for port to be released
+
         sleep 3
-        
-        # Verify port 80 is free
+
         if lsof -i :80 > /dev/null 2>&1; then
           echo "Warning: Port 80 still in use by non-Docker process"
           lsof -i :80 || true
         fi
 
-    - name: Build React app Docker image
+    - name: Build Next.js Docker image
       run: |
-        echo "Building React app with multi-stage Docker build..."
-        # Use --no-cache to ensure latest code is always built
+        echo "Building Next.js app with multi-stage Docker build..."
         docker build --no-cache -t personal-website .
 
     - name: Run production container
       run: |
         echo "Starting production container..."
-        docker run -d --name personal-website -p 80:80 personal-website
+        docker run -d --name personal-website \
+          -p 80:3000 \
+          --env OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} \
+          personal-website
 
-        # Wait for container to be ready
         echo "Waiting for container to start..."
         sleep 10
 
@@ -70,7 +65,6 @@ jobs:
       run: |
         echo "Testing if website is accessible..."
 
-        # Test main page
         HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:80/)
         if [ "$HTTP_CODE" = "200" ]; then
           echo "Main page is accessible (HTTP $HTTP_CODE)"
@@ -80,7 +74,6 @@ jobs:
           exit 1
         fi
 
-        # Test config.json
         HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:80/config/config.json)
         if [ "$HTTP_CODE" = "200" ]; then
           echo "Config file is accessible (HTTP $HTTP_CODE)"
@@ -90,7 +83,6 @@ jobs:
           exit 1
         fi
 
-        # Test articles.json
         HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:80/config/articles.json)
         if [ "$HTTP_CODE" = "200" ]; then
           echo "Articles file is accessible (HTTP $HTTP_CODE)"
@@ -115,5 +107,4 @@ jobs:
     - name: Clean up old images
       if: always()
       run: |
-        # Remove any unused images and volumes
         docker system prune -f
