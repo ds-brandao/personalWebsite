@@ -41,7 +41,7 @@ export function ArticleCard({ article, slug }: ArticleCardProps) {
           </p>
           <div className="mt-3 flex flex-wrap gap-1.5">
             {article.tags.map((tag) => (
-              <Badge key={tag} variant="secondary" className="text-xs">
+              <Badge key={tag} variant="outline" className="text-xs">
                 {tag}
               </Badge>
             ))}

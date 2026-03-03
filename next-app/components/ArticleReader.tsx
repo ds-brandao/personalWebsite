@@ -59,13 +59,14 @@ function MarkdownContent({ content }: { content: string }) {
 export function ArticleReader({ article, content }: ArticleReaderProps) {
   const router = useRouter();
 
-  const header = (
-    <>
+  return (
+    <div className="py-6 md:py-10">
+      {/* Desktop back button */}
       <Button
         variant="ghost"
         size="sm"
         onClick={() => router.back()}
-        className="mb-6 -ml-2"
+        className="mb-6 -ml-2 hidden md:inline-flex"
       >
         <ArrowLeft className="mr-1 size-4" />
         Back
@@ -76,17 +77,11 @@ export function ArticleReader({ article, content }: ArticleReaderProps) {
       </h1>
       <div className="flex flex-wrap gap-2 mt-3 mb-6">
         {article.tags.map((tag) => (
-          <Badge key={tag} variant="secondary">
+          <Badge key={tag} variant="outline">
             {tag}
           </Badge>
         ))}
       </div>
-    </>
-  );
-
-  return (
-    <div className="py-6 md:py-10">
-      {header}
 
       {/* Hero image header */}
       {article.image && (
