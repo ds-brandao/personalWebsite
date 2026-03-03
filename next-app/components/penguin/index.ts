@@ -1,1 +1,0 @@
-export { PenguinCompanion } from "./PenguinCompanion";
