@@ -60,6 +60,7 @@ export function ArticlesFilter({ articles, tags }: ArticlesFilterProps) {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.2 }}
+              className="h-full"
             >
               <ArticleCard
                 article={article}

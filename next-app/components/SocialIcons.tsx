@@ -30,7 +30,7 @@ export function SocialIcons({ github, linkedin, email }: SocialIconsProps) {
 
   return (
     <TooltipProvider>
-      <div className="flex items-center gap-1 mt-3">
+      <div className="flex items-center gap-1">
         {socials.map(({ key, icon: Icon, label }) => (
           <Tooltip key={key}>
             <TooltipTrigger asChild>

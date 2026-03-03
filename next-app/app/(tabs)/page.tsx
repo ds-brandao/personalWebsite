@@ -8,6 +8,7 @@ import {
 import { ActivityFeed } from "@/components/ActivityFeed";
 import type { ActivityItem } from "@/components/ActivityFeed";
 import { SocialIcons } from "@/components/SocialIcons";
+import { ArticleCarousel } from "@/components/ArticleCarousel";
 
 export const revalidate = 86400;
 
@@ -19,13 +20,11 @@ export default async function HomePage() {
   ]);
   const commits = await getRepoCommits(config.social.github.username, repos);
 
-  // Build unified feed
-  const feedItems: ActivityItem[] = [];
-
-  // Add commits
+  // Build feed items by type
+  const commitItems: ActivityItem[] = [];
   for (const [repo, repoCommits] of Object.entries(commits)) {
     for (const c of repoCommits) {
-      feedItems.push({
+      commitItems.push({
         type: "commit",
         sha: c.sha,
         message: c.message,
@@ -36,56 +35,52 @@ export default async function HomePage() {
     }
   }
 
-  // Add articles (use index as pseudo-chronology — first in array = most recent)
+  const contentItems: ActivityItem[] = [];
   for (const article of articles) {
-    feedItems.push({
+    contentItems.push({
       type: "article",
       title: article.title,
       summary: article.summary,
       slug: slugify(article.title),
       tags: article.tags,
+      date: article.date,
     });
   }
-
-  // Add featured
   if (config.featured) {
     for (const item of config.featured) {
-      feedItems.push({
+      contentItems.push({
         type: "featured",
         title: item.title,
         source: item.source,
         url: item.url,
+        date: item.date,
       });
     }
   }
 
-  // Sort: commits by date (newest first), then articles/featured appended
-  // Commits have dates; articles/featured don't — interleave by putting
-  // articles and featured between commits
-  const withDates = feedItems.filter(
-    (i) => i.type === "commit"
-  ) as Array<ActivityItem & { type: "commit" }>;
-  const withoutDates = feedItems.filter((i) => i.type !== "commit");
+  // Sort each group by date (newest first)
+  const byDate = (a: ActivityItem, b: ActivityItem) =>
+    new Date(b.date).getTime() - new Date(a.date).getTime();
+  commitItems.sort(byDate);
+  contentItems.sort(byDate);
 
-  withDates.sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-  );
+  // Take the latest commits (capped so they don't flood the feed)
+  // then merge with all content items and sort chronologically
+  const feedItems = [...commitItems.slice(0, 5), ...contentItems];
+  feedItems.sort(byDate);
 
-  // Interleave: insert non-dated items at positions 2, 5, etc.
-  const merged: ActivityItem[] = [...withDates];
-  let insertIdx = 2;
-  for (const item of withoutDates) {
-    merged.splice(insertIdx, 0, item);
-    insertIdx += 3;
-  }
+  const capped = feedItems.slice(0, 10);
 
-  const capped = merged.slice(0, 8);
+  // Articles sorted by date for the carousel
+  const sortedArticles = [...articles]
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .map((a) => ({ article: a, slug: slugify(a.title) }));
 
   return (
     <div className="py-8 md:py-12">
-      {/* Hero */}
-      <section className="mb-10">
-        <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground">
+      {/* Name (mobile only) + Social icons */}
+      <section className="mb-10 flex flex-col items-center">
+        <h1 className="md:hidden font-display text-3xl font-bold text-foreground mb-2">
           {config.personal.name}
         </h1>
         <SocialIcons
@@ -93,6 +88,14 @@ export default async function HomePage() {
           linkedin={config.social.linkedin}
           email={config.social.email}
         />
+      </section>
+
+      {/* Articles carousel */}
+      <section className="mb-10">
+        <h2 className="font-display text-xl font-semibold text-foreground mb-4">
+          Articles
+        </h2>
+        <ArticleCarousel articles={sortedArticles} />
       </section>
 
       {/* Unified activity feed */}

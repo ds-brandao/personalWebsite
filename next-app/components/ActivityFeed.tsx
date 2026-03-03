@@ -1,9 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { GitCommitIcon, FileTextIcon, StarIcon } from "lucide-react";
-import { motion } from "motion/react";
+import { Button } from "@/components/ui/button";
+import { GitCommitIcon, FileTextIcon, StarIcon, ChevronDown, ChevronUp } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
 
 export type ActivityItem =
   | {
@@ -20,12 +22,14 @@ export type ActivityItem =
       summary: string;
       slug: string;
       tags: string[];
+      date: string;
     }
   | {
       type: "featured";
       title: string;
       source: string;
       url: string;
+      date: string;
     };
 
 const icons = {
@@ -82,10 +86,18 @@ function FeedRow({
             </>
           )}
           {item.type === "article" && (
-            <span className="line-clamp-1">{item.summary}</span>
+            <>
+              <span className="line-clamp-1">{item.summary}</span>
+              <span>·</span>
+              <span className="shrink-0">{formatRelative(item.date)}</span>
+            </>
           )}
           {item.type === "featured" && (
-            <span>Press mention</span>
+            <>
+              <span>Press mention</span>
+              <span>·</span>
+              <span className="shrink-0">{formatRelative(item.date)}</span>
+            </>
           )}
         </div>
       </div>
@@ -118,24 +130,53 @@ function FeedRow({
 
 interface ActivityFeedProps {
   items: ActivityItem[];
+  initialCount?: number;
 }
 
-export function ActivityFeed({ items }: ActivityFeedProps) {
+export function ActivityFeed({ items, initialCount = 3 }: ActivityFeedProps) {
+  const [expanded, setExpanded] = useState(false);
+  const visible = expanded ? items : items.slice(0, initialCount);
+  const hasMore = items.length > initialCount;
+
   return (
-    <div className="divide-y divide-border">
-      {items.map((item, i) => (
-        <FeedRow
-          key={
-            item.type === "commit"
-              ? item.sha
-              : item.type === "article"
-                ? item.slug
-                : item.url
-          }
-          item={item}
-          index={i}
-        />
-      ))}
+    <div>
+      <div className="divide-y divide-border">
+        <AnimatePresence initial={false}>
+          {visible.map((item, i) => (
+            <FeedRow
+              key={
+                item.type === "commit"
+                  ? item.sha
+                  : item.type === "article"
+                    ? item.slug
+                    : item.url
+              }
+              item={item}
+              index={i}
+            />
+          ))}
+        </AnimatePresence>
+      </div>
+      {hasMore && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setExpanded(!expanded)}
+          className="mt-2 w-full text-muted-foreground"
+        >
+          {expanded ? (
+            <>
+              <ChevronUp className="mr-1 size-4" />
+              Show less
+            </>
+          ) : (
+            <>
+              <ChevronDown className="mr-1 size-4" />
+              Show more ({items.length - initialCount} more)
+            </>
+          )}
+        </Button>
+      )}
     </div>
   );
 }

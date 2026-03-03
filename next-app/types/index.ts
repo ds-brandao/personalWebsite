@@ -18,6 +18,7 @@ export interface FeaturedItem {
   title: string;
   source: string;
   url: string;
+  date: string;
 }
 
 export interface Article {
@@ -27,6 +28,7 @@ export interface Article {
   image: string;
   objectPosition?: string;
   tags: string[];
+  date: string;
 }
 
 export interface GitHubRepo {

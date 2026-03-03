@@ -16,10 +16,10 @@ function toThumb(src: string): string {
 
 export function ArticleCard({ article, slug }: ArticleCardProps) {
   return (
-    <Link href={`/articles/${slug}`}>
-      <Card className="overflow-hidden transition-shadow hover:shadow-md group">
+    <Link href={`/articles/${slug}`} className="block h-full">
+      <Card className="overflow-hidden transition-shadow hover:shadow-md group h-full flex flex-col py-0 gap-0">
         {article.image && (
-          <div className="relative h-40 w-full overflow-hidden">
+          <div className="relative h-40 w-full overflow-hidden shrink-0">
             <img
               src={toThumb(article.image)}
               alt={article.title}
@@ -32,11 +32,11 @@ export function ArticleCard({ article, slug }: ArticleCardProps) {
             />
           </div>
         )}
-        <CardContent className="p-4">
+        <CardContent className="p-4 flex flex-col flex-1">
           <h3 className="font-display text-lg font-semibold text-foreground line-clamp-2">
             {article.title}
           </h3>
-          <p className="mt-1 text-sm text-muted-foreground line-clamp-2">
+          <p className="mt-1 text-sm text-muted-foreground line-clamp-2 flex-1">
             {article.summary}
           </p>
           <div className="mt-3 flex flex-wrap gap-1.5">
