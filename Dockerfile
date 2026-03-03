@@ -7,7 +7,9 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 COPY --from=dependencies /app/node_modules ./node_modules
 COPY next-app/ .
+ARG COMMIT_SHA=unknown
 ENV NODE_ENV=production
+ENV COMMIT_SHA=$COMMIT_SHA
 RUN npm run build
 
 FROM node:20-alpine AS runner

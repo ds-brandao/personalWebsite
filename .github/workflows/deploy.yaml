@@ -48,7 +48,7 @@ jobs:
     - name: Build Next.js Docker image
       run: |
         echo "Building Next.js app with multi-stage Docker build..."
-        docker build --no-cache -t personal-website .
+        docker build --no-cache --build-arg COMMIT_SHA=$(git rev-parse --short HEAD) -t personal-website .
 
     - name: Run production container
       run: |

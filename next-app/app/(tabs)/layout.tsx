@@ -15,7 +15,7 @@ export default async function TabsLayout({
       <main className="mx-auto max-w-5xl px-4 pb-24 md:pb-8 md:px-6">
         {children}
       </main>
-      <footer className="hidden md:block border-t border-border py-4 text-center text-xs text-muted-foreground">
+      <footer className="border-t border-border py-4 mb-20 md:mb-0 text-center text-xs text-muted-foreground">
         <span>&copy; {new Date().getFullYear()} {config.personal.name}</span>
         {process.env.NEXT_PUBLIC_COMMIT_SHA && (
           <span className="ml-2 font-mono opacity-60">
