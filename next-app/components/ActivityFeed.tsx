@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { FeaturedEmbedDialog } from "@/components/FeaturedEmbedDialog";
 import { GitCommitIcon, FileTextIcon, StarIcon, ChevronDown, ChevronUp } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -50,9 +51,11 @@ function formatRelative(dateStr: string): string {
 function FeedRow({
   item,
   index,
+  onFeaturedClick,
 }: {
   item: ActivityItem;
   index: number;
+  onFeaturedClick?: (url: string) => void;
 }) {
   const Icon = icons[item.type];
 
@@ -110,9 +113,13 @@ function FeedRow({
         {content}
       </Link>
     ) : item.type === "featured" ? (
-      <a href={item.url} target="_blank" rel="noopener noreferrer" className="block hover:bg-muted/50 -mx-2 px-2 rounded-lg transition-colors">
+      <button
+        type="button"
+        onClick={() => onFeaturedClick?.(item.url)}
+        className="block w-full text-left hover:bg-muted/50 -mx-2 px-2 rounded-lg transition-colors"
+      >
         {content}
-      </a>
+      </button>
     ) : (
       <div className="-mx-2 px-2">{content}</div>
     );
@@ -135,8 +142,13 @@ interface ActivityFeedProps {
 
 export function ActivityFeed({ items, initialCount = 3 }: ActivityFeedProps) {
   const [expanded, setExpanded] = useState(false);
+  const [openUrl, setOpenUrl] = useState<string | null>(null);
   const visible = expanded ? items : items.slice(0, initialCount);
   const hasMore = items.length > initialCount;
+
+  const activeItem = items.find(
+    (item) => item.type === "featured" && item.url === openUrl
+  ) as Extract<ActivityItem, { type: "featured" }> | undefined;
 
   return (
     <div>
@@ -153,6 +165,7 @@ export function ActivityFeed({ items, initialCount = 3 }: ActivityFeedProps) {
               }
               item={item}
               index={i}
+              onFeaturedClick={setOpenUrl}
             />
           ))}
         </AnimatePresence>
@@ -177,6 +190,14 @@ export function ActivityFeed({ items, initialCount = 3 }: ActivityFeedProps) {
           )}
         </Button>
       )}
+
+      <FeaturedEmbedDialog
+        open={!!openUrl}
+        onOpenChange={(open) => !open && setOpenUrl(null)}
+        url={openUrl}
+        title={activeItem?.title}
+        source={activeItem?.source}
+      />
     </div>
   );
 }

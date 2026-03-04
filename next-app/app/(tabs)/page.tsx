@@ -9,6 +9,7 @@ import { ActivityFeed } from "@/components/ActivityFeed";
 import type { ActivityItem } from "@/components/ActivityFeed";
 import { SocialIcons } from "@/components/SocialIcons";
 import { ArticleCarousel } from "@/components/ArticleCarousel";
+import { FeaturedSection } from "@/components/FeaturedSection";
 
 export const revalidate = 86400;
 
@@ -100,37 +101,7 @@ export default async function HomePage() {
 
       {/* Featured / Press */}
       {config.featured && config.featured.length > 0 && (
-        <section className="mb-10">
-          <h2 className="font-display text-xl font-semibold text-foreground mb-4">
-            Featured In
-          </h2>
-          <div className="space-y-3">
-            {config.featured.map((item) => (
-              <a
-                key={item.url}
-                href={item.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-between gap-3 rounded-lg border border-border p-4 transition-colors hover:bg-muted/50"
-              >
-                <div>
-                  <p className="text-sm font-medium text-foreground">
-                    {item.title}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {item.source}
-                  </p>
-                </div>
-                <span className="text-xs text-muted-foreground shrink-0">
-                  {new Date(item.date).toLocaleDateString("en-US", {
-                    month: "short",
-                    year: "numeric",
-                  })}
-                </span>
-              </a>
-            ))}
-          </div>
-        </section>
+        <FeaturedSection items={config.featured} />
       )}
 
       {/* Unified activity feed */}
