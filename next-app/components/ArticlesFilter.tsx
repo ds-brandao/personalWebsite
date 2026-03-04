@@ -3,7 +3,18 @@
 import { useState } from "react";
 import { Article } from "@/types";
 import { ArticleCard } from "@/components/ArticleCard";
-import { Toggle } from "@/components/ui/toggle";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ListFilter, X } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
 interface ArticlesFilterProps {
@@ -27,28 +38,47 @@ export function ArticlesFilter({ articles, tags }: ArticlesFilterProps) {
 
   return (
     <>
-      <div className="flex flex-wrap gap-2 mb-6">
-        <Toggle
-          pressed={activeTag === null}
-          onPressedChange={() => setActiveTag(null)}
-          size="sm"
-          className="rounded-full"
-        >
-          All
-        </Toggle>
-        {tags.map((tag) => (
-          <Toggle
-            key={tag}
-            pressed={activeTag === tag}
-            onPressedChange={() =>
-              setActiveTag(activeTag === tag ? null : tag)
-            }
-            size="sm"
-            className="rounded-full"
+      <div className="flex items-center gap-3 mb-6">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="gap-2">
+              <ListFilter className="size-4" />
+              {activeTag ?? "All Topics"}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-48">
+            <DropdownMenuLabel>Filter by topic</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuRadioGroup
+              value={activeTag ?? "all"}
+              onValueChange={(v) => setActiveTag(v === "all" ? null : v)}
+            >
+              <DropdownMenuRadioItem value="all">
+                All Topics
+              </DropdownMenuRadioItem>
+              {tags.map((tag) => (
+                <DropdownMenuRadioItem key={tag} value={tag}>
+                  {tag}
+                </DropdownMenuRadioItem>
+              ))}
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {activeTag && (
+          <Badge
+            variant="secondary"
+            className="gap-1 cursor-pointer"
+            onClick={() => setActiveTag(null)}
           >
-            {tag}
-          </Toggle>
-        ))}
+            {activeTag}
+            <X className="size-3" />
+          </Badge>
+        )}
+
+        <span className="text-sm text-muted-foreground ml-auto">
+          {filtered.length} {filtered.length === 1 ? "article" : "articles"}
+        </span>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <AnimatePresence mode="popLayout">
