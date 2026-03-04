@@ -94,7 +94,7 @@ export function BottomTabBar() {
                   href={tab.href}
                   prefetch
                   className={cn(
-                    "relative flex flex-col items-center gap-0.5 px-4 py-2 rounded-full text-xs font-medium transition-colors",
+                    "relative flex flex-col items-center gap-0.5 px-3 py-2 rounded-full text-xs font-medium transition-colors",
                     isActive ? "text-primary" : "text-muted-foreground"
                   )}
                 >
@@ -120,19 +120,19 @@ export function BottomTabBar() {
           <motion.div
             layout
             transition={snappySpring}
-            className="rounded-full px-2 py-2"
+            className="rounded-full p-1.5"
             style={neumorphicStyle}
           >
             <button
               onClick={() => setTheme(isDark ? "light" : "dark")}
-              className="flex flex-col items-center justify-center gap-0.5 rounded-full px-3 py-2 text-xs font-medium text-muted-foreground"
+              className="flex items-center justify-center size-9 rounded-full text-muted-foreground transition-colors hover:text-foreground"
+              aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
             >
               {mounted ? (
-                isDark ? <Sun className="size-5" /> : <Moon className="size-5" />
+                isDark ? <Sun className="size-4" /> : <Moon className="size-4" />
               ) : (
-                <Sun className="size-5" />
+                <Sun className="size-4" />
               )}
-              <span>{mounted && isDark ? "Light" : "Dark"}</span>
             </button>
           </motion.div>
         </motion.div>
