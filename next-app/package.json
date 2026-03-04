@@ -1,12 +1,14 @@
 {
-  "name": "next-app",
-  "version": "0.1.0",
+  "name": "portfolio-template",
+  "version": "1.0.0",
   "private": true,
+  "description": "A modern developer portfolio and blog template built with Next.js, React, TypeScript, and Tailwind CSS",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "setup": "npx tsx scripts/setup.ts",
     "seed": "npx tsx scripts/seed-analyses.ts"
   },
   "dependencies": {

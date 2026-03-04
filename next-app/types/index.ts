@@ -1,4 +1,8 @@
 export interface Config {
+  site: {
+    title: string;
+    description: string;
+  };
   personal: {
     name: string;
     title: string;
@@ -6,7 +10,11 @@ export interface Config {
     favoriteRestaurant: { name: string; url: string };
   };
   social: {
-    github: { username: string; url: string };
+    github: {
+      username: string;
+      url: string;
+      hiddenRepos?: string[];
+    };
     email: string;
     linkedin: string;
   };

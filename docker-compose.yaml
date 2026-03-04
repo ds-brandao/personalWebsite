@@ -9,8 +9,10 @@ services:
     ports:
       - "3000:3000"
     command: sh -c "npm install && npm run dev -- --hostname 0.0.0.0"
+    # Optional: create next-app/.env.local with OPENAI_API_KEY for AI project analyses
     env_file:
-      - ./next-app/.env.local
+      - path: ./next-app/.env.local
+        required: false
     environment:
       - NODE_ENV=development
 
@@ -19,7 +21,8 @@ services:
     ports:
       - "80:3000"
     env_file:
-      - ./next-app/.env.local
+      - path: ./next-app/.env.local
+        required: false
     profiles:
       - production
 

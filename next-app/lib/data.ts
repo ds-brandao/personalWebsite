@@ -20,11 +20,12 @@ export async function getArticles(): Promise<Article[]> {
   return JSON.parse(raw);
 }
 
-const HIDDEN_REPOS = ["ds-brandao"];
-
 export async function getGitHubRepos(
   username: string
 ): Promise<GitHubRepo[]> {
+  const config = await getConfig();
+  const hiddenRepos = config.social.github.hiddenRepos ?? [];
+
   try {
     const res = await fetch(
       `https://api.github.com/users/${username}/repos?sort=updated&per_page=10&direction=desc`,
@@ -35,7 +36,7 @@ export async function getGitHubRepos(
     );
     if (!res.ok) throw new Error("GitHub API failed");
     const repos: GitHubRepo[] = await res.json();
-    return repos.filter((r) => !HIDDEN_REPOS.includes(r.name));
+    return repos.filter((r) => !hiddenRepos.includes(r.name));
   } catch {
     try {
       const filePath = path.join(

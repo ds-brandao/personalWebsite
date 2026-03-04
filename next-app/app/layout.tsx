@@ -1,12 +1,16 @@
 import type { Metadata, Viewport } from "next";
 import { fraunces, plusJakartaSans } from "./fonts";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { getConfig } from "@/lib/data";
 import "./globals.css";
 
-export const metadata: Metadata = {
-  title: "Daniel Brandao",
-  description: "Software Engineer | Backend Developer | AI Technologies",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const config = await getConfig();
+  return {
+    title: config.site.title,
+    description: config.site.description,
+  };
+}
 
 export const viewport: Viewport = {
   width: "device-width",

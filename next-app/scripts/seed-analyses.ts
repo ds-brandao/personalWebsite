@@ -18,16 +18,14 @@ import { openai } from "@ai-sdk/openai";
 import { tools } from "../ai/tools";
 import type { GitHubRepo, ProjectAnalysis, ToolResult } from "../types";
 
-const HIDDEN_REPOS = ["ds-brandao"];
-
-async function fetchRepos(username: string): Promise<GitHubRepo[]> {
+async function fetchRepos(username: string, hiddenRepos: string[]): Promise<GitHubRepo[]> {
   const res = await fetch(
     `https://api.github.com/users/${username}/repos?sort=updated&per_page=10&direction=desc`,
     { headers: { Accept: "application/vnd.github.v3+json" } }
   );
   if (!res.ok) throw new Error(`GitHub API failed: ${res.status}`);
   const repos: GitHubRepo[] = await res.json();
-  return repos.filter((r) => !HIDDEN_REPOS.includes(r.name));
+  return repos.filter((r) => !hiddenRepos.includes(r.name));
 }
 
 async function generateAnalysis(repo: GitHubRepo): Promise<ProjectAnalysis> {
@@ -78,9 +76,10 @@ async function main() {
   const configPath = path.join(process.cwd(), "public", "config", "config.json");
   const config = JSON.parse(fs.readFileSync(configPath, "utf-8"));
   const username = config.social.github.username;
+  const hiddenRepos: string[] = config.social?.github?.hiddenRepos ?? [];
 
   console.log(`Fetching repos for ${username}...`);
-  const repos = await fetchRepos(username);
+  const repos = await fetchRepos(username, hiddenRepos);
   console.log(`Found ${repos.length} repos. Generating analyses...`);
 
   const results = await Promise.allSettled(

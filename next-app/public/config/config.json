@@ -1,60 +1,38 @@
 {
+  "site": {
+    "title": "My Portfolio",
+    "description": "Developer portfolio and blog built with Next.js"
+  },
   "personal": {
-    "name": "Daniel Brandao",
-    "title": "aye!",
+    "name": "Your Name",
+    "title": "Software Engineer",
     "college": {
-      "name": "Bellevue College",
-      "url": "https://www.bellevuecollege.edu/"
+      "name": "Your University",
+      "url": "https://example.com"
     },
     "favoriteRestaurant": {
-      "name": "Gianfranco Ristorante Italiano",
-      "url": "https://www.google.com/maps/place/Gianfranco+Ristorante+Italiano/@47.5274551,-121.8345108,15z/data=!3m1!4b1!4m6!3m5!1s0x54907be66b78c025:0xc82fbc62605fe116!8m2!3d47.5274556!4d-121.8242111!16s%2Fg%2F1vl9r5tm?entry=ttu"
+      "name": "Your Favorite Restaurant",
+      "url": "https://example.com"
     }
   },
   "social": {
     "github": {
-      "username": "ds-brandao",
-      "url": "https://github.com/ds-brandao"
+      "username": "your-github-username",
+      "url": "https://github.com/your-github-username",
+      "hiddenRepos": []
     },
-    "email": "lounges.upstage_0y@icloud.com",
-    "linkedin": "https://www.linkedin.com/in/dsbrandao/"
+    "email": "you@example.com",
+    "linkedin": "https://linkedin.com/in/your-profile"
   },
   "tags": {
-    "Security": {
-      "color": "security",
-      "description": "Topics related to cybersecurity, privacy, and protecting digital assets"
+    "General": {
+      "color": "general",
+      "description": "General topics and discussions"
     },
-    "AI": {
-      "color": "ai",
-      "description": "Artificial intelligence, machine learning, and their applications"
-    },
-    "Intro": {
-      "color": "intro",
-      "description": "Introduction to the blog and my journey into cybersecurity and programming"
-    },
-    "CI/CD": {
-      "color": "ci/cd",
-      "description": "Continuous Integration/Continuous Deployment"
-    },
-    "Home Lab": {
-      "color": "home lab",
-      "description": "Home Lab"
-    },
-    "Systems Integration": {
-      "color": "systems integration",
-      "description": "Systems integration, synchronization, and automation"
-    },
-    "Life": {
-      "color": "life",
-      "description": "Life, love, and everything in between"
+    "Tutorial": {
+      "color": "tutorial",
+      "description": "Step-by-step guides and tutorials"
     }
   },
-  "featured": [
-    {
-      "title": "Project Portfolios and Networking Leads to Jobs",
-      "source": "CoE Cyber",
-      "url": "https://coecyber.io/project-portfolios-and-networking-leads-to-jobs",
-      "date": "2026-02-17"
-    }
-  ]
+  "featured": []
 }

@@ -1,0 +1,46 @@
+name: Create Release
+
+on:
+  push:
+    branches: ["template"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Generate version tag
+        id: version
+        run: |
+          VERSION="v$(date +'%Y.%m.%d')-$(git rev-parse --short HEAD)"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Create release archive
+        run: |
+          git archive --format=tar.gz --prefix=portfolio-template/ HEAD -o portfolio-template.tar.gz
+          git archive --format=zip --prefix=portfolio-template/ HEAD -o portfolio-template.zip
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.version }}
+          name: Release ${{ steps.version.outputs.version }}
+          body: |
+            Automated release from template branch.
+
+            ## Quick Start
+            1. Extract the archive
+            2. `cd portfolio-template/next-app`
+            3. `npm install`
+            4. `npm run setup`
+            5. `npm run dev`
+            6. Open http://localhost:3000
+          files: |
+            portfolio-template.tar.gz
+            portfolio-template.zip
+          generate_release_notes: true
