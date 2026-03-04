@@ -24,29 +24,13 @@
       "color": "security",
       "description": "Topics related to cybersecurity, privacy, and protecting digital assets"
     },
-    "Coding": {
-      "color": "coding",
-      "description": "Programming, software development, and coding techniques"
-    },
     "AI": {
       "color": "ai",
       "description": "Artificial intelligence, machine learning, and their applications"
     },
-    "Tutorial": {
-      "color": "tutorial",
-      "description": "Step-by-step guides and how-to content"
-    },
-    "Project": {
-      "color": "project",
-      "description": "Personal and professional projects I've worked on"
-    },
     "Intro": {
       "color": "intro",
       "description": "Introduction to the blog and my journey into cybersecurity and programming"
-    },
-    "Celery": {
-      "color": "celery",
-      "description": "Celery"
     },
     "CI/CD": {
       "color": "ci/cd",
