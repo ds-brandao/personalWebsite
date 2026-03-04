@@ -1,16 +1,12 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Home, FileText, Code, ArrowLeft } from "lucide-react";
+import { Home, FileText, Code, ArrowLeft, Sun, Moon } from "lucide-react";
+import { useTheme } from "next-themes";
 import { motion, AnimatePresence, LayoutGroup } from "motion/react";
 import { cn } from "@/lib/utils";
-
-const neumorphicStyle = {
-  background: "var(--card)",
-  boxShadow:
-    "6px 6px 12px rgba(0,0,0,0.08), -6px -6px 12px rgba(255,255,255,0.6), inset 1px 1px 2px rgba(255,255,255,0.3)",
-};
 
 // Apple .snappy spring: slight overshoot, quick settle
 const snappySpring = {
@@ -29,6 +25,23 @@ const tabs = [
 export function BottomTabBar() {
   const pathname = usePathname();
   const router = useRouter();
+  const { resolvedTheme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
+
+  const isDark = resolvedTheme === "dark";
+
+  const neumorphicStyle = {
+    background: "var(--card)",
+    boxShadow: isDark
+      ? "6px 6px 12px rgba(0,0,0,0.4), -6px -6px 12px rgba(255,255,255,0.03), inset 1px 1px 2px rgba(255,255,255,0.05)"
+      : "6px 6px 12px rgba(0,0,0,0.08), -6px -6px 12px rgba(255,255,255,0.6), inset 1px 1px 2px rgba(255,255,255,0.3)",
+  };
+
+  const activePillShadow = isDark
+    ? "3px 3px 6px rgba(0,0,0,0.3), -3px -3px 6px rgba(255,255,255,0.03)"
+    : "3px 3px 6px rgba(0,0,0,0.06), -3px -3px 6px rgba(255,255,255,0.5)";
 
   const activeTab = tabs.find(
     (tab) => tab.href === "/" ? pathname === "/" : pathname.startsWith(tab.href)
@@ -91,8 +104,7 @@ export function BottomTabBar() {
                       className="absolute inset-0 rounded-full"
                       style={{
                         background: "var(--background)",
-                        boxShadow:
-                          "3px 3px 6px rgba(0,0,0,0.06), -3px -3px 6px rgba(255,255,255,0.5)",
+                        boxShadow: activePillShadow,
                       }}
                       transition={snappySpring}
                     />
@@ -102,6 +114,26 @@ export function BottomTabBar() {
                 </Link>
               );
             })}
+          </motion.div>
+
+          {/* Theme toggle pill */}
+          <motion.div
+            layout
+            transition={snappySpring}
+            className="rounded-full px-2 py-2"
+            style={neumorphicStyle}
+          >
+            <button
+              onClick={() => setTheme(isDark ? "light" : "dark")}
+              className="flex flex-col items-center justify-center gap-0.5 rounded-full px-3 py-2 text-xs font-medium text-muted-foreground"
+            >
+              {mounted ? (
+                isDark ? <Sun className="size-5" /> : <Moon className="size-5" />
+              ) : (
+                <Sun className="size-5" />
+              )}
+              <span>{mounted && isDark ? "Light" : "Dark"}</span>
+            </button>
           </motion.div>
         </motion.div>
       </nav>

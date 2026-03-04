@@ -4,7 +4,14 @@ import { useState } from "react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { GitCommitIcon, FileTextIcon, StarIcon, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { GitCommitIcon, FileTextIcon, StarIcon, ChevronDown, ChevronUp, ExternalLinkIcon } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
 export type ActivityItem =
@@ -50,9 +57,11 @@ function formatRelative(dateStr: string): string {
 function FeedRow({
   item,
   index,
+  onFeaturedClick,
 }: {
   item: ActivityItem;
   index: number;
+  onFeaturedClick?: (url: string) => void;
 }) {
   const Icon = icons[item.type];
 
@@ -110,9 +119,13 @@ function FeedRow({
         {content}
       </Link>
     ) : item.type === "featured" ? (
-      <a href={item.url} target="_blank" rel="noopener noreferrer" className="block hover:bg-muted/50 -mx-2 px-2 rounded-lg transition-colors">
+      <button
+        type="button"
+        onClick={() => onFeaturedClick?.(item.url)}
+        className="block w-full text-left hover:bg-muted/50 -mx-2 px-2 rounded-lg transition-colors"
+      >
         {content}
-      </a>
+      </button>
     ) : (
       <div className="-mx-2 px-2">{content}</div>
     );
@@ -135,8 +148,13 @@ interface ActivityFeedProps {
 
 export function ActivityFeed({ items, initialCount = 3 }: ActivityFeedProps) {
   const [expanded, setExpanded] = useState(false);
+  const [openUrl, setOpenUrl] = useState<string | null>(null);
   const visible = expanded ? items : items.slice(0, initialCount);
   const hasMore = items.length > initialCount;
+
+  const activeItem = items.find(
+    (item) => item.type === "featured" && item.url === openUrl
+  ) as Extract<ActivityItem, { type: "featured" }> | undefined;
 
   return (
     <div>
@@ -153,6 +171,7 @@ export function ActivityFeed({ items, initialCount = 3 }: ActivityFeedProps) {
               }
               item={item}
               index={i}
+              onFeaturedClick={setOpenUrl}
             />
           ))}
         </AnimatePresence>
@@ -177,6 +196,37 @@ export function ActivityFeed({ items, initialCount = 3 }: ActivityFeedProps) {
           )}
         </Button>
       )}
+
+      <Dialog open={!!openUrl} onOpenChange={(open) => !open && setOpenUrl(null)}>
+        <DialogContent className="max-w-[calc(100%-1rem)] sm:max-w-4xl h-[90vh] sm:h-[80vh] flex flex-col p-0">
+          <DialogHeader className="px-4 pt-4 pb-0 sm:px-6 sm:pt-6">
+            <DialogTitle className="pr-8 text-base sm:text-lg">{activeItem?.title}</DialogTitle>
+            <DialogDescription className="flex items-center gap-2">
+              <span>{activeItem?.source}</span>
+              <span>·</span>
+              <a
+                href={activeItem?.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-xs hover:underline"
+              >
+                Open in new tab
+                <ExternalLinkIcon className="size-3" />
+              </a>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex-1 min-h-0 px-4 pb-4 sm:px-6 sm:pb-6">
+            {openUrl && (
+              <iframe
+                src={openUrl}
+                title={activeItem?.title ?? "Featured article"}
+                className="h-full w-full rounded-md border border-border"
+                sandbox="allow-scripts allow-same-origin allow-popups"
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
