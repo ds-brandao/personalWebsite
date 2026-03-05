@@ -1,7 +1,7 @@
 import { getArticles, getConfig } from "@/lib/data";
 import { ArticlesFilter } from "@/components/ArticlesFilter";
 
-export const revalidate = 86400;
+export const dynamic = "force-dynamic";
 
 export default async function ArticlesPage() {
   const [articles, config] = await Promise.all([getArticles(), getConfig()]);
