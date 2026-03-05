@@ -6,7 +6,7 @@ import {
 } from "@/lib/data";
 import { ProjectGrid } from "@/components/ProjectGrid";
 
-export const revalidate = 86400;
+export const dynamic = "force-dynamic";
 
 export default async function ProjectsPage() {
   const config = await getConfig();

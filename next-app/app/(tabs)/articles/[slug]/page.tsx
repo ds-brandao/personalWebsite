@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { getArticles, getArticleBySlug, slugify } from "@/lib/data";
 import { ArticleReader } from "@/components/ArticleReader";
 
-export const revalidate = 86400;
+export const dynamic = "force-dynamic";
 
 export async function generateStaticParams() {
   const articles = await getArticles();
