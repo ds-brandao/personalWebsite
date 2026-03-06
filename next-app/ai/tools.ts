@@ -1,4 +1,4 @@
-import { type InferUITools, type ToolSet, tool } from "ai";
+import { type ToolSet, tool } from "ai";
 import { z } from "zod";
 
 export const tools = {
@@ -63,5 +63,3 @@ export const tools = {
     execute: async (input) => input,
   }),
 } satisfies ToolSet;
-
-export type ChatTools = InferUITools<typeof tools>;
