@@ -100,11 +100,9 @@ function CommitsList({ commits }: { commits: GitHubCommit[] }) {
 }
 
 function DetailPanel({
-  repo,
   commits,
   analysis,
 }: {
-  repo: GitHubRepo;
   commits: GitHubCommit[];
   analysis?: ProjectAnalysis;
 }) {
@@ -175,7 +173,6 @@ export function ProjectGrid({ repos, commits, analyses }: ProjectGridProps) {
             className="col-span-full overflow-hidden"
           >
             <DetailPanel
-              repo={selectedRepo}
               commits={commits[selected!] ?? []}
               analysis={analyses[selected!]}
             />
