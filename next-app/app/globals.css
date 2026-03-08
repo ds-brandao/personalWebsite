@@ -159,15 +159,6 @@
   }
 }
 
-/* Hide scrollbar for carousels */
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
-
 /* iOS-like overscroll behavior */
 html {
   overscroll-behavior-y: none;
