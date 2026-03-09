@@ -1,11 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { FeaturedEmbedDialog } from "@/components/FeaturedEmbedDialog";
 import type { FeaturedItem } from "@/types";
 
+const INITIAL_COUNT = 3;
+
 export function FeaturedSection({ items }: { items: FeaturedItem[] }) {
   const [openUrl, setOpenUrl] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState(false);
+
+  const sorted = useMemo(
+    () => [...items].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
+    [items],
+  );
+
+  const visible = expanded ? sorted : sorted.slice(0, INITIAL_COUNT);
+  const hasMore = sorted.length > INITIAL_COUNT;
   const activeItem = items.find((item) => item.url === openUrl);
 
   return (
@@ -14,7 +25,7 @@ export function FeaturedSection({ items }: { items: FeaturedItem[] }) {
         Featured In
       </h2>
       <div className="space-y-3">
-        {items.map((item) => (
+        {visible.map((item) => (
           <button
             key={item.url}
             type="button"
@@ -38,6 +49,16 @@ export function FeaturedSection({ items }: { items: FeaturedItem[] }) {
           </button>
         ))}
       </div>
+
+      {hasMore && (
+        <button
+          type="button"
+          onClick={() => setExpanded((prev) => !prev)}
+          className="mt-3 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          {expanded ? "Show less" : `Show ${sorted.length - INITIAL_COUNT} more`}
+        </button>
+      )}
 
       <FeaturedEmbedDialog
         open={!!openUrl}
