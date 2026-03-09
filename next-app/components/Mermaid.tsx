@@ -1,13 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 interface MermaidProps {
   chart: string;
 }
 
 export function Mermaid({ chart }: MermaidProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
   const [svg, setSvg] = useState("");
 
   useEffect(() => {
@@ -51,7 +50,6 @@ export function Mermaid({ chart }: MermaidProps) {
 
   return (
     <div
-      ref={containerRef}
       className="my-4 flex justify-center [&_svg]:max-w-full"
       dangerouslySetInnerHTML={{ __html: svg }}
     />
