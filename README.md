@@ -110,9 +110,7 @@ Edit `next-app/public/config/config.json` to set your name, social links, and ta
 ```json
 {
   "personal": {
-    "name": "Your Name",
-    "college": { "name": "University", "url": "https://..." },
-    "favoriteRestaurant": { "name": "Restaurant", "url": "https://..." }
+    "name": "Your Name"
   },
   "social": {
     "github": { "username": "your-username", "url": "https://github.com/..." },
