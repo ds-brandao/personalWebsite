@@ -1,13 +1,8 @@
 import { notFound } from "next/navigation";
-import { getArticles, getArticleBySlug, slugify } from "@/lib/data";
+import { getArticleBySlug } from "@/lib/data";
 import { ArticleReader } from "@/components/ArticleReader";
 
 export const dynamic = "force-dynamic";
-
-export async function generateStaticParams() {
-  const articles = await getArticles();
-  return articles.map((a) => ({ slug: slugify(a.title) }));
-}
 
 export default async function ArticlePage({
   params,

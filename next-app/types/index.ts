@@ -1,9 +1,6 @@
 export interface Config {
   personal: {
     name: string;
-    title: string;
-    college: { name: string; url: string };
-    favoriteRestaurant: { name: string; url: string };
   };
   social: {
     github: { username: string; url: string };
