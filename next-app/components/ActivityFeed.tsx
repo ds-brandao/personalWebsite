@@ -14,7 +14,6 @@ export type ActivityItem =
       sha: string;
       message: string;
       repo: string;
-      author: string;
       date: string;
     }
   | {
@@ -22,7 +21,6 @@ export type ActivityItem =
       title: string;
       summary: string;
       slug: string;
-      tags: string[];
       date: string;
     }
   | {

@@ -30,7 +30,6 @@ export default async function HomePage() {
         sha: c.sha,
         message: c.message,
         repo,
-        author: c.authorName,
         date: c.date,
       });
     }
@@ -43,7 +42,6 @@ export default async function HomePage() {
       title: article.title,
       summary: article.summary,
       slug: slugify(article.title),
-      tags: article.tags,
       date: article.date,
     });
   }
