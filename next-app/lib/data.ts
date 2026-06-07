@@ -64,10 +64,12 @@ export async function getGitHubRepos(
         next: { revalidate: 300 },
       }
     );
-    if (!res.ok) throw new Error("GitHub API failed");
+    if (!res.ok) throw new Error(`GitHub API failed: ${res.status}`);
     const repos: GitHubRepo[] = await res.json();
     return repos.filter((r) => !HIDDEN_REPOS.includes(r.name));
-  } catch {
+  } catch (err) {
+    // Surfaces in Workers observability logs instead of failing silently
+    console.error("getGitHubRepos failed:", err);
     return [];
   }
 }
@@ -111,6 +113,8 @@ export async function getRepoCommits(
   for (const result of results) {
     if (result.status === "fulfilled") {
       commits[result.value.name] = result.value.commits;
+    } else {
+      console.error("getRepoCommits failed:", result.reason);
     }
   }
   return commits;
