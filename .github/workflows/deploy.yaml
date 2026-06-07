@@ -36,9 +36,9 @@ jobs:
         run: npm ci
 
       - name: Build (OpenNext for Cloudflare)
-        run: npx opennextjs-cloudflare build
+        run: COMMIT_SHA="${COMMIT_SHA_FULL:0:7}" npx opennextjs-cloudflare build
         env:
-          COMMIT_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          COMMIT_SHA_FULL: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
 
       # PRs: upload a preview version (own shareable URL, production untouched)
       - name: Upload preview version (PR)
