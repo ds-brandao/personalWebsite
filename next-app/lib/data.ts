@@ -46,6 +46,9 @@ const HIDDEN_REPOS = ["ds-brandao"];
 function githubHeaders(): Record<string, string> {
   const headers: Record<string, string> = {
     Accept: "application/vnd.github.v3+json",
+    // GitHub rejects requests without a User-Agent with 403. Node's fetch
+    // sends one automatically; workerd's does not — so it must be explicit.
+    "User-Agent": "personal-website (dbrandao.com)",
   };
   if (process.env.GITHUB_TOKEN) {
     headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
