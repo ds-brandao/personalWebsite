@@ -27,7 +27,7 @@ export default async function TabsLayout({
             )}
           </span>
           <span className="font-mono text-xs">
-            {config.personal.location} · built &amp; deployed from a home lab
+            {config.personal.location} · deployed on Cloudflare
           </span>
           <SocialIcons
             github={config.social.github.url}
