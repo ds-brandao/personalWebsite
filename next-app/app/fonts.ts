@@ -1,13 +1,19 @@
-import { Fraunces, Plus_Jakarta_Sans } from "next/font/google";
+import { Schibsted_Grotesk, Hanken_Grotesk, JetBrains_Mono } from "next/font/google";
 
-export const fraunces = Fraunces({
+export const schibstedGrotesk = Schibsted_Grotesk({
   subsets: ["latin"],
-  variable: "--font-fraunces",
+  variable: "--font-schibsted",
   display: "swap",
 });
 
-export const plusJakartaSans = Plus_Jakarta_Sans({
+export const hankenGrotesk = Hanken_Grotesk({
   subsets: ["latin"],
-  variable: "--font-plus-jakarta",
+  variable: "--font-hanken",
+  display: "swap",
+});
+
+export const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-jetbrains",
   display: "swap",
 });

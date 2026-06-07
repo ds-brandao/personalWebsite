@@ -1,12 +1,7 @@
-"use client";
-
-import { useState } from "react";
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { FeaturedEmbedDialog } from "@/components/FeaturedEmbedDialog";
-import { GitCommitIcon, FileTextIcon, StarIcon, ChevronDown, ChevronUp } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
+import { GitCommitHorizontal, PenLine, Star } from "lucide-react";
+import { Reveal } from "@/components/Reveal";
+import { timeAgo } from "@/lib/utils";
 
 export type ActivityItem =
   | {
@@ -19,7 +14,6 @@ export type ActivityItem =
   | {
       type: "article";
       title: string;
-      summary: string;
       slug: string;
       date: string;
     }
@@ -31,171 +25,91 @@ export type ActivityItem =
       date: string;
     };
 
-const icons = {
-  commit: GitCommitIcon,
-  article: FileTextIcon,
-  featured: StarIcon,
+const meta = {
+  commit: { kind: "Pushed", icon: GitCommitHorizontal },
+  article: { kind: "Published", icon: PenLine },
+  featured: { kind: "Featured", icon: Star },
 } as const;
-
-const relativeTime = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
-
-function formatRelative(dateStr: string): string {
-  const days = Math.round(
-    (new Date(dateStr).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
-  );
-  return relativeTime.format(days, "day");
-}
-
-function FeedRow({
-  item,
-  index,
-  onFeaturedClick,
-}: {
-  item: ActivityItem;
-  index: number;
-  onFeaturedClick?: (url: string) => void;
-}) {
-  const Icon = icons[item.type];
-
-  const content = (
-    <div className="flex items-start gap-3 py-3 group">
-      {/* Icon */}
-      <div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
-        <Icon className="size-4" />
-      </div>
-
-      {/* Body */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-start justify-between gap-2">
-          <p className="text-sm font-medium text-foreground leading-snug">
-            {item.type === "commit" && item.message}
-            {item.type === "article" && item.title}
-            {item.type === "featured" && item.title}
-          </p>
-          <Badge variant="secondary" className="text-[10px] shrink-0 mt-0.5">
-            {item.type === "commit" && item.repo}
-            {item.type === "article" && "Blog"}
-            {item.type === "featured" && item.source}
-          </Badge>
-        </div>
-        <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
-          {item.type === "commit" && (
-            <>
-              <span className="font-mono">{item.sha.slice(0, 7)}</span>
-              <span>·</span>
-              <span>{formatRelative(item.date)}</span>
-            </>
-          )}
-          {item.type === "article" && (
-            <>
-              <span className="line-clamp-1">{item.summary}</span>
-              <span>·</span>
-              <span className="shrink-0">{formatRelative(item.date)}</span>
-            </>
-          )}
-          {item.type === "featured" && (
-            <>
-              <span>Press mention</span>
-              <span>·</span>
-              <span className="shrink-0">{formatRelative(item.date)}</span>
-            </>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-
-  const wrapped =
-    item.type === "article" ? (
-      <Link href={`/articles/${item.slug}`} className="block hover:bg-muted/50 -mx-2 px-2 rounded-lg transition-colors">
-        {content}
-      </Link>
-    ) : item.type === "featured" ? (
-      <button
-        type="button"
-        onClick={() => onFeaturedClick?.(item.url)}
-        className="block w-full text-left hover:bg-muted/50 -mx-2 px-2 rounded-lg transition-colors"
-      >
-        {content}
-      </button>
-    ) : (
-      <div className="-mx-2 px-2">{content}</div>
-    );
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.04, duration: 0.25 }}
-    >
-      {wrapped}
-    </motion.div>
-  );
-}
 
 interface ActivityFeedProps {
   items: ActivityItem[];
-  initialCount?: number;
+  /** Profile URL like https://github.com/ds-brandao — used to link commits. */
+  githubUrl: string;
 }
 
-export function ActivityFeed({ items, initialCount = 3 }: ActivityFeedProps) {
-  const [expanded, setExpanded] = useState(false);
-  const [openUrl, setOpenUrl] = useState<string | null>(null);
-  const visible = expanded ? items : items.slice(0, initialCount);
-  const hasMore = items.length > initialCount;
+function rowClass() {
+  return "grid grid-cols-[16px_1fr_auto] items-center gap-3.5 rounded-[8px] border-t border-border px-2 py-3 transition-all duration-300 ease-snap hover:bg-muted hover:pl-3.25";
+}
 
-  const activeItem = items.find(
-    (item) => item.type === "featured" && item.url === openUrl
-  ) as Extract<ActivityItem, { type: "featured" }> | undefined;
-
+export function ActivityFeed({ items, githubUrl }: ActivityFeedProps) {
   return (
-    <div>
-      <div className="divide-y divide-border">
-        <AnimatePresence initial={false}>
-          {visible.map((item, i) => (
-            <FeedRow
-              key={
-                item.type === "commit"
-                  ? item.sha
-                  : item.type === "article"
-                    ? item.slug
-                    : item.url
-              }
-              item={item}
-              index={i}
-              onFeaturedClick={setOpenUrl}
-            />
-          ))}
-        </AnimatePresence>
-      </div>
-      {hasMore && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setExpanded(!expanded)}
-          className="mt-2 w-full text-muted-foreground"
-        >
-          {expanded ? (
-            <>
-              <ChevronUp className="mr-1 size-4" />
-              Show less
-            </>
-          ) : (
-            <>
-              <ChevronDown className="mr-1 size-4" />
-              Show more ({items.length - initialCount} more)
-            </>
-          )}
-        </Button>
-      )}
+    <div className="flex flex-col [&>div:last-child_a]:border-b [&>div:last-child_a]:border-b-border">
+      {items.map((item, i) => {
+        const { kind, icon: Icon } = meta[item.type];
 
-      <FeaturedEmbedDialog
-        open={!!openUrl}
-        onOpenChange={(open) => !open && setOpenUrl(null)}
-        url={openUrl}
-        title={activeItem?.title}
-        source={activeItem?.source}
-      />
+        const body = (
+          <>
+            <Icon className="size-3.5 text-faint" strokeWidth={1.8} />
+            <span className="min-w-0 truncate text-[14.5px] text-muted-foreground">
+              <span className="mr-2.5 font-mono text-[10px] tracking-[0.13em] text-faint uppercase">
+                {kind}
+              </span>
+              {item.type === "commit" && (
+                <>
+                  <span className="font-mono text-[13px] text-primary">
+                    {item.repo}
+                  </span>{" "}
+                  {item.message}
+                </>
+              )}
+              {item.type === "article" && item.title}
+              {item.type === "featured" && (
+                <>
+                  {item.title} <span className="text-faint">· {item.source}</span>
+                </>
+              )}
+            </span>
+            <span className="font-mono text-xs whitespace-nowrap text-faint">
+              {timeAgo(item.date)}
+            </span>
+          </>
+        );
+
+        const key =
+          item.type === "commit"
+            ? item.sha
+            : item.type === "article"
+              ? item.slug
+              : item.url;
+
+        return (
+          <Reveal key={key} delay={(i % 6) * 55}>
+            {item.type === "commit" ? (
+              <a
+                href={`${githubUrl}/${item.repo}/commit/${item.sha}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={rowClass()}
+              >
+                {body}
+              </a>
+            ) : item.type === "article" ? (
+              <Link href={`/articles/${item.slug}`} className={rowClass()}>
+                {body}
+              </Link>
+            ) : (
+              <a
+                href={item.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={rowClass()}
+              >
+                {body}
+              </a>
+            )}
+          </Reveal>
+        );
+      })}
     </div>
   );
 }

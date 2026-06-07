@@ -1,0 +1,36 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "personal-website",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-05-15",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "personal-website"
+    }
+  ],
+  // Incremental cache (R2 not enabled on this account; KV is equivalent here)
+  "kv_namespaces": [
+    {
+      "binding": "NEXT_INC_CACHE_KV",
+      "id": "1dc32be517ee419db64e7e5d533bcf22"
+    }
+  ],
+  "workers_dev": true,
+  // Stage 2 (domain cutover): uncomment once the tunnel's CNAME for
+  // dbrandao.com is removed — a custom domain can't attach over it.
+  // "routes": [
+  //   {
+  //     "pattern": "dbrandao.com",
+  //     "custom_domain": true
+  //   }
+  // ],
+  "observability": {
+    "enabled": true
+  }
+}

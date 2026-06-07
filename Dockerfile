@@ -10,6 +10,9 @@ COPY next-app/ .
 ARG COMMIT_SHA=unknown
 ENV NODE_ENV=production
 ENV COMMIT_SHA=$COMMIT_SHA
+# Enables `output: "standalone"` in next.config.ts (Docker-only; the
+# Cloudflare OpenNext build uses the default output)
+ENV DOCKER_BUILD=1
 RUN npm run build
 
 FROM node:20-alpine AS runner

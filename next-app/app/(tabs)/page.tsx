@@ -3,13 +3,16 @@ import {
   getArticles,
   getGitHubRepos,
   getRepoCommits,
+  getReadMinutes,
   slugify,
 } from "@/lib/data";
 import { ActivityFeed } from "@/components/ActivityFeed";
 import type { ActivityItem } from "@/components/ActivityFeed";
-import { SocialIcons } from "@/components/SocialIcons";
-import { ArticleCarousel } from "@/components/ArticleCarousel";
-import { FeaturedSection } from "@/components/FeaturedSection";
+import { ArticleCard } from "@/components/ArticleCard";
+import { Hero } from "@/components/Hero";
+import { ProjectGrid } from "@/components/ProjectGrid";
+import { Reveal } from "@/components/Reveal";
+import { SectionHead } from "@/components/SectionHead";
 
 export const dynamic = "force-dynamic";
 
@@ -40,7 +43,6 @@ export default async function HomePage() {
     contentItems.push({
       type: "article",
       title: article.title,
-      summary: article.summary,
       slug: slugify(article.title),
       date: article.date,
     });
@@ -68,47 +70,70 @@ export default async function HomePage() {
   const feedItems = [...commitItems.slice(0, 5), ...contentItems];
   feedItems.sort(byDate);
 
-  const capped = feedItems.slice(0, 10);
+  const capped = feedItems.slice(0, 8);
 
-  // Articles sorted by date for the carousel
-  const sortedArticles = [...articles]
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    .map((a) => ({ article: a, slug: slugify(a.title) }));
+  // Latest two articles for the home preview
+  const latestArticles = await Promise.all(
+    [...articles]
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .slice(0, 2)
+      .map(async (article) => ({
+        article,
+        slug: slugify(article.title),
+        readMinutes: await getReadMinutes(article.markdown),
+      }))
+  );
 
   return (
-    <div className="py-8 md:py-12">
-      {/* Name (mobile only) + Social icons */}
-      <section className="mb-10 flex flex-col items-center">
-        <h1 className="md:hidden font-display text-3xl font-bold text-foreground mb-2">
-          {config.personal.name}
-        </h1>
-        <SocialIcons
-          github={config.social.github.url}
-          linkedin={config.social.linkedin}
-          email={config.social.email}
+    <>
+      <Hero config={config} />
+
+      {/* Latest articles */}
+      <section className="pb-[clamp(54px,8vw,92px)]">
+        <SectionHead
+          kicker="Latest articles"
+          title="From the blog"
+          link={{ href: "/articles", label: "All articles" }}
         />
+        <div className="grid grid-cols-1 gap-5.5 wide:grid-cols-2">
+          {latestArticles.map(({ article, slug, readMinutes }, i) => (
+            <Reveal key={slug} delay={i * 55} className="h-full [&>a]:h-full">
+              <ArticleCard
+                article={article}
+                slug={slug}
+                readMinutes={readMinutes}
+              />
+            </Reveal>
+          ))}
+        </div>
       </section>
 
-      {/* Articles carousel */}
-      <section className="mb-10">
-        <h2 className="font-display text-xl font-semibold text-foreground mb-4">
-          Articles
-        </h2>
-        <ArticleCarousel articles={sortedArticles} />
+      <hr className="-mx-(--pad) h-px border-0 bg-border" />
+
+      {/* Selected projects */}
+      <section className="py-[clamp(54px,8vw,92px)]">
+        <SectionHead
+          kicker="Selected work"
+          title="Things I've built"
+          link={{ href: "/projects", label: "All projects" }}
+        />
+        <ProjectGrid repos={repos.slice(0, 4)} commits={commits} />
       </section>
 
-      {/* Featured / Press */}
-      {config.featured && config.featured.length > 0 && (
-        <FeaturedSection items={config.featured} />
-      )}
+      <hr className="-mx-(--pad) h-px border-0 bg-border" />
 
-      {/* Unified activity feed */}
-      <section>
-        <h2 className="font-display text-xl font-semibold text-foreground mb-4">
-          Recent Activity
-        </h2>
-        <ActivityFeed items={capped} />
+      {/* Recent activity */}
+      <section className="py-[clamp(34px,5vw,54px)]">
+        <SectionHead
+          kicker="Recent activity"
+          link={{
+            href: config.social.github.url,
+            label: "On GitHub",
+            external: true,
+          }}
+        />
+        <ActivityFeed items={capped} githubUrl={config.social.github.url} />
       </section>
-    </div>
+    </>
   );
 }

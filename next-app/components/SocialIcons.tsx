@@ -1,60 +1,39 @@
-"use client";
-
 import { Github, Linkedin, Mail } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 interface SocialIconsProps {
   github: string;
   linkedin: string;
-  email: string;
+  email?: string;
+  size?: "default" | "sm";
 }
 
-const socials = [
-  { key: "github", icon: Github, label: "GitHub" },
-  { key: "linkedin", icon: Linkedin, label: "LinkedIn" },
-  { key: "email", icon: Mail, label: "Email" },
-] as const;
-
-export function SocialIcons({ github, linkedin, email }: SocialIconsProps) {
-  const urls: Record<string, string> = {
-    github,
-    linkedin,
-    email: `mailto:${email}`,
-  };
+export function SocialIcons({ github, linkedin, email, size = "default" }: SocialIconsProps) {
+  const socials = [
+    { href: github, icon: Github, label: "GitHub", external: true },
+    { href: linkedin, icon: Linkedin, label: "LinkedIn", external: true },
+    ...(email
+      ? [{ href: `mailto:${email}`, icon: Mail, label: "Email", external: false }]
+      : []),
+  ];
 
   return (
-    <TooltipProvider>
-      <div className="flex items-center gap-1">
-        {socials.map(({ key, icon: Icon, label }) => (
-          <Tooltip key={key}>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="rounded-full text-muted-foreground hover:text-primary"
-                asChild
-              >
-                <a
-                  href={urls[key]}
-                  target={key === "email" ? undefined : "_blank"}
-                  rel={key === "email" ? undefined : "noopener noreferrer"}
-                >
-                  <Icon className="size-5" />
-                </a>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{label}</p>
-            </TooltipContent>
-          </Tooltip>
-        ))}
-      </div>
-    </TooltipProvider>
+    <div className="flex gap-2">
+      {socials.map(({ href, icon: Icon, label, external }) => (
+        <a
+          key={label}
+          href={href}
+          aria-label={label}
+          target={external ? "_blank" : undefined}
+          rel={external ? "noopener noreferrer" : undefined}
+          className={cn(
+            "grid place-items-center rounded-[11px] border border-border bg-card text-muted-foreground transition-all duration-350 ease-snap hover:-translate-y-0.75 hover:border-primary-line hover:text-primary hover:shadow-[var(--shadow-lift)]",
+            size === "sm" ? "size-8.5" : "size-10"
+          )}
+        >
+          <Icon className={size === "sm" ? "size-4" : "size-4.5"} strokeWidth={1.7} />
+        </a>
+      ))}
+    </div>
   );
 }

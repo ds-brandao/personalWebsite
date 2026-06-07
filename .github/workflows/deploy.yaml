@@ -1,110 +1,79 @@
-name: Deploy Website
+name: Deploy to Cloudflare Workers
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
+
+# Never run two deploys at once; cancel superseded PR builds
+concurrency:
+  group: deploy-${{ github.event_name == 'pull_request' && github.event.pull_request.number || 'main' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
 
 jobs:
   deploy:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: next-app
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
-        fetch-depth: 0
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Verify project structure
-      run: |
-        echo "Deploying commit: $(git rev-parse HEAD)"
-        echo "Commit message: $(git log -1 --pretty=%B)"
-        echo ""
-        echo "Checking Next.js app structure..."
-        ls -la
-        ls -la ./next-app
-        ls -la ./next-app/public/config
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: next-app/package-lock.json
 
-    - name: Stop existing containers
-      run: |
-        docker compose down || true
-        docker rm -f personal-website || true
+      - name: Install dependencies
+        run: npm ci
 
-        CONTAINER_ON_80=$(docker ps -q --filter "publish=80" || true)
-        if [ -n "$CONTAINER_ON_80" ]; then
-          echo "Found container(s) using port 80: $CONTAINER_ON_80"
-          docker rm -f $CONTAINER_ON_80 || true
-        fi
+      - name: Build (OpenNext for Cloudflare)
+        run: npx opennextjs-cloudflare build
+        env:
+          COMMIT_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
 
-        sleep 3
+      # PRs: upload a preview version (own shareable URL, production untouched)
+      - name: Upload preview version (PR)
+        if: github.event_name == 'pull_request'
+        run: |
+          npx opennextjs-cloudflare upload -- --message "PR #${{ github.event.pull_request.number }}" | tee upload.log
+          {
+            echo "## Cloudflare preview"
+            grep -Eo 'https://[a-z0-9-]+\.[a-z0-9-]+\.workers\.dev[^ ]*' upload.log | head -1 \
+              || echo "Preview uploaded — URL in the step log above."
+          } >> "$GITHUB_STEP_SUMMARY"
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
-        if lsof -i :80 > /dev/null 2>&1; then
-          echo "Warning: Port 80 still in use by non-Docker process"
-          lsof -i :80 || true
-        fi
+      # main: deploy to production
+      - name: Deploy to production (main)
+        if: github.event_name == 'push'
+        run: npx opennextjs-cloudflare deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
-    - name: Build Next.js Docker image
-      run: |
-        echo "Building Next.js app with multi-stage Docker build..."
-        docker build --no-cache --build-arg COMMIT_SHA=$(git rev-parse --short HEAD) -t personal-website .
-
-    - name: Run production container
-      run: |
-        echo "Starting production container..."
-        docker run -d --name personal-website \
-          -p 80:3000 \
-          --env OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} \
-          personal-website
-
-        echo "Waiting for container to start..."
-        sleep 10
-
-    - name: Test website
-      run: |
-        echo "Testing if website is accessible..."
-
-        HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:80/)
-        if [ "$HTTP_CODE" = "200" ]; then
-          echo "Main page is accessible (HTTP $HTTP_CODE)"
-        else
-          echo "Main page returned HTTP $HTTP_CODE"
-          docker logs personal-website
-          exit 1
-        fi
-
-        HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:80/config/config.json)
-        if [ "$HTTP_CODE" = "200" ]; then
-          echo "Config file is accessible (HTTP $HTTP_CODE)"
-        else
-          echo "Config file returned HTTP $HTTP_CODE"
-          docker logs personal-website
-          exit 1
-        fi
-
-        HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:80/config/articles.json)
-        if [ "$HTTP_CODE" = "200" ]; then
-          echo "Articles file is accessible (HTTP $HTTP_CODE)"
-        else
-          echo "Articles file returned HTTP $HTTP_CODE"
-          docker logs personal-website
-          exit 1
-        fi
-
-        echo "Website deployment successful!"
-
-    - name: Show container logs
-      if: failure()
-      run: docker logs personal-website || true
-
-    - name: Clean up on failure
-      if: failure()
-      run: |
-        docker stop personal-website || true
-        docker rm personal-website || true
-
-    - name: Clean up old images
-      if: always()
-      run: |
-        docker system prune -f
+      - name: Smoke test production
+        if: github.event_name == 'push'
+        env:
+          # Stage 2 (domain cutover): switch to https://dbrandao.com
+          SITE_URL: https://personal-website.dsb-sniper.workers.dev
+        run: |
+          for path in / /articles /projects; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" --retry 5 --retry-delay 5 --retry-all-errors "${SITE_URL}${path}")
+            if [ "$code" = "200" ]; then
+              echo "OK   ${path} (HTTP ${code})"
+            else
+              echo "FAIL ${path} (HTTP ${code})"
+              exit 1
+            fi
+          done

@@ -1,0 +1,21 @@
+# Dependencies & build output — reinstalled/rebuilt inside the image
+# (without this, local macOS node_modules would overwrite the Linux ones)
+next-app/node_modules
+next-app/.next
+next-app/.open-next
+next-app/.wrangler
+next-app/tsconfig.tsbuildinfo
+node_modules
+
+# Local env & secrets
+next-app/.env*
+
+# Not part of the image
+.git
+.github
+.claude
+dist
+docs
+images
+blog-posts
+**/.DS_Store

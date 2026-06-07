@@ -6,20 +6,16 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  /* Claude Color Palette — Semantic tokens */
-  --color-claude-white: #FFFFFF;
-  --color-claude-cream: #FDF9F3;
-  --color-claude-taupe: #D2C3B7;
-  --color-claude-muted-brown: #7E6E5C;
-  --color-claude-brown: #3F3227;
-  --color-claude-rust: #D0643A;
-  --color-claude-dark: #211A15;
-  --color-claude-noir: #0E0A08;
+  /* Typography — Schibsted Grotesk (display), Hanken Grotesk (body), JetBrains Mono (code meta) */
+  --font-display: var(--font-schibsted), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-hanken), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, "SFMono-Regular", monospace;
 
-  /* Typography */
-  --font-display: var(--font-fraunces), Georgia, "Times New Roman", serif;
-  --font-sans: var(--font-plus-jakarta), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  /* Design easing — fast-out, long settle (prototype --ease) */
+  --ease-snap: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Prototype collapses grids/hero at 860px, between Tailwind's md and lg */
+  --breakpoint-wide: 53.8125rem;
 
   /* shadcn theme var bindings */
   --color-background: var(--background);
@@ -53,6 +49,14 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+
+  /* Design-system extras (warm-neutral redesign) */
+  --color-faint: var(--text-faint);
+  --color-border-strong: var(--border-strong);
+  --color-primary-soft: var(--primary-soft);
+  --color-primary-line: var(--primary-line);
+  --color-bg-tint: var(--bg-tint);
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -62,75 +66,105 @@
   --radius-4xl: calc(var(--radius) + 16px);
 }
 
-/* Light mode (default) */
+/* Light (default) — warm stone */
 :root {
-  --radius: 0.625rem;
-  --background: #FFFFFF;
-  --foreground: #3F3227;
-  --card: #FDF9F3;
-  --card-foreground: #3F3227;
+  --radius: 0.875rem;
+  --pad: clamp(20px, 5vw, 48px); /* shared page gutter (nav + content + footer) */
+  --background: #FAF7F2;
+  --foreground: #25211D;
+  --card: #FFFFFF;
+  --card-foreground: #25211D;
   --popover: #FFFFFF;
-  --popover-foreground: #3F3227;
-  --primary: #D0643A;
+  --popover-foreground: #25211D;
+  --primary: #B0613C;
   --primary-foreground: #FFFFFF;
-  --secondary: #FDF9F3;
-  --secondary-foreground: #3F3227;
-  --muted: #FDF9F3;
-  --muted-foreground: #7E6E5C;
-  --accent: #FDF9F3;
-  --accent-foreground: #3F3227;
-  --destructive: #D0643A;
-  --border: #D2C3B7;
-  --input: #D2C3B7;
-  --ring: #D0643A;
-  --chart-1: #D0643A;
-  --chart-2: #7E6E5C;
-  --chart-3: #3F3227;
-  --chart-4: #D2C3B7;
-  --chart-5: #211A15;
-  --sidebar: #FDF9F3;
-  --sidebar-foreground: #3F3227;
-  --sidebar-primary: #D0643A;
+  --secondary: #F6F1EA;
+  --secondary-foreground: #25211D;
+  --muted: #F6F1EA;
+  --muted-foreground: #6E665B;
+  --accent: #F6F1EA;
+  --accent-foreground: #25211D;
+  --destructive: #B0613C;
+  --border: #EAE3D8;
+  --input: #DBD2C4;
+  --ring: #B0613C;
+  --chart-1: #B0613C;
+  --chart-2: #6E665B;
+  --chart-3: #25211D;
+  --chart-4: #DBD2C4;
+  --chart-5: #9C9286;
+  --sidebar: #F6F1EA;
+  --sidebar-foreground: #25211D;
+  --sidebar-primary: #B0613C;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #FDF9F3;
-  --sidebar-accent-foreground: #3F3227;
-  --sidebar-border: #D2C3B7;
-  --sidebar-ring: #D0643A;
+  --sidebar-accent: #F4EFE7;
+  --sidebar-accent-foreground: #25211D;
+  --sidebar-border: #EAE3D8;
+  --sidebar-ring: #B0613C;
+
+  /* Design-system extras */
+  --text-faint: #9C9286;
+  --border-strong: #DBD2C4;
+  --primary-press: #98512F;
+  --primary-soft: rgba(176, 97, 60, 0.10);
+  --primary-line: rgba(176, 97, 60, 0.28);
+  --bg-tint: #F4EFE7;
+  --stripe: rgba(110, 102, 91, 0.10);
+  --shadow-soft: 0 1px 2px rgba(40, 33, 26, 0.04), 0 2px 6px rgba(40, 33, 26, 0.05);
+  --shadow-lift: 0 4px 14px rgba(40, 33, 26, 0.07), 0 1px 3px rgba(40, 33, 26, 0.05);
+  --shadow-deep: 0 18px 50px -18px rgba(40, 33, 26, 0.22);
+  color-scheme: light;
+
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Dark mode */
+/* Dark — warm charcoal */
 .dark {
-  --background: #0E0A08;
-  --foreground: #FDF9F3;
-  --card: #211A15;
-  --card-foreground: #FDF9F3;
-  --popover: #211A15;
-  --popover-foreground: #FDF9F3;
-  --primary: #D0643A;
-  --primary-foreground: #FDF9F3;
-  --secondary: #3F3227;
-  --secondary-foreground: #FDF9F3;
-  --muted: #3F3227;
-  --muted-foreground: #D2C3B7;
-  --accent: #3F3227;
-  --accent-foreground: #FDF9F3;
-  --destructive: #D0643A;
-  --border: #7E6E5C;
-  --input: #7E6E5C;
-  --ring: #D0643A;
-  --chart-1: #D0643A;
-  --chart-2: #D2C3B7;
-  --chart-3: #FDF9F3;
-  --chart-4: #7E6E5C;
-  --chart-5: #3F3227;
-  --sidebar: #211A15;
-  --sidebar-foreground: #FDF9F3;
-  --sidebar-primary: #D0643A;
-  --sidebar-primary-foreground: #FDF9F3;
-  --sidebar-accent: #3F3227;
-  --sidebar-accent-foreground: #FDF9F3;
-  --sidebar-border: #7E6E5C;
-  --sidebar-ring: #D0643A;
+  --background: #15120F;
+  --foreground: #ECE6DC;
+  --card: #201B16;
+  --card-foreground: #ECE6DC;
+  --popover: #201B16;
+  --popover-foreground: #ECE6DC;
+  --primary: #CE7B53;
+  --primary-foreground: #1A120C;
+  --secondary: #28221C;
+  --secondary-foreground: #ECE6DC;
+  --muted: #28221C;
+  --muted-foreground: #A99E8E;
+  --accent: #28221C;
+  --accent-foreground: #ECE6DC;
+  --destructive: #CE7B53;
+  --border: #2E2720;
+  --input: #3C342B;
+  --ring: #CE7B53;
+  --chart-1: #CE7B53;
+  --chart-2: #A99E8E;
+  --chart-3: #ECE6DC;
+  --chart-4: #3C342B;
+  --chart-5: #756C5F;
+  --sidebar: #201B16;
+  --sidebar-foreground: #ECE6DC;
+  --sidebar-primary: #CE7B53;
+  --sidebar-primary-foreground: #1A120C;
+  --sidebar-accent: #28221C;
+  --sidebar-accent-foreground: #ECE6DC;
+  --sidebar-border: #2E2720;
+  --sidebar-ring: #CE7B53;
+
+  /* Design-system extras */
+  --text-faint: #756C5F;
+  --border-strong: #3C342B;
+  --primary-press: #DD8A62;
+  --primary-soft: rgba(206, 123, 83, 0.14);
+  --primary-line: rgba(206, 123, 83, 0.34);
+  --bg-tint: #1B1713;
+  --stripe: rgba(236, 230, 220, 0.07);
+  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-lift: 0 6px 18px rgba(0, 0, 0, 0.45);
+  --shadow-deep: 0 24px 60px -20px rgba(0, 0, 0, 0.6);
+  color-scheme: dark;
 }
 
 @layer base {
@@ -139,6 +173,96 @@
   }
   body {
     @apply bg-background text-foreground font-sans antialiased;
+    font-size: 17px;
+    line-height: 1.65;
+    text-rendering: optimizeLegibility;
+    transition: background-color 0.5s var(--ease-soft), color 0.5s var(--ease-soft);
+  }
+  @media (max-width: 560px) {
+    body {
+      font-size: 16px;
+    }
+  }
+}
+
+/* ---------- Type helpers ---------- */
+.kicker {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  white-space: nowrap;
+}
+
+/* ---------- Tag chip ---------- */
+.tag {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  white-space: nowrap;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--muted);
+  transition: color 0.2s, border-color 0.2s, background-color 0.2s;
+}
+.tag.on {
+  color: var(--primary);
+  border-color: var(--primary-line);
+  background: var(--primary-soft);
+}
+button.tag {
+  cursor: pointer;
+}
+button.tag:hover {
+  color: var(--primary);
+  border-color: var(--primary-line);
+}
+
+/* ---------- Striped placeholder fill ---------- */
+.stripes {
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(135deg, var(--stripe) 0 1px, transparent 1px 11px);
+}
+
+/* ---------- Scroll reveal ---------- */
+.reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+}
+.reveal.in {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  * {
+    animation-duration: 0.001ms !important;
+  }
+}
+
+/* ---------- View transition ---------- */
+.view {
+  animation: viewIn 0.5s var(--ease) both;
+}
+@keyframes viewIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
 

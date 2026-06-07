@@ -8,6 +8,8 @@ WORKDIR /app
 COPY --from=dependencies /app/node_modules ./node_modules
 COPY . .
 ENV NODE_ENV=production
+# Enables `output: "standalone"` in next.config.ts (Docker-only build mode)
+ENV DOCKER_BUILD=1
 RUN npm run build
 
 FROM node:20-alpine AS runner

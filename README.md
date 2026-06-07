@@ -12,7 +12,6 @@ A modern, responsive personal portfolio website built with **Next.js**, **TypeSc
 - **Motion Animations** — Smooth, performant animations throughout
 - **Blog System** — Markdown-based articles with tag filtering and modal reading
 - **GitHub Integration** — Automatically fetches and displays GitHub repositories
-- **AI Project Analyses** — Pre-generated project insights using OpenAI
 - **Responsive Design** — Mobile-first layout with adaptive grid system
 - **Docker Development** — Containerized development and production environments
 
@@ -24,9 +23,9 @@ A modern, responsive personal portfolio website built with **Next.js**, **TypeSc
 | **Styling** | Tailwind CSS with custom theme |
 | **Animations** | Motion (Framer Motion) |
 | **Markdown** | react-markdown with GitHub Flavored Markdown |
-| **AI** | ai SDK + OpenAI (build-time only, via seed script) |
-| **Build** | Turbopack (dev), Next.js standalone (production) |
-| **Container** | Docker with multi-stage builds |
+| **Build** | Turbopack (dev), OpenNext for Cloudflare (production) |
+| **Deploy** | Cloudflare Workers via GitHub Actions |
+| **Container** | Docker with multi-stage builds (local testing) |
 
 ## Getting Started
 
@@ -73,26 +72,22 @@ docker run -p 80:80 personal-website
 ```
 ├── next-app/                   # Next.js application
 │   ├── app/
-│   │   └── page.tsx            # Server component (data fetching)
+│   │   ├── (tabs)/             # Home, Articles, Projects routes
+│   │   ├── globals.css         # Design tokens (warm-neutral light/dark)
+│   │   └── fonts.ts            # Schibsted Grotesk, Hanken Grotesk, JetBrains Mono
 │   ├── components/             # React components
-│   │   ├── PageClient.tsx      # Main client layout
+│   │   ├── Hero.tsx            # Home hero
+│   │   ├── ProjectGrid.tsx     # Project cards + commits panel
 │   │   ├── ArticleCard.tsx     # Blog post cards
-│   │   ├── Projects.tsx        # Project carousel
-│   │   ├── ProjectDetail.tsx   # AI analysis + commits display
-│   │   └── ai-elements/       # AI-generated UI components
-│   ├── ai/
-│   │   └── tools.ts            # AI tool definitions for analysis
+│   │   └── ActivityFeed.tsx    # Unified recent activity feed
 │   ├── lib/
 │   │   └── data.ts             # Server-side data fetching
-│   ├── scripts/
-│   │   └── seed-analyses.ts    # Pre-generate AI project analyses
 │   ├── types/
 │   │   └── index.ts            # TypeScript type definitions
 │   ├── public/
 │   │   ├── config/             # Configuration files
 │   │   │   ├── config.json     # Personal info & tags
-│   │   │   ├── articles.json   # Blog post metadata
-│   │   │   └── analyses.json   # Pre-generated AI analyses
+│   │   │   └── articles.json   # Blog post metadata
 │   │   ├── blog-posts/         # Markdown blog posts
 │   │   └── images/             # Static images
 │   └── package.json
@@ -137,28 +132,56 @@ Edit `next-app/public/config/config.json` to set your name, social links, and ta
 }
 ```
 
-### AI Project Analyses (Optional)
+### GitHub API Rate Limits (Optional)
 
-To generate AI-powered project analyses, set your OpenAI API key and run the seed script:
+Repository and commit data is fetched anonymously (60 requests/hour). To raise the limit to 5,000/hour, provide a token:
 
 ```bash
 cd next-app
-echo "OPENAI_API_KEY=your-key-here" > .env.local
-npm run seed
+echo "GITHUB_TOKEN=your-token-here" > .env.local
 ```
 
 ## Deployment
 
-### Docker / Container Platform
+The site deploys to **Cloudflare Workers** via the [OpenNext Cloudflare adapter](https://opennext.js.org/cloudflare).
+
+### GitHub Actions (automatic)
+
+`.github/workflows/deploy.yaml`:
+- **Push to `main`** → production deploy to `dbrandao.com` + smoke test
+- **Pull requests** → preview version with its own shareable URL (production untouched)
+
+Requires two repository secrets: `CLOUDFLARE_API_TOKEN` (the "Edit Cloudflare Workers" token template) and `CLOUDFLARE_ACCOUNT_ID`.
+
+### Manual deploy
+
+```bash
+cd next-app
+npx wrangler login        # once
+npm run deploy            # opennextjs-cloudflare build && deploy
+```
+
+### Local Workers runtime
+
+Test the production build in workerd locally (no deploy):
+
+```bash
+cd next-app
+npm run preview
+```
+
+### One-time account setup
+
+1. `npx wrangler r2 bucket create personal-website-inc-cache` — backs the incremental cache (5-minute GitHub data revalidation)
+2. `npx wrangler secret put GITHUB_TOKEN` — raises the GitHub API limit for the Worker
+3. Remove the old Zero Trust tunnel public hostname for `dbrandao.com` (the Worker's custom domain can't attach while the tunnel's DNS record exists)
+
+### Docker (local testing only)
 
 ```bash
 docker build -t personal-website .
-docker run -d -p 80:80 personal-website
+docker run -d -p 3100:3000 personal-website
 ```
-
-### GitHub Actions
-
-The included workflow (`.github/workflows/deploy.yml`) automatically builds and deploys on push to `main`.
 
 ## Contributing
 

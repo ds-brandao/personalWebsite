@@ -1,26 +1,57 @@
 import { Config, Article, GitHubRepo, GitHubCommit } from "@/types";
-import type { ProjectAnalysis } from "@/types";
 import fs from "fs";
 import path from "path";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
+import configJson from "@/public/config/config.json";
+import articlesJson from "@/public/config/articles.json";
 
+// config.json / articles.json are bundled at build time (no filesystem at
+// request time on Cloudflare Workers).
 export async function getConfig(): Promise<Config> {
-  const filePath = path.join(process.cwd(), "public", "config", "config.json");
-  const raw = fs.readFileSync(filePath, "utf-8");
-  return JSON.parse(raw);
+  return configJson;
 }
 
 export async function getArticles(): Promise<Article[]> {
-  const filePath = path.join(
-    process.cwd(),
-    "public",
-    "config",
-    "articles.json"
-  );
-  const raw = fs.readFileSync(filePath, "utf-8");
-  return JSON.parse(raw);
+  return articlesJson;
+}
+
+/**
+ * Read a file from public/ — from disk in Node (next dev, Docker), from the
+ * Worker's static assets binding on Cloudflare.
+ */
+async function readPublicFile(relPath: string): Promise<string | null> {
+  try {
+    const filePath = path.join(process.cwd(), "public", relPath);
+    return fs.readFileSync(filePath, "utf-8");
+  } catch {
+    try {
+      const { env } = getCloudflareContext();
+      // Cast: we don't generate cloudflare-env.d.ts; ASSETS is the assets
+      // binding declared in wrangler.jsonc.
+      const assets = (
+        env as { ASSETS?: { fetch: (input: URL) => Promise<Response> } }
+      ).ASSETS;
+      if (!assets) return null;
+      const res = await assets.fetch(new URL(relPath, "https://assets.local"));
+      return res.ok ? await res.text() : null;
+    } catch {
+      return null;
+    }
+  }
 }
 
 const HIDDEN_REPOS = ["ds-brandao"];
+
+// Optional token raises the GitHub rate limit from 60/hr to 5000/hr
+function githubHeaders(): Record<string, string> {
+  const headers: Record<string, string> = {
+    Accept: "application/vnd.github.v3+json",
+  };
+  if (process.env.GITHUB_TOKEN) {
+    headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
+  }
+  return headers;
+}
 
 export async function getGitHubRepos(
   username: string
@@ -29,7 +60,7 @@ export async function getGitHubRepos(
     const res = await fetch(
       `https://api.github.com/users/${username}/repos?sort=updated&per_page=10&direction=desc`,
       {
-        headers: { Accept: "application/vnd.github.v3+json" },
+        headers: githubHeaders(),
         next: { revalidate: 300 },
       }
     );
@@ -37,18 +68,7 @@ export async function getGitHubRepos(
     const repos: GitHubRepo[] = await res.json();
     return repos.filter((r) => !HIDDEN_REPOS.includes(r.name));
   } catch {
-    try {
-      const filePath = path.join(
-        process.cwd(),
-        "public",
-        "config",
-        "projects.json"
-      );
-      const raw = fs.readFileSync(filePath, "utf-8");
-      return JSON.parse(raw);
-    } catch {
-      return [];
-    }
+    return [];
   }
 }
 
@@ -61,7 +81,7 @@ export async function getRepoCommits(
       const res = await fetch(
         `https://api.github.com/repos/${owner}/${repo.name}/commits?per_page=3`,
         {
-          headers: { Accept: "application/vnd.github.v3+json" },
+          headers: githubHeaders(),
           next: { revalidate: 300 },
         }
       );
@@ -96,14 +116,19 @@ export async function getRepoCommits(
   return commits;
 }
 
-export async function getProjectAnalyses(): Promise<Record<string, ProjectAnalysis>> {
-  try {
-    const filePath = path.join(process.cwd(), "public", "config", "analyses.json");
-    const raw = fs.readFileSync(filePath, "utf-8");
-    return JSON.parse(raw);
-  } catch {
-    return {};
-  }
+/** Estimated reading time in minutes from the article's markdown (~200 wpm). */
+export async function getReadMinutes(
+  markdownPath: string
+): Promise<number | null> {
+  const raw = await readPublicFile(markdownPath);
+  if (!raw) return null;
+  const words = raw.trim().split(/\s+/).length;
+  return Math.max(1, Math.round(words / 200));
+}
+
+/** Full markdown body for the article reader. */
+export async function getArticleContent(article: Article): Promise<string> {
+  return (await readPublicFile(article.markdown)) ?? "";
 }
 
 export function slugify(title: string): string {

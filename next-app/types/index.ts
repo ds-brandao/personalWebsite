@@ -1,6 +1,8 @@
 export interface Config {
   personal: {
     name: string;
+    location: string;
+    lead: string;
   };
   social: {
     github: { username: string; url: string };
@@ -37,6 +39,8 @@ export interface GitHubRepo {
   language: string | null;
   stargazers_count: number;
   forks_count: number;
+  topics?: string[];
+  pushed_at?: string;
 }
 
 export interface GitHubCommit {
@@ -46,17 +50,3 @@ export interface GitHubCommit {
   date: string;
 }
 
-export interface ToolResult {
-  toolName:
-    | "displayPackageInfo"
-    | "displayCodeSnippet"
-    | "displayFileStructure"
-    | "displaySetupCommand";
-  result: Record<string, unknown>;
-}
-
-export interface ProjectAnalysis {
-  repoName: string;
-  toolResults: ToolResult[];
-  cachedAt: string;
-}

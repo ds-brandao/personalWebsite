@@ -1,6 +1,8 @@
 {
   "personal": {
-    "name": "Daniel Brandao"
+    "name": "Daniel Brandao",
+    "location": "Seattle, WA",
+    "lead": "I work at the intersection of cybersecurity and applied AI — building self-healing networks, local LLM tooling, and automation that quietly handles the boring parts."
   },
   "social": {
     "github": {

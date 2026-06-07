@@ -1,18 +1,26 @@
-import { getArticles, getConfig } from "@/lib/data";
+import { getArticles, getReadMinutes, slugify } from "@/lib/data";
 import { ArticlesFilter } from "@/components/ArticlesFilter";
+import { SectionHead } from "@/components/SectionHead";
 
 export const dynamic = "force-dynamic";
 
 export default async function ArticlesPage() {
-  const [articles, config] = await Promise.all([getArticles(), getConfig()]);
-  const tags = Object.keys(config.tags);
+  const articles = await getArticles();
+
+  const items = await Promise.all(
+    [...articles]
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .map(async (article) => ({
+        article,
+        slug: slugify(article.title),
+        readMinutes: await getReadMinutes(article.markdown),
+      }))
+  );
 
   return (
-    <div className="py-8 md:py-12">
-      <h1 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-6">
-        Articles
-      </h1>
-      <ArticlesFilter articles={articles} tags={tags} />
+    <div className="view py-[clamp(40px,6vw,72px)]">
+      <SectionHead kicker="Notes from the lab" title="Articles" />
+      <ArticlesFilter items={items} />
     </div>
   );
 }

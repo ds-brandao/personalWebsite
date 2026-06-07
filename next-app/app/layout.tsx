@@ -1,11 +1,12 @@
 import type { Metadata, Viewport } from "next";
-import { fraunces, plusJakartaSans } from "./fonts";
+import { schibstedGrotesk, hankenGrotesk, jetbrainsMono } from "./fonts";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Daniel Brandao",
-  description: "Software Engineer | Backend Developer | AI Technologies",
+  title: "Daniel Brandao — Security Engineer × Applied AI",
+  description:
+    "Daniel Brandao — security engineer working at the intersection of cybersecurity and applied AI.",
 };
 
 export const viewport: Viewport = {
@@ -20,7 +21,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${fraunces.variable} ${plusJakartaSans.variable}`}>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${schibstedGrotesk.variable} ${hankenGrotesk.variable} ${jetbrainsMono.variable}`}
+    >
       <body className="bg-background text-foreground font-sans antialiased">
         <ThemeProvider>
           {children}

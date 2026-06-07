@@ -7,6 +7,7 @@ import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import { Article } from "@/types";
 import { Mermaid } from "@/components/Mermaid";
+import { SkeletonImage } from "@/components/SkeletonImage";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft } from "lucide-react";
@@ -86,7 +87,7 @@ export function ArticleReader({ article, content }: ArticleReaderProps) {
       {/* Hero image header */}
       {article.image && (
         <div className="relative h-48 md:h-72 w-full overflow-hidden rounded-lg mb-8">
-          <img
+          <SkeletonImage
             src={article.image}
             alt={article.title}
             className="w-full h-full object-cover"
