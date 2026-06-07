@@ -4,6 +4,13 @@ import { SectionHead } from "@/components/SectionHead";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = {
+  title: "Articles",
+  description:
+    "Articles by Daniel Brandao on cybersecurity, applied AI, home labs, and systems integration.",
+  alternates: { canonical: "/articles" },
+};
+
 export default async function ArticlesPage() {
   const articles = await getArticles();
 

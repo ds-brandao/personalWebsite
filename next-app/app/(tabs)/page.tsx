@@ -16,6 +16,10 @@ import { SectionHead } from "@/components/SectionHead";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = {
+  alternates: { canonical: "/" },
+};
+
 export default async function HomePage() {
   const config = await getConfig();
   const [articles, repos] = await Promise.all([

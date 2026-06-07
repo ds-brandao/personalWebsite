@@ -4,6 +4,13 @@ import { SectionHead } from "@/components/SectionHead";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = {
+  title: "Projects",
+  description:
+    "Projects by Daniel Brandao — security tooling, applied AI agents, and automation.",
+  alternates: { canonical: "/projects" },
+};
+
 export default async function ProjectsPage() {
   const config = await getConfig();
   const repos = await getGitHubRepos(config.social.github.username);
