@@ -13,7 +13,7 @@ export function Hero({ config }: { config: Config }) {
       {/* Mobile: name + portrait side by side, lead/actions full width below.
           Wide (≥861px): text column vs portrait column, as in the prototype. */}
       <div className="grid grid-cols-[1fr_auto] items-center gap-x-5 gap-y-7 wide:grid-cols-[1.35fr_0.9fr] wide:gap-x-[clamp(28px,5vw,64px)] wide:gap-y-0">
-        <h1 className="font-display text-[clamp(32px,9vw,68px)] leading-[1.02] font-bold tracking-[-0.035em] wide:mb-5.5">
+        <h1 className="font-display text-[clamp(32px,7vw,68px)] leading-[1.02] font-bold tracking-[-0.035em] wide:mb-5.5">
           {first}
           <br />
           {rest.join(" ")}
