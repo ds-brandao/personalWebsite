@@ -65,11 +65,10 @@ jobs:
       - name: Smoke test production
         if: github.event_name == 'push'
         env:
-          # Stage 2 (domain cutover): switch to https://dbrandao.com
-          SITE_URL: https://personal-website.dsb-sniper.workers.dev
+          SITE_URL: https://dbrandao.com
         run: |
           for path in / /articles /projects; do
-            code=$(curl -s -o /dev/null -w "%{http_code}" --retry 5 --retry-delay 5 --retry-all-errors "${SITE_URL}${path}")
+            code=$(curl -s -o /dev/null -w "%{http_code}" --retry 10 --retry-delay 10 --retry-all-errors "${SITE_URL}${path}")
             if [ "$code" = "200" ]; then
               echo "OK   ${path} (HTTP ${code})"
             else

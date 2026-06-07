@@ -172,9 +172,9 @@ npm run preview
 
 ### One-time account setup
 
-1. `npx wrangler r2 bucket create personal-website-inc-cache` — backs the incremental cache (5-minute GitHub data revalidation)
+1. KV namespace `personal-website-inc-cache` backs the incremental cache (5-minute GitHub data revalidation); its id is bound in `wrangler.jsonc`
 2. `npx wrangler secret put GITHUB_TOKEN` — raises the GitHub API limit for the Worker
-3. Remove the old Zero Trust tunnel public hostname for `dbrandao.com` (the Worker's custom domain can't attach while the tunnel's DNS record exists)
+3. The Worker owns the `dbrandao.com` custom domain (the former Zero Trust tunnel DNS record was removed at cutover)
 
 ### Docker (local testing only)
 

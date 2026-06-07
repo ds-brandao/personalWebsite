@@ -21,15 +21,16 @@
       "id": "1dc32be517ee419db64e7e5d533bcf22"
     }
   ],
-  "workers_dev": true,
-  // Stage 2 (domain cutover): uncomment once the tunnel's CNAME for
-  // dbrandao.com is removed — a custom domain can't attach over it.
-  // "routes": [
-  //   {
-  //     "pattern": "dbrandao.com",
-  //     "custom_domain": true
-  //   }
-  // ],
+  // Production serves dbrandao.com only — no workers.dev hostname.
+  // PR preview versions still get ephemeral preview URLs.
+  "workers_dev": false,
+  "preview_urls": true,
+  "routes": [
+    {
+      "pattern": "dbrandao.com",
+      "custom_domain": true
+    }
+  ],
   "observability": {
     "enabled": true
   }
