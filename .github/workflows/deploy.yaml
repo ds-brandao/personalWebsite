@@ -82,3 +82,16 @@ jobs:
               exit 1
             fi
           done
+
+          # www must resolve (custom domain) and 301 to the apex.
+          www_headers=$(curl -s -D- -o /dev/null --retry 10 --retry-delay 10 --retry-all-errors "https://www.dbrandao.com/")
+          www_code=$(printf '%s' "$www_headers" | awk 'toupper($1) ~ /^HTTP/ { c=$2 } END { print c }')
+          www_location=$(printf '%s' "$www_headers" | awk 'tolower($1) == "location:" { print $2; exit }' | tr -d '\r')
+          if [ "$www_code" = "301" ] && printf '%s' "$www_location" | grep -q '^https://dbrandao.com'; then
+            echo "OK   www → apex (HTTP ${www_code} ${www_location})"
+          elif printf '%s' "$www_headers" | grep -qi "^cf-mitigated: challenge"; then
+            echo "OK   www (challenged by bot protection — DNS + edge serving)"
+          else
+            echo "FAIL www (HTTP ${www_code} Location: ${www_location})"
+            exit 1
+          fi
