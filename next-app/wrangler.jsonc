@@ -21,13 +21,18 @@
       "id": "1dc32be517ee419db64e7e5d533bcf22"
     }
   ],
-  // Production serves dbrandao.com only — no workers.dev hostname.
+  // Production serves the apex and www — no workers.dev hostname.
+  // www is a custom domain so DNS exists; the app 301s it to the apex.
   // PR preview versions still get ephemeral preview URLs.
   "workers_dev": false,
   "preview_urls": true,
   "routes": [
     {
       "pattern": "dbrandao.com",
+      "custom_domain": true
+    },
+    {
+      "pattern": "www.dbrandao.com",
       "custom_domain": true
     }
   ],

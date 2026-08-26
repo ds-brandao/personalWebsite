@@ -174,7 +174,7 @@ npm run preview
 
 1. KV namespace `personal-website-inc-cache` backs the incremental cache (5-minute GitHub data revalidation); its id is bound in `wrangler.jsonc`
 2. `npx wrangler secret put GITHUB_TOKEN` — raises the GitHub API limit for the Worker
-3. The Worker owns the `dbrandao.com` custom domain (the former Zero Trust tunnel DNS record was removed at cutover)
+3. The Worker owns the `dbrandao.com` and `www.dbrandao.com` custom domains (www 301s to the apex). The former Zero Trust tunnel DNS record was removed at cutover.
 
 ### Docker (local testing only)
 

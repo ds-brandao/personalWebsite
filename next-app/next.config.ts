@@ -70,6 +70,18 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  // www is attached as a Worker custom domain (see wrangler.jsonc) so DNS
+  // resolves; this 301 makes dbrandao.com the single canonical host.
+  async redirects() {
+    return [
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "www.dbrandao.com" }],
+        destination: "https://dbrandao.com/:path*",
+        statusCode: 301,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
