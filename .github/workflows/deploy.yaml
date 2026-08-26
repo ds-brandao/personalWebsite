@@ -84,14 +84,25 @@ jobs:
           done
 
           # www must resolve (custom domain) and 301 to the apex.
-          www_headers=$(curl -s -D- -o /dev/null --retry 10 --retry-delay 10 --retry-all-errors "https://www.dbrandao.com/")
-          www_code=$(printf '%s' "$www_headers" | awk 'toupper($1) ~ /^HTTP/ { c=$2 } END { print c }')
-          www_location=$(printf '%s' "$www_headers" | awk 'tolower($1) == "location:" { print $2; exit }' | tr -d '\r')
-          if [ "$www_code" = "301" ] && printf '%s' "$www_location" | grep -q '^https://dbrandao.com'; then
-            echo "OK   www → apex (HTTP ${www_code} ${www_location})"
-          elif printf '%s' "$www_headers" | grep -qi "^cf-mitigated: challenge"; then
-            echo "OK   www (challenged by bot protection — DNS + edge serving)"
-          else
-            echo "FAIL www (HTTP ${www_code} Location: ${www_location})"
-            exit 1
-          fi
+          # Exact Location: Next does not interpolate `:path*` for `/`, so a
+          # prefix match would accept the broken URL https://dbrandao.com/:path*.
+          check_www() {
+            local path="$1" expected="$2"
+            local headers code location
+            headers=$(curl -s -D- -o /dev/null --retry 10 --retry-delay 10 --retry-all-errors "https://www.dbrandao.com${path}")
+            code=$(printf '%s' "$headers" | awk 'toupper($1) ~ /^HTTP/ { c=$2 } END { print c }')
+            location=$(printf '%s' "$headers" | awk 'tolower($1) == "location:" { print $2; exit }' | tr -d '\r')
+            if printf '%s' "$location" | grep -q ':path'; then
+              echo "FAIL www${path} (uninterpolated placeholder in Location: ${location})"
+              exit 1
+            elif [ "$code" = "301" ] && [ "$location" = "$expected" ]; then
+              echo "OK   www${path} → ${expected} (HTTP ${code})"
+            elif printf '%s' "$headers" | grep -qi "^cf-mitigated: challenge"; then
+              echo "OK   www${path} (challenged by bot protection — DNS + edge serving)"
+            else
+              echo "FAIL www${path} (HTTP ${code} Location: ${location})"
+              exit 1
+            fi
+          }
+          check_www "/" "https://dbrandao.com/"
+          check_www "/articles" "https://dbrandao.com/articles"
