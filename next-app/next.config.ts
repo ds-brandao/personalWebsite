@@ -72,12 +72,21 @@ const nextConfig: NextConfig = {
   },
   // www is attached as a Worker custom domain (see wrangler.jsonc) so DNS
   // resolves; this 301 makes dbrandao.com the single canonical host.
+  // Next does not interpolate `:path*` for `/`, so the catch-all used to
+  // 301 the root to the literal URL https://dbrandao.com/:path*. Split:
+  // `/` is explicit, other paths use `:path+` (one or more segments).
   async redirects() {
     return [
       {
-        source: "/:path*",
+        source: "/",
         has: [{ type: "host", value: "www.dbrandao.com" }],
-        destination: "https://dbrandao.com/:path*",
+        destination: "https://dbrandao.com/",
+        statusCode: 301,
+      },
+      {
+        source: "/:path+",
+        has: [{ type: "host", value: "www.dbrandao.com" }],
+        destination: "https://dbrandao.com/:path+",
         statusCode: 301,
       },
     ];
