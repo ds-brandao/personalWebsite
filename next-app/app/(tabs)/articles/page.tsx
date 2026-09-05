@@ -1,8 +1,6 @@
-import { getArticles, getReadMinutes, slugify } from "@/lib/data";
+import { getArticleList } from "@/lib/articles";
 import { ArticlesFilter } from "@/components/ArticlesFilter";
 import { SectionHead } from "@/components/SectionHead";
-
-export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Articles",
@@ -12,17 +10,7 @@ export const metadata = {
 };
 
 export default async function ArticlesPage() {
-  const articles = await getArticles();
-
-  const items = await Promise.all(
-    [...articles]
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      .map(async (article) => ({
-        article,
-        slug: slugify(article.title),
-        readMinutes: await getReadMinutes(article.markdown),
-      }))
-  );
+  const items = await getArticleList();
 
   return (
     <div className="view py-[clamp(40px,6vw,72px)]">

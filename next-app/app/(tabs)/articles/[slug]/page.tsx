@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getArticleBySlug, getArticleContent } from "@/lib/data";
+import { getArticles, getArticleBySlug, getArticleContent, slugify } from "@/lib/articles";
 import { SITE_URL } from "@/lib/site";
 import { ArticleReader } from "@/components/ArticleReader";
 
-export const dynamic = "force-dynamic";
+export const dynamicParams = false;
+
+export function generateStaticParams() {
+  return getArticles().map((article) => ({ slug: slugify(article.title) }));
+}
 
 interface ArticlePageProps {
   params: Promise<{ slug: string }>;
@@ -14,7 +18,7 @@ export async function generateMetadata({
   params,
 }: ArticlePageProps): Promise<Metadata> {
   const { slug } = await params;
-  const article = await getArticleBySlug(slug);
+  const article = getArticleBySlug(slug);
   if (!article) return {};
 
   return {
@@ -35,7 +39,7 @@ export async function generateMetadata({
 
 export default async function ArticlePage({ params }: ArticlePageProps) {
   const { slug } = await params;
-  const article = await getArticleBySlug(slug);
+  const article = getArticleBySlug(slug);
   if (!article) notFound();
 
   const content = await getArticleContent(article);

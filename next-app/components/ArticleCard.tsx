@@ -26,6 +26,8 @@ export function ArticleCard({ article, slug, readMinutes }: ArticleCardProps) {
         <div className="relative aspect-video w-full shrink-0 overflow-hidden border-b border-border bg-muted">
           <SkeletonImage
             src={toThumb(article.image)}
+            loading="lazy"
+            decoding="async"
             alt={article.title}
             className="h-full w-full object-cover transition-transform duration-600 ease-snap group-hover:scale-104"
             style={

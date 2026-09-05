@@ -5,12 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { cn } from "@/lib/utils";
-
-const links = [
-  { href: "/", label: "Home" },
-  { href: "/articles", label: "Articles" },
-  { href: "/projects", label: "Projects" },
-];
+import { navLinks, isActiveRoute } from "@/lib/navigation";
 
 export function TopNav({ name }: { name: string }) {
   const pathname = usePathname();
@@ -47,16 +42,13 @@ export function TopNav({ name }: { name: string }) {
         </Link>
 
         <nav className="flex items-center gap-1">
-          {links.map((link) => {
-            const isActive =
-              link.href === "/"
-                ? pathname === "/"
-                : pathname.startsWith(link.href);
+          {navLinks.map((link) => {
+            const isActive = isActiveRoute(pathname, link.href);
             return (
               <Link
                 key={link.href}
-                href={link.href}
-                prefetch
+                  href={link.href}
+                  aria-current={isActive ? "page" : undefined}
                 className={cn(
                   "relative rounded-full px-3.5 py-2 text-[14.5px] font-medium transition-colors",
                   isActive

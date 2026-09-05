@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { schibstedGrotesk, hankenGrotesk, jetbrainsMono } from "./fonts";
 import { ThemeProvider } from "@/components/ThemeProvider";
-import { getConfig } from "@/lib/data";
+import { getConfig } from "@/lib/config";
 import { SITE_URL } from "@/lib/site";
 import "./globals.css";
 
@@ -45,12 +45,12 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const config = await getConfig();
+  const config = getConfig();
 
   // Entity data for name searches: tells Google who this site is about
   const jsonLd = {

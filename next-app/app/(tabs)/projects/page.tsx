@@ -1,5 +1,8 @@
-import { getConfig, getGitHubRepos, getRepoCommits } from "@/lib/data";
+import { Suspense } from "react";
+import { getConfig } from "@/lib/config";
+import { getGitHubData } from "@/lib/github";
 import { ProjectGrid } from "@/components/ProjectGrid";
+import { ProjectGridSkeleton } from "@/components/ContentSkeletons";
 import { SectionHead } from "@/components/SectionHead";
 
 export const dynamic = "force-dynamic";
@@ -11,10 +14,13 @@ export const metadata = {
   alternates: { canonical: "/projects" },
 };
 
-export default async function ProjectsPage() {
-  const config = await getConfig();
-  const repos = await getGitHubRepos(config.social.github.username);
-  const commits = await getRepoCommits(config.social.github.username, repos);
+async function Projects() {
+  const { repos, commits } = await getGitHubData(getConfig().social.github.username);
+  return <ProjectGrid repos={repos} commits={commits} />;
+}
+
+export default function ProjectsPage() {
+  const config = getConfig();
 
   return (
     <div className="view py-[clamp(40px,6vw,72px)]">
@@ -27,7 +33,9 @@ export default async function ProjectsPage() {
           external: true,
         }}
       />
-      <ProjectGrid repos={repos} commits={commits} />
+      <Suspense fallback={<ProjectGridSkeleton />}>
+        <Projects />
+      </Suspense>
     </div>
   );
 }
