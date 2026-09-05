@@ -3,27 +3,7 @@ import { GitCommitHorizontal, PenLine, Star } from "lucide-react";
 import { Reveal } from "@/components/Reveal";
 import { timeAgo } from "@/lib/utils";
 
-export type ActivityItem =
-  | {
-      type: "commit";
-      sha: string;
-      message: string;
-      repo: string;
-      date: string;
-    }
-  | {
-      type: "article";
-      title: string;
-      slug: string;
-      date: string;
-    }
-  | {
-      type: "featured";
-      title: string;
-      source: string;
-      url: string;
-      date: string;
-    };
+import type { ActivityItem } from "@/types";
 
 const meta = {
   commit: { kind: "Pushed", icon: GitCommitHorizontal },

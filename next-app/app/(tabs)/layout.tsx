@@ -1,14 +1,14 @@
-import { getConfig } from "@/lib/data";
+import { getConfig } from "@/lib/config";
 import { TopNav } from "@/components/TopNav";
 import { BottomTabBar } from "@/components/BottomTabBar";
 import { SocialIcons } from "@/components/SocialIcons";
 
-export default async function TabsLayout({
+export default function TabsLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const config = await getConfig();
+  const config = getConfig();
 
   return (
     <div className="flex min-h-dvh flex-col">

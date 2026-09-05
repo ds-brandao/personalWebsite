@@ -1,16 +1,14 @@
-"use client";
+import "server-only";
 
-import { useRouter } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
-import { Article } from "@/types";
+import type { Article } from "@/types";
 import { Mermaid } from "@/components/Mermaid";
 import { SkeletonImage } from "@/components/SkeletonImage";
-import { Button } from "@/components/ui/button";
+import { ArticleBackButton } from "@/components/ArticleBackButton";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft } from "lucide-react";
 
 interface ArticleReaderProps {
   article: Article;
@@ -37,7 +35,7 @@ function MarkdownContent({ content }: { content: string }) {
       remarkPlugins={[remarkGfm]}
       rehypePlugins={[rehypeHighlight, rehypeRaw]}
       components={{
-        pre({ children, ...props }) {
+        pre({ children, className }) {
           const child = Array.isArray(children) ? children[0] : children;
           if (child && typeof child === "object" && "props" in child) {
             const childProps = child.props as Record<string, unknown>;
@@ -48,7 +46,7 @@ function MarkdownContent({ content }: { content: string }) {
               return <Mermaid chart={String(childProps.children).trim()} />;
             }
           }
-          return <pre {...props}>{children}</pre>;
+          return <pre className={className}>{children}</pre>;
         },
       }}
     >
@@ -58,20 +56,10 @@ function MarkdownContent({ content }: { content: string }) {
 }
 
 export function ArticleReader({ article, content }: ArticleReaderProps) {
-  const router = useRouter();
-
   return (
     <div className="py-6 md:py-10">
       {/* Desktop back button */}
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => router.back()}
-        className="mb-6 -ml-2 hidden md:inline-flex"
-      >
-        <ArrowLeft className="mr-1 size-4" />
-        Back
-      </Button>
+      <ArticleBackButton />
 
       <h1 className="font-display text-2xl md:text-4xl font-bold text-foreground leading-tight">
         {article.title}

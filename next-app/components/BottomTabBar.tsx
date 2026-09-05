@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Home, FileText, Code, ArrowLeft, Sun, Moon } from "lucide-react";
-import { useTheme } from "next-themes";
+import { Home, FileText, Code, ArrowLeft } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { navLinks, isActiveRoute } from "@/lib/navigation";
 import { motion, AnimatePresence, LayoutGroup } from "motion/react";
 import { cn } from "@/lib/utils";
 
@@ -16,35 +16,19 @@ const snappySpring = {
   mass: 0.8,
 };
 
-const tabs = [
-  { href: "/", label: "Home", icon: Home },
-  { href: "/articles", label: "Articles", icon: FileText },
-  { href: "/projects", label: "Projects", icon: Code },
-];
+const tabIcons = { "/": Home, "/articles": FileText, "/projects": Code };
+const tabs = navLinks.map((link) => ({ ...link, icon: tabIcons[link.href] }));
+
+const neumorphicStyle = {
+  background: "var(--card)",
+  boxShadow: "var(--nav-shadow)",
+};
 
 export function BottomTabBar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { resolvedTheme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => setMounted(true), []);
-
-  const isDark = resolvedTheme === "dark";
-
-  const neumorphicStyle = {
-    background: "var(--card)",
-    boxShadow: isDark
-      ? "6px 6px 12px rgba(0,0,0,0.4), -6px -6px 12px rgba(255,255,255,0.03), inset 1px 1px 2px rgba(255,255,255,0.05)"
-      : "6px 6px 12px rgba(0,0,0,0.08), -6px -6px 12px rgba(255,255,255,0.6), inset 1px 1px 2px rgba(255,255,255,0.3)",
-  };
-
-  const activePillShadow = isDark
-    ? "3px 3px 6px rgba(0,0,0,0.3), -3px -3px 6px rgba(255,255,255,0.03)"
-    : "3px 3px 6px rgba(0,0,0,0.06), -3px -3px 6px rgba(255,255,255,0.5)";
-
   const activeTab = tabs.find(
-    (tab) => tab.href === "/" ? pathname === "/" : pathname.startsWith(tab.href)
+    (tab) => isActiveRoute(pathname, tab.href)
   );
 
   // Show back button on sub-pages (e.g. /articles/some-slug)
@@ -92,7 +76,7 @@ export function BottomTabBar() {
                 <Link
                   key={tab.href}
                   href={tab.href}
-                  prefetch
+                  aria-current={isActive ? "page" : undefined}
                   className={cn(
                     "relative flex flex-col items-center gap-0.5 px-3 py-2 rounded-full text-xs font-medium transition-colors",
                     isActive ? "text-primary" : "text-muted-foreground"
@@ -104,7 +88,7 @@ export function BottomTabBar() {
                       className="absolute inset-0 rounded-full"
                       style={{
                         background: "var(--background)",
-                        boxShadow: activePillShadow,
+                        boxShadow: "var(--nav-active-shadow)",
                       }}
                       transition={snappySpring}
                     />
@@ -123,17 +107,7 @@ export function BottomTabBar() {
             className="rounded-full p-1.5"
             style={neumorphicStyle}
           >
-            <button
-              onClick={() => setTheme(isDark ? "light" : "dark")}
-              className="flex items-center justify-center size-9 rounded-full text-muted-foreground transition-colors hover:text-foreground"
-              aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
-            >
-              {mounted ? (
-                isDark ? <Sun className="size-4" /> : <Moon className="size-4" />
-              ) : (
-                <Sun className="size-4" />
-              )}
-            </button>
+            <ThemeToggle compact />
           </motion.div>
         </motion.div>
       </nav>

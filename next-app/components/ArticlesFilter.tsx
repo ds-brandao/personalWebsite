@@ -1,15 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Article } from "@/types";
+import type { ArticleListItem } from "@/types";
 import { ArticleCard } from "@/components/ArticleCard";
 import { motion, AnimatePresence } from "motion/react";
-
-export interface ArticleListItem {
-  article: Article;
-  slug: string;
-  readMinutes: number | null;
-}
 
 export function ArticlesFilter({ items }: { items: ArticleListItem[] }) {
   const [activeTag, setActiveTag] = useState("All");

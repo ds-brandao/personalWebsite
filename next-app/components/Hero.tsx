@@ -24,6 +24,7 @@ export function Hero({ config }: { config: Config }) {
           <div className="relative aspect-4/5 overflow-hidden rounded-[22px] border border-border-strong bg-muted shadow-[var(--shadow-deep)]">
             <SkeletonImage
               src="/images/portrait.jpg"
+              fetchPriority="high"
               alt={personal.name}
               className="h-full w-full object-cover"
             />

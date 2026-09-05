@@ -1,9 +1,9 @@
 import type { MetadataRoute } from "next";
-import { getArticles, slugify } from "@/lib/data";
+import { getArticles, slugify } from "@/lib/articles";
 import { SITE_URL } from "@/lib/site";
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const articles = await getArticles();
+export default function sitemap(): MetadataRoute.Sitemap {
+  const articles = getArticles();
 
   return [
     {

@@ -7,10 +7,10 @@ A modern, responsive personal portfolio website built with **Next.js**, **TypeSc
 
 ## Features
 
-- **Next.js Server-Side Rendering** — Fast initial page loads with server-side data fetching
+- **Streaming Server Rendering** — Home content appears independently of GitHub requests
 - **Tailwind CSS** — Utility-first styling with custom dark theme
 - **Motion Animations** — Smooth, performant animations throughout
-- **Blog System** — Markdown-based articles with tag filtering and modal reading
+- **Static Blog** — Prerendered Markdown articles with tag filtering and dedicated reader pages
 - **GitHub Integration** — Automatically fetches and displays GitHub repositories
 - **Responsive Design** — Mobile-first layout with adaptive grid system
 - **Docker Development** — Containerized development and production environments
@@ -81,7 +81,11 @@ docker run -p 80:80 personal-website
 │   │   ├── ArticleCard.tsx     # Blog post cards
 │   │   └── ActivityFeed.tsx    # Unified recent activity feed
 │   ├── lib/
-│   │   └── data.ts             # Server-side data fetching
+│   │   ├── config.ts           # Bundled personal configuration
+│   │   ├── articles.ts         # Article lookup, Markdown, reading-time summaries
+│   │   ├── github.ts           # Cached, bounded GitHub requests
+│   │   ├── activity.ts         # Recent-activity composition
+│   │   └── navigation.ts       # Shared routes and active-route matching
 │   ├── types/
 │   │   └── index.ts            # TypeScript type definitions
 │   ├── public/
@@ -95,6 +99,14 @@ docker run -p 80:80 personal-website
 ├── docker-compose.yaml         # Development environment
 └── README.md
 ```
+
+## Rendering and data flow
+
+- `public/config/` and `public/blog-posts/` are the application's content source. Configuration is synchronous; article reads are asynchronous and shared within a server render.
+- `/articles` and every configured `/articles/[slug]` page are prerendered at build time. Publishing an article requires a rebuild, and an unknown slug returns 404. Markdown parsing and syntax highlighting stay on the server; only interactive controls and Mermaid diagrams need browser code.
+- Home and Projects stream their slow GitHub sections behind the existing skeletons. Repository and commit requests keep their five-minute cache, have a five-second timeout per request, and degrade to empty data when unavailable. Home's project and activity sections share the same data snapshot; only fields used by the UI reach client components.
+- A deployed Cloudflare Worker reads Markdown through `ASSETS`; development, prerendering, and local Node/Docker use asynchronous file reads. Missing configured Markdown fails visibly instead of producing an empty article.
+- Desktop and mobile navigation share their route definitions and theme toggle. The existing layout, theme colors, and animations are retained; reduced-motion preferences are respected, and scroll reveals progressively enhance already-visible HTML.
 
 ## Customization
 
