@@ -9,9 +9,9 @@ export const LINKS: Record<string, string> = {
   linkedin: "https://www.linkedin.com/in/dsbrandao/",
   github: "https://github.com/ds-brandao",
   website: SITE_URL,
-  // Projects
+  // Projects (article paths are /articles/<slugify(title)>, see lib/data.ts)
   netwiz: "https://github.com/ds-brandao/netwiz",
-  homelab: SITE_URL,
-  "network-security": SITE_URL,
-  "intrusion-detection": SITE_URL,
+  homelab: `${SITE_URL}/articles/leveraging-github-self-hosted-runners-for-ci-cd-in-a-home-lab`,
+  "network-security": `${SITE_URL}/articles`,
+  "intrusion-detection": `${SITE_URL}/articles`,
 };
