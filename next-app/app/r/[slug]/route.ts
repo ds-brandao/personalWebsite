@@ -1,22 +1,11 @@
 import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { sendClickAlert, type Click } from "@/lib/click-alert";
 import { LINKS } from "@/lib/links";
-import { SITE_URL } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
 
 interface LinkRouteContext {
   params: Promise<{ slug: string }>;
-}
-
-interface Click {
-  slug: string;
-  destination: string;
-  time: string;
-  location: string;
-  network: string;
-  userAgent: string;
-  referrer: string;
-  likelyBot: boolean;
 }
 
 // Subset of Cloudflare's request.cf we read; absent outside Workers. OpenNext
@@ -86,9 +75,16 @@ function describeClick(
     destination,
     time: new Date().toLocaleString("en-US", {
       timeZone: "America/Los_Angeles",
-      dateStyle: "medium",
-      timeStyle: "short",
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      timeZoneName: "short",
     }),
+    // Cloudflare sets this to the connecting client's address and overwrites
+    // any value a client sends, unlike X-Forwarded-For.
+    ip: request.headers.get("cf-connecting-ip") ?? "unknown",
     location:
       [cf?.city, cf?.region, country].filter(Boolean).join(", ") || "unknown",
     network: cf?.asOrganization ?? "unknown",
@@ -114,44 +110,5 @@ function runAfterResponse(task: Promise<void>) {
     getCloudflareContext().ctx.waitUntil(task);
   } catch {
     // Not running on Workers
-  }
-}
-
-async function sendClickAlert(click: Click): Promise<void> {
-  const { RESEND_API_KEY, LINK_ALERT_TO, LINK_ALERT_FROM } = process.env;
-  if (!RESEND_API_KEY || !LINK_ALERT_TO || !LINK_ALERT_FROM) {
-    console.warn(
-      "link alert skipped: set RESEND_API_KEY, LINK_ALERT_TO and LINK_ALERT_FROM"
-    );
-    return;
-  }
-
-  try {
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: LINK_ALERT_FROM,
-        to: LINK_ALERT_TO,
-        subject: `${click.likelyBot ? "[bot?] " : ""}Link clicked: /r/${click.slug} (${click.location})`,
-        text: [
-          `Link: ${SITE_URL}/r/${click.slug}`,
-          `Destination: ${click.destination}`,
-          `Time: ${click.time} (Pacific)`,
-          `Location: ${click.location}`,
-          `Network: ${click.network}`,
-          `Browser: ${click.userAgent}`,
-          `Referrer: ${click.referrer}`,
-        ].join("\n"),
-      }),
-    });
-    if (!res.ok) {
-      console.error(`link alert failed: Resend ${res.status} ${await res.text()}`);
-    }
-  } catch (error) {
-    console.error("link alert failed:", error);
   }
 }
