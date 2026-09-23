@@ -54,6 +54,29 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
+      # main: copy runtime secrets from repo secrets onto the Worker, so GitHub
+      # stays the one place to change them. Runs before the deploy so the new
+      # version starts with them; Worker secrets persist across deploys. Not on
+      # PRs: `secret bulk` deploys to production immediately.
+      - name: Sync Worker secrets (main)
+        if: github.event_name == 'push'
+        run: |
+          if [ -z "$RESEND_API_KEY" ]; then
+            echo "::warning::RESEND_API_KEY repo secret not set; link click alerts stay off"
+            exit 0
+          fi
+          jq -n \
+            --arg RESEND_API_KEY "$RESEND_API_KEY" \
+            --arg LINK_ALERT_TO "$LINK_ALERT_TO" \
+            --arg LINK_ALERT_FROM "$LINK_ALERT_FROM" \
+            '$ARGS.named' | npx wrangler secret bulk
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          LINK_ALERT_TO: ${{ secrets.LINK_ALERT_TO }}
+          LINK_ALERT_FROM: ${{ secrets.LINK_ALERT_FROM }}
+
       # main: deploy to production
       - name: Deploy to production (main)
         if: github.event_name == 'push'
