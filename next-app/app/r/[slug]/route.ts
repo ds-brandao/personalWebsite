@@ -18,12 +18,28 @@ interface CfLocation {
   asOrganization?: string;
 }
 
+// The Workers rate limiting binding declared in wrangler.jsonc.
+interface RateLimiter {
+  limit(options: { key: string }): Promise<{ success: boolean }>;
+}
+
 // Crawlers, link unfurlers and scripted clients. Flagged in the alert rather
 // than dropped: user agents are easy to fake either way.
 const BOT_PATTERN =
   /bot|crawl|spider|slurp|preview|facebookexternalhit|headless|curl|wget|python|go-http|node-fetch|axios/i;
 
+const RATE_LIMITED_HEADERS = {
+  "Retry-After": "60",
+  "Cache-Control": "no-store",
+};
+
 export async function GET(request: Request, { params }: LinkRouteContext) {
+  if (await overRateLimit(request)) {
+    return new Response("Too many requests", {
+      status: 429,
+      headers: RATE_LIMITED_HEADERS,
+    });
+  }
   const { slug } = await params;
   const destination = lookup(slug);
   if (!destination) return new Response("Not found", { status: 404 });
@@ -38,11 +54,35 @@ export async function GET(request: Request, { params }: LinkRouteContext) {
 
 // Mail and chat link scanners often probe with HEAD; answer without an alert
 // so only real visits send email.
-export async function HEAD(_request: Request, { params }: LinkRouteContext) {
+export async function HEAD(request: Request, { params }: LinkRouteContext) {
+  if (await overRateLimit(request)) {
+    return new Response(null, { status: 429, headers: RATE_LIMITED_HEADERS });
+  }
   const destination = lookup((await params).slug);
   return destination
     ? redirect(destination)
     : new Response(null, { status: 404 });
+}
+
+// Per-IP cap so nobody can walk slugs to map the link list or flood the
+// inbox with click alerts. Counts are per Cloudflare location and
+// approximate, which is enough for both.
+async function overRateLimit(request: Request): Promise<boolean> {
+  const ip = request.headers.get("cf-connecting-ip");
+  const limiter = linkRateLimiter();
+  if (!ip || !limiter) return false;
+  const { success } = await limiter.limit({ key: ip });
+  return !success;
+}
+
+function linkRateLimiter(): RateLimiter | undefined {
+  try {
+    // Cast: cloudflare-env.d.ts isn't generated (see lib/data.ts).
+    return (getCloudflareContext().env as { LINK_RATE_LIMITER?: RateLimiter })
+      .LINK_RATE_LIMITER;
+  } catch {
+    return undefined; // Not running on Workers (Docker / next start)
+  }
 }
 
 function lookup(slug: string): string | undefined {

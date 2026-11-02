@@ -21,10 +21,12 @@ const isDev = process.env.NODE_ENV !== "production";
 
 // Same-origin CSP. 'unsafe-inline' is required for next-themes' FOUC
 // script and Next.js inline styles. next/font self-hosts Google fonts;
-// GitHub fetches are server-side; there is no analytics or other CDN.
+// GitHub fetches are server-side. The one third-party script is Cloudflare
+// Web Analytics' beacon, which the edge injects into every page; it reports
+// to this origin's /cdn-cgi/rum, so connect-src 'self' covers it.
 const contentSecurityPolicy = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
+  `script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com/beacon.min.js${isDev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data:",
   "font-src 'self'",

@@ -21,11 +21,22 @@
       "id": "1dc32be517ee419db64e7e5d533bcf22"
     }
   ],
-  // Production serves the apex and www — no workers.dev hostname.
+  // Production serves the apex and www only.
   // www is a custom domain so DNS exists; the app 301s it to the apex.
-  // PR preview versions still get ephemeral preview URLs.
+  // No preview URLs: *.workers.dev hostnames skip the zone's WAF rules
+  // (challenge, geo block) yet run with the production secrets, and each
+  // version's URL stays live after its PR closes.
   "workers_dev": false,
-  "preview_urls": true,
+  "preview_urls": false,
+  // Caps /r/ requests per client IP (see app/r/[slug]/route.ts). The
+  // namespace is account-wide: keep the id unique across this account's Workers.
+  "ratelimits": [
+    {
+      "name": "LINK_RATE_LIMITER",
+      "namespace_id": "1101",
+      "simple": { "limit": 10, "period": 60 }
+    }
+  ],
   "routes": [
     {
       "pattern": "dbrandao.com",
