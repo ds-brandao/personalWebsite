@@ -23,10 +23,12 @@ const isDev = process.env.NODE_ENV !== "production";
 // script and Next.js inline styles. next/font self-hosts Google fonts;
 // GitHub fetches are server-side. The one third-party script is Cloudflare
 // Web Analytics' beacon, which the edge injects into every page; it reports
-// to this origin's /cdn-cgi/rum, so connect-src 'self' covers it.
+// to this origin's /cdn-cgi/rum, so connect-src 'self' covers it. The
+// injected script lives under a versioned path (beacon.min.js/v<hash>), so
+// the source needs the trailing slash: an exact file path would not match.
 const contentSecurityPolicy = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com/beacon.min.js${isDev ? " 'unsafe-eval'" : ""}`,
+  `script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com/beacon.min.js/${isDev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data:",
   "font-src 'self'",
