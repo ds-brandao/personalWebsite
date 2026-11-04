@@ -11,11 +11,12 @@ interface LinkRouteContext {
 // Subset of Cloudflare's request.cf we read; absent outside Workers. OpenNext
 // types cf as CfProperties from @cloudflare/workers-types, which this project
 // doesn't install, so it arrives untyped.
-interface CfLocation {
+interface CfRequestInfo {
   city?: string;
   region?: string;
   country?: string;
   asOrganization?: string;
+  verifiedBotCategory?: string;
 }
 
 // The Workers rate limiting binding declared in wrangler.jsonc.
@@ -45,10 +46,13 @@ export async function GET(request: Request, { params }: LinkRouteContext) {
   if (!destination) return new Response("Not found", { status: 404 });
 
   const click = describeClick(request, { slug, destination });
+  const verifiedBot = cloudflareRequestInfo()?.verifiedBotCategory || null;
   // Logged before emailing so Workers observability keeps a record even if
   // Resend is down or unconfigured.
-  console.log(JSON.stringify({ event: "link_click", ...click }));
-  runAfterResponse(sendClickAlert(click));
+  console.log(JSON.stringify({ event: "link_click", ...click, verifiedBot }));
+  // Verified bots (mail link scanners, crawlers) skip the zone's WAF
+  // challenge, so no person is behind the click: log it, don't email.
+  if (!verifiedBot) runAfterResponse(sendClickAlert(click));
   return redirect(destination);
 }
 
@@ -107,7 +111,7 @@ function describeClick(
   request: Request,
   { slug, destination }: Pick<Click, "slug" | "destination">
 ): Click {
-  const cf = cloudflareLocation();
+  const cf = cloudflareRequestInfo();
   const userAgent = request.headers.get("user-agent") ?? "";
   const country = cf?.country ?? request.headers.get("cf-ipcountry");
   return {
@@ -134,7 +138,7 @@ function describeClick(
   };
 }
 
-function cloudflareLocation(): CfLocation | undefined {
+function cloudflareRequestInfo(): CfRequestInfo | undefined {
   try {
     return getCloudflareContext().cf;
   } catch {
