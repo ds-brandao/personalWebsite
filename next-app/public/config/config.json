@@ -45,15 +45,44 @@
   "featured": [
     {
       "title": "Project Portfolios and Networking Leads to Jobs",
+      "summary": "How a portfolio of real projects and a habit of networking took me from Bellevue College graduate to software engineer at T-Mobile.",
       "source": "CoE Cyber",
       "url": "https://coecyber.io/project-portfolios-and-networking-leads-to-jobs",
+      "image": "/images/blog/thumbs/monnet.webp",
+      "objectPosition": "center 70%",
       "date": "2026-02-17"
     },
     {
       "title": "Tips for Building a GitHub Portfolio",
+      "summary": "A beginner's guide to GitHub and how to start a portfolio there, written for students starting out in tech.",
       "source": "CoE Cyber",
       "url": "https://coecyber.io/tips-for-building-a-github-portfolio",
+      "image": "/images/blog/thumbs/frame.webp",
+      "objectPosition": "center 35%",
       "date": "2026-03-09"
+    }
+  ],
+  "apps": [
+    {
+      "name": "Gift Exchange: Secret Santa",
+      "platform": "Free for iPhone",
+      "summary": "For friends and family, but it may be useful to you!",
+      "url": "https://apps.apple.com/us/app/gift-exchange-secret-santa/id6831462639",
+      "icon": "/images/apps/gift-exchange/icon.webp",
+      "screenshots": [
+        {
+          "src": "/images/apps/gift-exchange/draw.webp",
+          "alt": "Event screen for Christmas Eve with the gift box that reveals the draw"
+        },
+        {
+          "src": "/images/apps/gift-exchange/reveal.webp",
+          "alt": "Gift tag reveal showing the person you drew"
+        },
+        {
+          "src": "/images/apps/gift-exchange/wish-list.webp",
+          "alt": "Wish list with sizes, favorite stores and gift ideas"
+        }
+      ]
     }
   ]
 }

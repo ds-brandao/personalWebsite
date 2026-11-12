@@ -1,28 +1,28 @@
 "use client";
 
 import { useState } from "react";
-import { Article } from "@/types";
+import { ArticleListItem } from "@/types";
 import { ArticleCard } from "@/components/ArticleCard";
+import { FeaturedCard, FEATURED_TAG } from "@/components/FeaturedCard";
 import { motion, AnimatePresence } from "motion/react";
 
-export interface ArticleListItem {
-  article: Article;
-  slug: string;
-  readMinutes: number | null;
+function tagsOf(entry: ArticleListItem): string[] {
+  return entry.kind === "article" ? entry.article.tags : [FEATURED_TAG];
+}
+
+function keyOf(entry: ArticleListItem): string {
+  return entry.kind === "article" ? entry.slug : entry.item.url;
 }
 
 export function ArticlesFilter({ items }: { items: ArticleListItem[] }) {
   const [activeTag, setActiveTag] = useState("All");
 
-  const allTags = [
-    "All",
-    ...Array.from(new Set(items.flatMap(({ article }) => article.tags))),
-  ];
+  const allTags = ["All", ...Array.from(new Set(items.flatMap(tagsOf)))];
 
   const filtered =
     activeTag === "All"
       ? items
-      : items.filter(({ article }) => article.tags.includes(activeTag));
+      : items.filter((entry) => tagsOf(entry).includes(activeTag));
 
   return (
     <>
@@ -40,9 +40,9 @@ export function ArticlesFilter({ items }: { items: ArticleListItem[] }) {
       </div>
       <div className="grid grid-cols-1 gap-5.5 wide:grid-cols-2">
         <AnimatePresence mode="popLayout">
-          {filtered.map(({ article, slug, readMinutes }) => (
+          {filtered.map((entry) => (
             <motion.div
-              key={slug}
+              key={keyOf(entry)}
               layout
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -50,11 +50,15 @@ export function ArticlesFilter({ items }: { items: ArticleListItem[] }) {
               transition={{ duration: 0.2 }}
               className="h-full"
             >
-              <ArticleCard
-                article={article}
-                slug={slug}
-                readMinutes={readMinutes}
-              />
+              {entry.kind === "article" ? (
+                <ArticleCard
+                  article={entry.article}
+                  slug={entry.slug}
+                  readMinutes={entry.readMinutes}
+                />
+              ) : (
+                <FeaturedCard item={entry.item} />
+              )}
             </motion.div>
           ))}
         </AnimatePresence>
