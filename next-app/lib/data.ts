@@ -1,4 +1,10 @@
-import { Config, Article, GitHubRepo, GitHubCommit } from "@/types";
+import {
+  Config,
+  Article,
+  ArticleListItem,
+  GitHubRepo,
+  GitHubCommit,
+} from "@/types";
 import fs from "fs";
 import path from "path";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
@@ -136,6 +142,33 @@ export async function getReadMinutes(
 /** Full markdown body for the article reader. */
 export async function getArticleContent(article: Article): Promise<string> {
   return (await readPublicFile(article.markdown)) ?? "";
+}
+
+function listItemTime(entry: ArticleListItem): number {
+  const date = entry.kind === "article" ? entry.article.date : entry.item.date;
+  return new Date(date).getTime();
+}
+
+/** Own articles and featured articles together, newest first. */
+export async function getArticleList(): Promise<ArticleListItem[]> {
+  const [articles, config] = await Promise.all([getArticles(), getConfig()]);
+
+  const ownArticles: ArticleListItem[] = await Promise.all(
+    articles.map(async (article) => ({
+      kind: "article" as const,
+      article,
+      slug: slugify(article.title),
+      readMinutes: await getReadMinutes(article.markdown),
+    }))
+  );
+  const featured: ArticleListItem[] = (config.featured ?? []).map((item) => ({
+    kind: "featured",
+    item,
+  }));
+
+  return [...ownArticles, ...featured].sort(
+    (a, b) => listItemTime(b) - listItemTime(a)
+  );
 }
 
 export function slugify(title: string): string {

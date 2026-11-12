@@ -11,13 +11,26 @@ export interface Config {
   };
   tags: Record<string, { color: string; description: string }>;
   featured?: FeaturedItem[];
+  apps?: App[];
 }
 
 export interface FeaturedItem {
   title: string;
+  summary: string;
   source: string;
   url: string;
+  image: string;
+  objectPosition?: string;
   date: string;
+}
+
+export interface App {
+  name: string;
+  platform: string;
+  summary: string;
+  url: string;
+  icon: string;
+  screenshots: { src: string; alt: string }[];
 }
 
 export interface Article {
@@ -29,6 +42,15 @@ export interface Article {
   tags: string[];
   date: string;
 }
+
+export type ArticleListItem =
+  | {
+      kind: "article";
+      article: Article;
+      slug: string;
+      readMinutes: number | null;
+    }
+  | { kind: "featured"; item: FeaturedItem };
 
 export interface GitHubRepo {
   id: number;

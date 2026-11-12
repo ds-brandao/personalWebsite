@@ -1,4 +1,5 @@
 import { getConfig, getGitHubRepos, getRepoCommits } from "@/lib/data";
+import { AppCard } from "@/components/AppCard";
 import { ProjectGrid } from "@/components/ProjectGrid";
 import { SectionHead } from "@/components/SectionHead";
 
@@ -27,6 +28,11 @@ export default async function ProjectsPage() {
           external: true,
         }}
       />
+      {config.apps?.map((app) => (
+        <div key={app.url} className="mb-5.5">
+          <AppCard app={app} />
+        </div>
+      ))}
       <ProjectGrid repos={repos} commits={commits} />
     </div>
   );

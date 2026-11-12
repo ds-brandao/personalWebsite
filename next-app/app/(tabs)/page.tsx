@@ -3,12 +3,13 @@ import {
   getArticles,
   getGitHubRepos,
   getRepoCommits,
-  getReadMinutes,
+  getArticleList,
   slugify,
 } from "@/lib/data";
 import { ActivityFeed } from "@/components/ActivityFeed";
 import type { ActivityItem } from "@/components/ActivityFeed";
-import { ArticleCard } from "@/components/ArticleCard";
+import { AppCard } from "@/components/AppCard";
+import { ArticleCarousel } from "@/components/ArticleCarousel";
 import { Hero } from "@/components/Hero";
 import { ProjectGrid } from "@/components/ProjectGrid";
 import { Reveal } from "@/components/Reveal";
@@ -76,17 +77,7 @@ export default async function HomePage() {
 
   const capped = feedItems.slice(0, 8);
 
-  // Latest two articles for the home preview
-  const latestArticles = await Promise.all(
-    [...articles]
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      .slice(0, 2)
-      .map(async (article) => ({
-        article,
-        slug: slugify(article.title),
-        readMinutes: await getReadMinutes(article.markdown),
-      }))
-  );
+  const articleList = await getArticleList();
 
   return (
     <>
@@ -96,20 +87,12 @@ export default async function HomePage() {
       <section className="pb-[clamp(54px,8vw,92px)]">
         <SectionHead
           kicker="Latest articles"
-          title="From the blog"
+          title="Latest writing"
           link={{ href: "/articles", label: "All articles" }}
         />
-        <div className="grid grid-cols-1 gap-5.5 wide:grid-cols-2">
-          {latestArticles.map(({ article, slug, readMinutes }, i) => (
-            <Reveal key={slug} delay={i * 55} className="h-full [&>a]:h-full">
-              <ArticleCard
-                article={article}
-                slug={slug}
-                readMinutes={readMinutes}
-              />
-            </Reveal>
-          ))}
-        </div>
+        <Reveal>
+          <ArticleCarousel items={articleList} />
+        </Reveal>
       </section>
 
       <hr className="-mx-(--pad) h-px border-0 bg-border" />
@@ -121,6 +104,11 @@ export default async function HomePage() {
           title="Things I've built"
           link={{ href: "/projects", label: "All projects" }}
         />
+        {config.apps?.map((app) => (
+          <Reveal key={app.url} className="mb-5.5">
+            <AppCard app={app} />
+          </Reveal>
+        ))}
         <ProjectGrid repos={repos.slice(0, 4)} commits={commits} />
       </section>
 
